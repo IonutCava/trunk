@@ -2,12 +2,12 @@
 
 #include "sceneData.cmn"
 #include "utility.frag"
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
-layout(binding = TEXTURE_UNIT1) uniform sampler2D texSpecular;
-layout(binding = TEXTURE_OPACITY) uniform sampler2D texSSAO;
-layout(binding = TEXTURE_PROJECTION) uniform sampler2D texSSR;
+layout(binding = TEXTURE_UNIT0)         uniform sampler2D texScreen;
+layout(binding = TEXTURE_UNIT1)         uniform sampler2D texSpecular;
+layout(binding = TEXTURE_OPACITY)       uniform sampler2D texSSAO;
+layout(binding = TEXTURE_PROJECTION)    uniform sampler2D texSSR;
 layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texNormalsAndMatData;
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepth;
+layout(binding = TEXTURE_DEPTH)         uniform sampler2D texDepth;
 
 uniform mat4 invProjectionMatrix;
 uniform mat4 invViewMatrix;
@@ -43,8 +43,7 @@ void main() {
     }
 
     const vec4 matData = texture(texNormalsAndMatData, VAR._texCoord);
-    const uint probeID = uint(abs(matData.a));
-    if (probeID == PROBE_ID_NO_REFLECTIONS) {
+    if (uint(abs(matData.a)) == PROBE_ID_NO_REFLECTIONS) {
         _colourOut = vec4(albedo.rgb, 1.f);
         return;
     }
@@ -52,20 +51,18 @@ void main() {
     const float ssao = texture(texSSAO, VAR._texCoord).r;
     const vec3 reflection = texture(texSSR, VAR._texCoord).rgb;
     const vec3 kS = texture(texSpecular, VAR._texCoord).rgb;
-    const vec2 MR = unpackVec2(matData.b);
-    const float metalness = MR.x;
-    const float roughness = MR.y;
+    const float metalness = unpackVec2(matData.b).x;
 
     // Energy conservation
     vec3 kD = vec3(1.f) - kS;
     kD *= 1.f - metalness;
 
     // Diffuse irradience computation
-    const vec3 diffuseIrradiance = albedo.rgb * ssao;
+    const vec3 diffuseIrradiance = albedo.rgb;
     // Specular radiance computation
     const vec3 specularRadiance = reflection * kS;
 
-    const vec3 ambientIBL = (diffuseIrradiance * kD) + specularRadiance;
+    const vec3 ambientIBL = ssao * (kD * diffuseIrradiance + specularRadiance);
 
     _colourOut = vec4(ambientIBL, 1.f);
 }
@@ -80,7 +77,7 @@ void main() {
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texExposure;
 
-uniform float manualExposure;
+uniform float manualExposureFactor;
 uniform int mappingFunction;
 uniform bool useAdaptiveExposure;
 uniform bool skipToneMapping;
@@ -213,11 +210,14 @@ void main() {
     vec3 screenColour = inputColour.rgb;
 
     if (!skipToneMapping && mappingFunction != NONE) {
-        vec3 Yxy = convertRGB2Yxy(screenColour * manualExposure);
+        vec3 Yxy = vec3(0.f);
 
         if (useAdaptiveExposure) {
+            Yxy = convertRGB2Yxy(screenColour);
             const float avgLuminance = texture(texExposure, VAR._texCoord).r;
-            Yxy.x = Yxy.x / (9.6f * avgLuminance + 0.0001f);
+            Yxy.x = (Yxy.x / (9.6f * avgLuminance + 0.0001f)) * manualExposureFactor;
+        } else {
+            Yxy = convertRGB2Yxy(screenColour * manualExposureFactor);
         }
 
         if (mappingFunction == REINHARD)     {
@@ -242,6 +242,10 @@ void main() {
     }
 
     //Do not apply gamma correction here as edge-detection in subsequent passes work best in linear space
-    _colourOut.rgb = screenColour;//ToSRGBAccurate(screenColour);
+#if 0
+    _colourOut.rgb = ToSRGBAccurate(screenColour);
+#else
+    _colourOut.rgb = screenColour;
+#endif
     _colourOut.a = Luminance(_colourOut.rgb);
 }

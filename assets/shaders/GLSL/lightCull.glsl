@@ -12,7 +12,7 @@ layout(binding = BUFFER_LIGHT_INDEX_COUNT, std430) COMP_ONLY_RW buffer globalInd
 #define DIRECTIONAL_LIGHT_COUNT dvd_LightData.x
 #define POINT_LIGHT_COUNT       dvd_LightData.y
 #define SPOT_LIGHT_COUNT        dvd_LightData.z
-#define GROUP_SIZE (GRID_SIZE_X_THREADS * GRID_SIZE_Y_THREADS * GRID_SIZE_Z_THREADS)
+#define GROUP_SIZE (GRID_SIZE_X * GRID_SIZE_Y * GRID_SIZE_Z_THREADS)
 
 struct TempLight
 {
@@ -23,7 +23,7 @@ struct TempLight
 
 shared TempLight sharedLights[GROUP_SIZE];
 
-layout(local_size_x = GRID_SIZE_X_THREADS, local_size_y = GRID_SIZE_Y_THREADS, local_size_z = GRID_SIZE_Z_THREADS) in;
+layout(local_size_x = GRID_SIZE_X, local_size_y = GRID_SIZE_Y, local_size_z = GRID_SIZE_Z_THREADS) in;
 
 bool lightIntersectsCluster(TempLight light, VolumeTileAABB cluster);
 
@@ -118,15 +118,15 @@ bool lightIntersectsCluster(TempLight light, VolumeTileAABB cluster) {
     // coordinates in the shared array of lights after copying
 
     // only add distance in either dimension if it's outside the bounding box
-    vec3 belowDist = cluster.minPoint.xyz - light.position;
-    vec3 aboveDist = light.position - cluster.maxPoint.xyz;
+    const vec3 belowDist = cluster.minPoint.xyz - light.position;
+    const vec3 aboveDist = light.position - cluster.maxPoint.xyz;
 
-    vec3 isBelow = vec3(greaterThan(belowDist, vec3(0.0)));
-    vec3 isAbove = vec3(greaterThan(aboveDist, vec3(0.0)));
+    const vec3 isBelow = vec3(greaterThan(belowDist, vec3(0.0)));
+    const vec3 isAbove = vec3(greaterThan(aboveDist, vec3(0.0)));
 
-    vec3 distSqVec = (isBelow * belowDist) + (isAbove * aboveDist);
-    float distsq = dot(distSqVec, distSqVec);
+    const vec3 distSqVec = (isBelow * belowDist) + (isAbove * aboveDist);
+    const float distsq = dot(distSqVec, distSqVec);
 
-    return distsq <= (light.radius * light.radius);
+    return distsq <= SQUARED(light.radius);
 }
 

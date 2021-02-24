@@ -37,8 +37,6 @@
 #ifndef SCENE_ANIMATOR_H_
 #define SCENE_ANIMATOR_H_
 
-#include <assimp/matrix4x4.h>
-
 #include "AnimationEvaluator.h"
 #include "Core/Math/Headers/Line.h"
 
@@ -205,11 +203,11 @@ class SceneAnimator {
     void saveSkeleton(ByteBuffer& dataOut, Bone* parent) const;
     Bone* loadSkeleton(ByteBuffer& dataIn, Bone* parent);
 
-    void updateTransforms(Bone* pNode);
+    static void UpdateTransforms(Bone* pNode);
     void calculate(I32 animationIndex, D64 pTime);
-    I32 createSkeleton(Bone* piNode,
-                       const mat4<F32>& parent,
-                       vectorEASTL<Line>& lines);
+    static I32 CreateSkeleton(Bone* piNode,
+                              const mat4<F32>& parent,
+                              vectorEASTL<Line>& lines);
 
    private:
     /// Frame count of the longest registered animation
@@ -222,8 +220,6 @@ class SceneAnimator {
     vectorEASTL<AnimEvaluator_ptr> _animations;
     /// find animations quickly
     hashMap<U64, U32> _animationNameToID;
-    /// temp array of transforms
-    vectorEASTL<aiMatrix4x4> _transforms;
     mat4<F32> _boneTransformCache;
     LineCollection _skeletonLines;
     vectorEASTL<vectorEASTL<Line>> _skeletonLinesContainer;

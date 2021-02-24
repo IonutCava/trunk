@@ -645,6 +645,17 @@ SunDetails Sky::setDateTime(struct tm *dateTime) {
     return getCurrentDetails();
 }
 
+SunDetails Sky::setGeographicLocation(const SimpleLocation location) {
+    _sun.SetLocation(location._longitude, location._latitude);
+    return getCurrentDetails();
+}
+
+SunDetails Sky::setDateTimeAndLocation(struct tm *dateTime, SimpleLocation location) {
+    _sun.SetLocation(location._longitude, location._latitude);
+    _sun.SetDate(dateTime);
+    return getCurrentDetails();
+}
+
 SunDetails Sky::getCurrentDetails() const noexcept {
     return _sun.GetDetails();
 }
@@ -655,6 +666,10 @@ bool Sky::isDay() const noexcept {
 
 SimpleTime Sky::GetTimeOfDay() const noexcept {
     return _sun.GetTimeOfDay();
+}
+
+SimpleLocation Sky::GetGeographicLocation() const noexcept{
+    return _sun.GetGeographicLocation();
 }
 
 void Sky::setAtmosphere(const Atmosphere& atmosphere) noexcept {
@@ -749,7 +764,7 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     bindDescriptorSetsCommand._set._textureData.add({ _skybox->data(), _skyboxSampler, TextureUsage::UNIT0 });
     bindDescriptorSetsCommand._set._textureData.add({ _weatherTex->data(), _noiseSamplerLinear, TextureUsage::HEIGHTMAP });
     bindDescriptorSetsCommand._set._textureData.add({ _curlNoiseTex->data(), _noiseSamplerLinear, TextureUsage::OPACITY });
-    bindDescriptorSetsCommand._set._textureData.add({ _worlNoiseTex->data(), _noiseSamplerMipMap, TextureUsage::OCCLUSION_METALLIC_ROUGHNESS });
+    bindDescriptorSetsCommand._set._textureData.add({ _worlNoiseTex->data(), _noiseSamplerMipMap, TextureUsage::SPECULAR });
     bindDescriptorSetsCommand._set._textureData.add({ _perWorlNoiseTex->data(), _noiseSamplerMipMap, TextureUsage::NORMALMAP });
 
     pkgInOut.add(bindDescriptorSetsCommand);

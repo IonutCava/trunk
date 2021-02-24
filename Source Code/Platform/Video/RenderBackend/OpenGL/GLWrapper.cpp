@@ -379,7 +379,6 @@ bool GL_API::InitGLSW(Configuration& config) {
 
     AppendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA "                    + Util::to_string(Z_TEST_SIGMA) + "f");
     AppendToShaderHeader(ShaderType::COUNT,    "#define INV_Z_TEST_SIGMA "                + Util::to_string(1.f - Z_TEST_SIGMA) + "f");
-    AppendToShaderHeader(ShaderType::COUNT,    "#define SKY_OFFSET "                      + Util::to_string(Z_TEST_SIGMA) + "f");
     AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT "        + Util::to_string(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT));
     AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS "       + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));
     AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_DIR_LIGHTS "   + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS));
@@ -416,32 +415,26 @@ bool GL_API::InitGLSW(Configuration& config) {
     AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_UNIFORM_BLOCK "            + Util::to_string(to_base(ShaderBufferLocation::UNIFORM_BLOCK)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define GRID_SIZE_X "                     + Util::to_string(gridSize.x));
     AppendToShaderHeader(ShaderType::COUNT,    "#define GRID_SIZE_Y "                     + Util::to_string(gridSize.y));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define GRID_SIZE_Z "                     + Util::to_string(gridSize.z));
     AppendToShaderHeader(ShaderType::COUNT,    "#define GRID_SIZE_Z_THREADS "             + Util::to_string(Config::Lighting::ClusteredForward::CLUSTER_Z_THREADS));
     AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS_PER_CLUSTER "          + Util::to_string(numLightsPerCluster));
     AppendToShaderHeader(ShaderType::COUNT,    "#define REFLECTION_PROBE_RESOLUTION "     + Util::to_string(reflectionProbeRes));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_UNIT0 "                   + Util::to_string(to_base(TextureUsage::UNIT0)));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_HEIGHT "                  + Util::to_string(to_base(TextureUsage::HEIGHTMAP)));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_UNIT1 "                   + Util::to_string(to_base(TextureUsage::UNIT1)));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_NORMALMAP "               + Util::to_string(to_base(TextureUsage::NORMALMAP)));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_OPACITY "                 + Util::to_string(to_base(TextureUsage::OPACITY)));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_OMR "                     + Util::to_string(to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_PROJECTION "              + Util::to_string(to_base(TextureUsage::PROJECTION)));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_DEPTH_MAP "               + Util::to_string(to_base(TextureUsage::DEPTH)));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_REFRACTION "              + Util::to_string(to_base(TextureUsage::REFRACTION)));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_REFLECTION "              + Util::to_string(to_base(TextureUsage::REFLECTION)));
+    for (U8 i = 0; i < to_base(TextureUsage::COUNT); ++i) {
+        AppendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define TEXTURE_%s %d", TypeUtil::TextureUsageToString(static_cast<TextureUsage>(i)), i).c_str());
+    }
+    for (U8 i = 0; i < to_base(TextureOperation::COUNT); ++i) {
+        AppendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define TEX_%s %d", TypeUtil::TextureOperationToString(static_cast<TextureOperation>(i)), i).c_str());
+    }
     AppendToShaderHeader(ShaderType::COUNT,    "#define GLOBAL_WATER_BODIES_COUNT "       + Util::to_string(GLOBAL_WATER_BODIES_COUNT));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define GLOBAL_PROBE_COUNT "              + Util::to_string(GLOBAL_PROBE_COUNT));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define GLOBAL_PROBE_COUNT "              + Util::to_string(GLOBAL_PROBE_COUNT + 0));
     AppendToShaderHeader(ShaderType::COUNT,    "#define PROBE_ID_NO_REFLECTIONS "         + Util::to_string(GLOBAL_PROBE_COUNT + 1));
     AppendToShaderHeader(ShaderType::COUNT,    "#define PROBE_ID_NO_SSR "                 + Util::to_string(GLOBAL_PROBE_COUNT + 2));
     AppendToShaderHeader(ShaderType::COUNT,    "#define PROBE_ID_NO_ENV_REFLECTIONS "     + Util::to_string(GLOBAL_PROBE_COUNT + 3));
     AppendToShaderHeader(ShaderType::COUNT,    "#define MATERIAL_TEXTURE_COUNT "          + Util::to_string(MATERIAL_TEXTURE_COUNT));
-    AppendToShaderHeader(ShaderType::COMPUTE,  "#define GRID_SIZE_Z "                     + Util::to_string(gridSize.z));
-    AppendToShaderHeader(ShaderType::COMPUTE,  "#define GRID_SIZE_X_THREADS "             + Util::to_string(gridSize.x));
-    AppendToShaderHeader(ShaderType::COMPUTE,  "#define GRID_SIZE_Y_THREADS "             + Util::to_string(gridSize.y));
     AppendToShaderHeader(ShaderType::COMPUTE,  "#define BUFFER_LUMINANCE_HISTOGRAM "      + Util::to_string(to_base(ShaderBufferLocation::LUMINANCE_HISTOGRAM)));
-    AppendToShaderHeader(ShaderType::VERTEX,   "#define MAX_BONE_COUNT_PER_NODE "         + Util::to_string(Config::MAX_BONE_COUNT_PER_NODE));
     AppendToShaderHeader(ShaderType::VERTEX,   "#define BUFFER_BONE_TRANSFORMS "          + Util::to_string(to_base(ShaderBufferLocation::BONE_TRANSFORMS)));
     AppendToShaderHeader(ShaderType::VERTEX,   "#define BUFFER_BONE_TRANSFORMS_PREV "     + Util::to_string(to_base(ShaderBufferLocation::BONE_TRANSFORMS_PREV)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define MAX_BONE_COUNT_PER_NODE "         + Util::to_string(Config::MAX_BONE_COUNT_PER_NODE));
     AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_POSITION "                 + Util::to_string(to_base(AttribLocation::POSITION)));
     AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_TEXCOORD "                 + Util::to_string(to_base(AttribLocation::TEXCOORD)));
     AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_NORMAL "                   + Util::to_string(to_base(AttribLocation::NORMAL)));
@@ -451,14 +444,7 @@ bool GL_API::InitGLSW(Configuration& config) {
     AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_BONE_INDICE "              + Util::to_string(to_base(AttribLocation::BONE_INDICE)));
     AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_WIDTH "                    + Util::to_string(to_base(AttribLocation::WIDTH)));
     AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_GENERIC "                  + Util::to_string(to_base(AttribLocation::GENERIC)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFLECTION_ENV "          + Util::to_string(to_base(TextureUsage::REFLECTION_ENV)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFLECTION_SKY "          + Util::to_string(to_base(TextureUsage::REFLECTION_SKY)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_POST_FX_DATA "            + Util::to_string(to_base(TextureUsage::POST_FX_DATA)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_SCENE_NORMALS "           + Util::to_string(to_base(TextureUsage::SCENE_NORMALS)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define SHADOW_CUBE_MAP_ARRAY "           + Util::to_string(to_base(TextureUsage::SHADOW_CUBE)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define SHADOW_LAYERED_MAP_ARRAY "        + Util::to_string(to_U32(TextureUsage::SHADOW_LAYERED)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define SHADOW_SINGLE_MAP_ARRAY "         + Util::to_string(to_U32(TextureUsage::SHADOW_SINGLE)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_COUNT "                   + Util::to_string(to_U32(TextureUsage::COUNT)));
+
     for (MaterialDebugFlag flag : MaterialDebugFlag::_values()) {
         AppendToShaderHeader(ShaderType::FRAGMENT, Util::StringFormat("#define DEBUG_%s %d", flag._to_string(), flag._to_integral()));
     }

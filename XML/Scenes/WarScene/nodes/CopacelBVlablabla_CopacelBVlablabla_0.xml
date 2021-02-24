@@ -10,24 +10,24 @@
     </Transform>
 </TRANSFORM>
 <NAVIGATION/>
-<BOUNDS>
-    <Show__AABB>false</Show__AABB>
-    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
-</BOUNDS>
+<BOUNDS/>
 <RENDERING>
     <Material>
         <version>1</version>
-        <shadingMode>BLINN_PHONG</shadingMode>
+        <shadingMode>PHONG</shadingMode>
         <colour r="0.274500012" g="0.149000004" b="0.0118000004" a="1"/>
         <emissive r="0" g="0" b="0"/>
+        <ambient r="0" g="0" b="0"/>
+        <specular r="0" g="0" b="0" a="1"/>
         <metallic>0</metallic>
-        <roughness>0.5</roughness>
+        <roughness>1</roughness>
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
+        <ignoreTexDiffuseAlpha>false</ignoreTexDiffuseAlpha>
         <bumpMethod>NONE</bumpMethod>
-        <parallaxFactor>0.00999999978</parallaxFactor>
+        <parallaxFactor>1</parallaxFactor>
         <transparencyEnabled>true</transparencyEnabled>
-        <isRefractive>true</isRefractive>
+        <isRefractive>false</isRefractive>
         <RenderStates>
             <1>
                 <colourWrite r="true" g="true" b="false" a="false"/>
@@ -235,6 +235,7 @@
                 <name>branch.png</name>
                 <path>assets/textures</path>
                 <flipped>true</flipped>
+                <usage>MULTIPLY</usage>
                 <Sampler>
                     <id>1</id>
                 </Sampler>
@@ -256,10 +257,5 @@
             </1>
         </SamplerDescriptors>
     </Material>
-    <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
-    <HiZ__Occlusion__Cull>true</HiZ__Occlusion__Cull>
-    <Show__Axis>false</Show__Axis>
-    <Receives__Shadows>false</Receives__Shadows>
-    <Casts__Shadows>true</Casts__Shadows>
 </RENDERING>

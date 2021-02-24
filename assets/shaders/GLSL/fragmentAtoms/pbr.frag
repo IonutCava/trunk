@@ -1,10 +1,6 @@
 #ifndef _PBR_FRAG_
 #define _PBR_FRAG_
 
-#if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
-#define PBR_SHADING
-#endif //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
-
 // AMAZING RESOURCE : http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
 // Reference: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/PBR.glsl
 // Following BRDF methods are based upon research Frostbite EA
@@ -151,28 +147,27 @@ vec3 SchlickFresnelCustom(in vec3 specular, in float LdotH) {
 
 //----------------------------------------------------------------------------------
 
-
 //-------------------- GETTERS - -----------------------------------------------------
 //Get Fresnel
 //  specular  = the rgb specular color value of the pixel
 //  VdotH     = the dot product of the camera view direction and the half vector 
 vec3 Fresnel(in vec3 specular, in float VdotH, in float LdotH) {
-#if defined(PBR_SHADING)
+#if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
     return SchlickGaussianFresnel(specular, LdotH);
-#else
+#else //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
     return SchlickFresnel(specular, VdotH);
-#endif
+#endif //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
 }
 
 // Get Distribution
 //   roughness    = the roughness of the pixel
 //   NdotH        = the dot product of the normal and the half vector
 float Distribution(in float roughness, in float NdotH) {
-#if defined(PBR_SHADING)
+#if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
     return GGXDistribution(roughness, NdotH);
-#else //PBR_SHADING
+#else //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
     return BlinnPhongDistribution(roughness, NdotH);
-#endif //PBR_SHADING
+#endif //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
 }
 
 //Get Diffuse
@@ -182,12 +177,12 @@ float Distribution(in float roughness, in float NdotH) {
 //   NdotL        = the normal dot with the light direction
 //   VdotH        = the camera view direction dot with the half vector
 vec3 Diffuse(in vec3 diffuseColor, in float roughness, in float NdotV, in float NdotL, in float VdotH, in float LdotH) {
-#if defined(PBR_SHADING)
+#if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
     const float D = BurleyDiffuse(roughness, NdotV, NdotL, VdotH, LdotH);
-#else //PBR_SHADING
+#else //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
     const float D = LambertianDiffuse(NdotL);
     //const float D = CustomLambertianDiffuse(roughness, NdotV, NdotL);
-#endif //PBR_SHADING
+#endif //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
 
     return diffuseColor * D;
 }
@@ -197,38 +192,40 @@ vec3 Diffuse(in vec3 diffuseColor, in float roughness, in float NdotV, in float 
 //   NdotL        = the dot product of the normal and direction to the light
 //   NdotV        = the dot product of the normal and the camera view direction
 float Visibility(in float roughness, in float NdotL, in float NdotV) {
-#if defined(PBR_SHADING)
+#if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
     return NeumannVisibility(NdotV, NdotL);
-#else //PBR_SHADING
+#else //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
     return SmithGGXSchlickVisibility(roughness, NdotV, NdotL);
-#endif //PBR_SHADING
+#endif //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
 }
 
 //Return the PBR BRDF value
 //   L  = normalised lightDir
 //   V  = view direction
 //   N  = surface normal of the pixel
-//   diffColour = base colour
-//   specColour = specular colour
+//   lightColour = the colour of the light we're computing the BRDF factors for
+//   lightAttenuation = attenuation factor to multiply the light's colour by (includes shadow, distance fade, etc)
 //   ndl       = dot(normal,lightVec) [M_EPSILON,1.0f]
-//   roughness = material roughness value for the target pixel
-//   occlusion = material ambient occlusion value for the target pixel (from map, not SSAO!)
+//   properties = material properties value for the target pixel (base colour, OMR, spec value, etc)
 vec3 GetBRDF(in vec3 L,
              in vec3 V,
              in vec3 N,
-             in vec3 diffColour,
-             in vec3 specColour,
+             in vec3 lightColour,
+             in float lightAttenuation,
              in float ndl,
-             in float roughness,
-             in float occlusion)
+             in float ndv,
+             in NodeMaterialProperties properties)
 {
-#if defined(PBR_SHADING) || defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
+    const vec3 diffColour = properties._albedo;
+    const vec3 specColour = properties._specular.rgb;
+    const float roughness = properties._OMR[2];
+    const float occlusion = properties._OMR[0];
+
     const vec3 H = normalize(V + L);
 
     const float vdh = clamp((dot(V, H)), M_EPSILON, 1.f);
     const float ldh = clamp((dot(L, H)), M_EPSILON, 1.f);
     const float ndh = clamp((dot(N, H)), M_EPSILON, 1.f);
-    const float ndv = abs(dot(N, V)) + M_EPSILON;
 
     // Material data
     const vec3 diffuseFactor = Diffuse(diffColour, roughness, ndv, ndl, vdh, ldh);
@@ -238,21 +235,9 @@ vec3 GetBRDF(in vec3 L,
 
     const vec3 specularFactor = distTerm * visTerm * fresnelTerm * ndl * INV_M_PI;
 
-    return (diffuseFactor * occlusion) + specularFactor;
-#elif defined(USE_SHADING_TOON)
-    const float intensity = dot(lightVec, normal);
-    vec3 color2 = vec3(1.0f);
+    const vec3 brdf = (diffuseFactor * occlusion) + specularFactor;
 
-         if (intensity > 0.95f) color2 = vec3(1.0f);
-    else if (intensity > 0.75f) color2 = vec3(0.8f);
-    else if (intensity > 0.50f) color2 = vec3(0.6f);
-    else if (intensity > 0.25f) color2 = vec3(0.4f);
-    else                        color2 = vec3(0.2f);
-
-    return color2 * diffColour * occlusion;
-#else
-    return vec3(0.6f, 1.0f, 0.7f); //obvious lime-green
-#endif //USE_SHADING_TOON
+    return brdf * lightColour * lightAttenuation;
 }
 
 #endif //_PBR_FRAG_

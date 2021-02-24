@@ -28,8 +28,10 @@ namespace {
 }
 
 namespace detail {
-    bool LoadSave::read(const stringImpl& path) {
+    bool LoadSave::read(const stringImpl& path, const stringImpl& rootNode) {
         _loadPath = path;
+        _rootNodePath = rootNode;
+
         read_xml(_loadPath, XmlTree, boost::property_tree::xml_parser::trim_whitespace);
         return !XmlTree.empty();
     }

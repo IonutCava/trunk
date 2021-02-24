@@ -17,8 +17,8 @@ namespace Divide {
 PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
     : PreRenderOperator(context, parent, FilterType::FILTER_SS_ANTIALIASING)
 {
-    useSMAA(cache->context().config().rendering.postFX.postAAType == "SMAA");
-    postAAQualityLevel(cache->context().config().rendering.postFX.PostAAQualityLevel);
+    useSMAA(cache->context().config().rendering.postFX.postAA.type == "SMAA");
+    postAAQualityLevel(cache->context().config().rendering.postFX.postAA.qualityLevel);
 
     RenderTargetDescriptor desc = {};
     desc._resolution = parent.screenRT()._rt->getResolution();
@@ -149,7 +149,7 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
     if (useSMAA() != currentUseSMAA()) {
         currentUseSMAA(useSMAA());
 
-        _context.context().config().rendering.postFX.postAAType = (useSMAA() ? "SMAA" : "FXAA");
+        _context.context().config().rendering.postFX.postAA.type = (useSMAA() ? "SMAA" : "FXAA");
         _context.context().config().changed(true);
     }
 
@@ -158,7 +158,7 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
 
         _pushConstantsCommand._constants.set(_ID("dvd_qualityMultiplier"), GFX::PushConstantType::INT, to_I32(postAAQualityLevel() - 1));
 
-        _context.context().config().rendering.postFX.PostAAQualityLevel = postAAQualityLevel();
+        _context.context().config().rendering.postFX.postAA.qualityLevel = postAAQualityLevel();
         _context.context().config().changed(true);
 
         if (currentPostAAQualityLevel() == 0) {

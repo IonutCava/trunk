@@ -101,8 +101,8 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     desc._resolution = vec2<U16>(res / resolutionDownscaleFactor);
     _bloomOutput = _context.renderTargetPool().allocateRT(desc);
 
-    factor(_context.context().config().rendering.postFX.bloomFactor);
-    luminanceThreshold(_context.context().config().rendering.postFX.bloomThreshold);
+    factor(_context.context().config().rendering.postFX.bloom.factor);
+    luminanceThreshold(_context.context().config().rendering.postFX.bloom.threshold);
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator() {
@@ -132,16 +132,18 @@ void BloomPreRenderOperator::reshape(const U16 width, const U16 height) {
 void BloomPreRenderOperator::factor(const F32 val) {
     _bloomFactor = val;
     _bloomApplyConstants.set(_ID("bloomFactor"), GFX::PushConstantType::FLOAT, _bloomFactor);
-    _context.context().config().rendering.postFX.bloomFactor = val;
+    _context.context().config().rendering.postFX.bloom.factor = val;
+    _context.context().config().changed(true);
 }
 
 void BloomPreRenderOperator::luminanceThreshold(const F32 val) {
     _bloomThreshold = val;
     _bloomCalcConstants.set(_ID("luminanceThreshold"), GFX::PushConstantType::FLOAT, _bloomThreshold);
-    _context.context().config().rendering.postFX.bloomThreshold = val;
+    _context.context().config().rendering.postFX.bloom.threshold = val;
+    _context.context().config().changed(true);
 }
 
-// Order: luminance calc -> bloom -> tonemap
+// Order: luminance calc -> bloom -> toneMap
 bool BloomPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
     assert(input._targetID != output._targetID);
 

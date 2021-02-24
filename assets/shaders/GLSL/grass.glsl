@@ -147,12 +147,14 @@ void main (void){
     }
 #endif //DEBUG_LODS
 
+    float normalVariation = 0.f;
+    const vec3 normalWV = getNormalWV(VAR._texCoord, normalVariation);
+
     vec4 colour = vec4(albedo.rgb, min(albedo.a, _alphaFactor));
     vec3 MetalnessRoughnessProbeID = vec3(0.f, 1.f, 0.f);
     vec3 SpecularColourOut = vec3(0.f);
-    const vec3 normalWV = getNormalWV(VAR._texCoord);
     if (albedo.a >= Z_TEST_SIGMA) {
-        colour = getPixelColour(LoD, albedo, data, normalWV, VAR._texCoord, SpecularColourOut, MetalnessRoughnessProbeID);
+        colour = getPixelColour(LoD, albedo, data, normalWV, normalVariation, VAR._texCoord, SpecularColourOut, MetalnessRoughnessProbeID);
     }
     writeScreenColour(colour, normalWV, SpecularColourOut, MetalnessRoughnessProbeID);
 }

@@ -22,9 +22,9 @@ uniform float fadeStart;
 uniform vec4 sampleKernel[SSAO_SAMPLE_COUNT];
 
 // Input screen texture
-layout(binding = TEXTURE_UNIT0)         uniform sampler2D texNoise;
-layout(binding = TEXTURE_UNIT1)         uniform sampler2D texNormalsAndMatData;
-layout(binding = TEXTURE_DEPTH_MAP)     uniform sampler2D texDepthMap;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texNoise;
+layout(binding = TEXTURE_UNIT1) uniform sampler2D texNormalsAndMatData;
+layout(binding = TEXTURE_DEPTH) uniform sampler2D texDepthMap;
 
 out float _ssaoOut;
 
@@ -39,6 +39,11 @@ out float _ssaoOut;
 //ref1: https://github.com/McNopper/OpenGL/blob/master/Example28/shader/ssao.frag.glsl
 //ref2: https://github.com/itoral/vkdf/blob/9622f6a9e6602e06c5a42507202ad5a7daf917a4/data/spirv/ssao.deferred.frag.input
 void main(void) {
+    if (dvd_materialDebugFlag != DEBUG_COUNT && dvd_materialDebugFlag != DEBUG_SSAO) {
+        _ssaoOut = 1.f;
+        return;
+    }
+
     // Calculate out of the current fragment in screen space the view space position.
     if (sign(texture(texNormalsAndMatData, VAR._texCoord).a) < -0.5f) {
         _ssaoOut = 1.f;
@@ -100,7 +105,7 @@ void main(void) {
 
 //ref: https://github.com/itoral/vkdf/blob/9622f6a9e6602e06c5a42507202ad5a7daf917a4/data/spirv/ssao-blur.deferred.frag.input
 layout(binding = TEXTURE_UNIT0)         uniform sampler2D texSSAO;
-layout(binding = TEXTURE_DEPTH_MAP)     uniform sampler2D texDepthMap;
+layout(binding = TEXTURE_DEPTH)         uniform sampler2D texDepthMap;
 layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texNormal;
 
 uniform mat4 invProjectionMatrix;
@@ -182,7 +187,7 @@ void main() {
 
 //ref: https://github.com/itoral/vkdf/blob/9622f6a9e6602e06c5a42507202ad5a7daf917a4/data/spirv/ssao-blur.deferred.frag.input
 layout(binding = TEXTURE_UNIT0)         uniform sampler2D texSSAO;
-layout(binding = TEXTURE_DEPTH_MAP)     uniform sampler2D texDepthMap;
+layout(binding = TEXTURE_DEPTH)         uniform sampler2D texDepthMap;
 layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texNormal;
 
 uniform mat4 invProjectionMatrix;
@@ -273,7 +278,7 @@ void main() {
 --Fragment.SSAODownsample
 
 layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texNormal;
-layout(binding = TEXTURE_DEPTH_MAP)     uniform sampler2D texDepthMap;
+layout(binding = TEXTURE_DEPTH)         uniform sampler2D texDepthMap;
 
 out vec3 _outColour;
 
@@ -371,7 +376,7 @@ void main()
 layout(binding = TEXTURE_UNIT0)     uniform sampler2D texSSAOLinear;
 layout(binding = TEXTURE_UNIT1)     uniform sampler2D texSSAONearest;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texSSAONormalsDepth;
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
+layout(binding = TEXTURE_DEPTH)     uniform sampler2D texDepthMap;
 
 out float _ssaoOut;
 

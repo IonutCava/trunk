@@ -27,25 +27,32 @@ layout(binding = BUFFER_NODE_MATERIAL_DATA, std430) coherent ACCESS_R buffer dvd
 #if defined(USE_BINDLESS_TEXTURES)
 #define texDiffuse0   samplerUnit0(dvd_Materials[MATERIAL_IDX]._textures[0].xy)
 #define texOpacityMap samplerOpacity(dvd_Materials[MATERIAL_IDX]._textures[0].zw)
-#define texDiffuse1   samplerUnit1(dvd_Materials[MATERIAL_IDX]._textures[1].xy)
-#define texOMR        samplerOMR(dvd_Materials[MATERIAL_IDX]._textures[1].zw)
-#define texHeight     samplerHeight(dvd_Materials[MATERIAL_IDX]._textures[2].xy)
-#define texProjected  samplerProj(dvd_Materials[MATERIAL_IDX]._textures[2].zw)
 #define texNormalMap  samplerNormal(dvd_Materials[MATERIAL_IDX]._textures[3].xy)
+#define texHeight     samplerHeight(dvd_Materials[MATERIAL_IDX]._textures[2].xy)
+#define texSpecular   samplerSpecular(dvd_Materials[MATERIAL_IDX]._textures[1].zw)
+#define texMetalness  samplerMetalness(dvd_Materials[MATERIAL_IDX]._textures[1].zw)
+#define texRoughness  samplerRoughness(dvd_Materials[MATERIAL_IDX]._textures[1].zw)
+#define texOcclusion  samplerOcclusion(dvd_Materials[MATERIAL_IDX]._textures[1].zw)
+#define texEmissive   samplerEmissive(dvd_Materials[MATERIAL_IDX]._textures[1].zw)
+#define texDiffuse1   samplerUnit1(dvd_Materials[MATERIAL_IDX]._textures[1].xy)
+#define texProjected  samplerProj(dvd_Materials[MATERIAL_IDX]._textures[2].zw)
 #define texReflect    samplerReflect(dvd_Materials[MATERIAL_IDX]._textures[3].zw)
 #define texReract     samplerRefract(dvd_Materials[MATERIAL_IDX]._textures[4].xy)
 #else //USE_BINDLESS_TEXTURES
 layout(binding = TEXTURE_UNIT0)      uniform samplerUnit0 texDiffuse0;
-layout(binding = TEXTURE_UNIT1)      uniform samplerUnit1 texDiffuse1;
-layout(binding = TEXTURE_HEIGHT)     uniform samplerHeight texHeight;
-layout(binding = TEXTURE_OMR)        uniform samplerOMR texOMR;
 layout(binding = TEXTURE_OPACITY)    uniform samplerOpacity texOpacityMap;
 layout(binding = TEXTURE_NORMALMAP)  uniform samplerNormal texNormalMap;
+layout(binding = TEXTURE_HEIGHTMAP)  uniform samplerHeight texHeight;
+layout(binding = TEXTURE_SPECULAR)   uniform samplerSpecular texSpecular;
+layout(binding = TEXTURE_METALNESS)  uniform samplerMetalness texMetalness;
+layout(binding = TEXTURE_ROUGHNESS)  uniform samplerRoughness texRoughness;
+layout(binding = TEXTURE_OCCLUSION)  uniform samplerOcclusion texOcclusion;
+layout(binding = TEXTURE_EMISSIVE)   uniform samplerEmissive texEmissive;
+layout(binding = TEXTURE_UNIT1)      uniform samplerUnit1 texDiffuse1;
 layout(binding = TEXTURE_PROJECTION) uniform samplerProj texProjected;
 layout(binding = TEXTURE_REFLECTION) uniform samplerReflect texReflect;
 layout(binding = TEXTURE_REFRACTION) uniform samplerRefract texRefract;
 #endif //USE_BINDLESS_TEXTURES
-
 
 #endif //FRAG_SHADER || NEED_MATERIAL_DATA
 

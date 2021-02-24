@@ -72,11 +72,11 @@ namespace Util {
     bool colourInput4(Editor& parent, const char* name, FColour4& col, const bool readOnly, Pred&& dataSetter) {
         const bool ret = ImGui::ColorEdit4(name, col._v, ImGuiColorEditFlags__OptionsDefault);
         if (!readOnly) {
-            RegisterUndo<FColour4, true>(parent, GFX::PushConstantType::FCOLOUR4, col, col, name, [dataSetter](const FColour4& oldColour) {
-                dataSetter(oldColour._v);
-            });
+            RegisterUndo<FColour4, true>(parent, GFX::PushConstantType::FCOLOUR4, col, col, name, dataSetter);
         }
-
+        if (ret) {
+            dataSetter(col);
+        }
         return ret;
     }
 
@@ -84,11 +84,11 @@ namespace Util {
     bool colourInput3(Editor& parent, const char* name, FColour3& col, const bool readOnly, Pred&& dataSetter) {
         const bool ret = ImGui::ColorEdit3(name, col._v, ImGuiColorEditFlags__OptionsDefault);
         if (!readOnly) {
-            RegisterUndo<FColour3, true>(parent, GFX::PushConstantType::FCOLOUR3, col, col, name, [dataSetter](const FColour4& oldColour) {
-                dataSetter(oldColour._v);
-            });
+            RegisterUndo<FColour3, true>(parent, GFX::PushConstantType::FCOLOUR3, col, col, name, dataSetter);
         }
-
+        if (ret) {
+            dataSetter(col);
+        }
         return ret;
     }
 

@@ -8,7 +8,7 @@ namespace Divide {
 
 bool Configuration::fromXML(const char* xmlFile) {
     Console::printfn(Locale::Get(_ID("XML_LOAD_CONFIG")), xmlFile);
-    if (LoadSave.read(xmlFile)) {
+    if (LoadSave.read(xmlFile, "config.")) {
         GET_PARAM(debug.enableRenderAPIDebugging);
         GET_PARAM(debug.useGeometryCache);
         GET_PARAM(debug.useVegetationCache);
@@ -24,6 +24,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(debug.useShaderBinaryCache);
         GET_PARAM(debug.memFile);
         GET_PARAM(language);
+        GET_PARAM(runtime.title);
         GET_PARAM(runtime.targetDisplay);
         GET_PARAM(runtime.targetRenderingAPI);
         GET_PARAM(runtime.maxWorkerThreads);
@@ -71,16 +72,46 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM_ATTRIB(rendering.lodThresholds, y);
         GET_PARAM_ATTRIB(rendering.lodThresholds, z);
         GET_PARAM_ATTRIB(rendering.lodThresholds, w);
-        GET_PARAM(rendering.postFX.postAAType);
-        GET_PARAM(rendering.postFX.PostAAQualityLevel);
-        GET_PARAM(rendering.postFX.enableAdaptiveToneMapping);
-        GET_PARAM(rendering.postFX.enableDepthOfField);
-        GET_PARAM(rendering.postFX.enableScreenSpaceReflections);
-        GET_PARAM(rendering.postFX.enablePerObjectMotionBlur);
-        GET_PARAM(rendering.postFX.enableBloom);
-        GET_PARAM(rendering.postFX.bloomFactor);
-        GET_PARAM(rendering.postFX.bloomThreshold);
-        GET_PARAM(rendering.postFX.velocityScale);
+        GET_PARAM(rendering.postFX.postAA.type);
+        GET_PARAM(rendering.postFX.postAA.qualityLevel);
+        GET_PARAM(rendering.postFX.toneMap.adaptive);
+        GET_PARAM(rendering.postFX.toneMap.manualExposureFactor);
+        GET_PARAM(rendering.postFX.toneMap.minLogLuminance);
+        GET_PARAM(rendering.postFX.toneMap.maxLogLuminance);
+        GET_PARAM(rendering.postFX.toneMap.tau);
+        GET_PARAM(rendering.postFX.toneMap.mappingFunction);
+        GET_PARAM(rendering.postFX.dof.enabled);
+        GET_PARAM_ATTRIB(rendering.postFX.dof.focalPoint, x);
+        GET_PARAM_ATTRIB(rendering.postFX.dof.focalPoint, y);
+        GET_PARAM(rendering.postFX.dof.focalDepth);
+        GET_PARAM(rendering.postFX.dof.focalLength);
+        GET_PARAM(rendering.postFX.dof.fStop);
+        GET_PARAM(rendering.postFX.dof.ndofstart);
+        GET_PARAM(rendering.postFX.dof.ndofdist);
+        GET_PARAM(rendering.postFX.dof.fdofstart);
+        GET_PARAM(rendering.postFX.dof.fdofdist);
+        GET_PARAM(rendering.postFX.dof.vignout);
+        GET_PARAM(rendering.postFX.dof.vignin);
+        GET_PARAM(rendering.postFX.dof.autoFocus);
+        GET_PARAM(rendering.postFX.dof.vignetting);
+        GET_PARAM(rendering.postFX.dof.debugFocus);
+        GET_PARAM(rendering.postFX.dof.manualdof);
+        GET_PARAM(rendering.postFX.ssr.enabled);
+        GET_PARAM(rendering.postFX.ssr.maxDistance);
+        GET_PARAM(rendering.postFX.ssr.jitterAmount);
+        GET_PARAM(rendering.postFX.ssr.stride);
+        GET_PARAM(rendering.postFX.ssr.zThickness);
+        GET_PARAM(rendering.postFX.ssr.strideZCutoff);
+        GET_PARAM(rendering.postFX.ssr.screenEdgeFadeStart);
+        GET_PARAM(rendering.postFX.ssr.eyeFadeStart);
+        GET_PARAM(rendering.postFX.ssr.eyeFadeEnd);
+        GET_PARAM(rendering.postFX.ssr.maxSteps);
+        GET_PARAM(rendering.postFX.ssr.binarySearchIterations);
+        GET_PARAM(rendering.postFX.motionBlur.enablePerObject);
+        GET_PARAM(rendering.postFX.motionBlur.velocityScale);
+        GET_PARAM(rendering.postFX.bloom.enabled);
+        GET_PARAM(rendering.postFX.bloom.factor);
+        GET_PARAM(rendering.postFX.bloom.threshold);
         GET_PARAM(rendering.postFX.ssao.enable);
         GET_PARAM(rendering.postFX.ssao.UseHalfResolution);
         GET_PARAM(rendering.postFX.ssao.FullRes.Radius);
@@ -118,10 +149,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.shadowMapping.spot.maxAnisotropicFilteringLevel);
         GET_PARAM(rendering.shadowMapping.point.enabled);
         GET_PARAM(rendering.shadowMapping.point.shadowMapResolution);
-
-        GET_PARAM(title);
-        GET_PARAM(defaultTextureLocation);
-        GET_PARAM(defaultShadersLocation);
+        GET_PARAM(defaultAssetLocation.textures);
+        GET_PARAM(defaultAssetLocation.shaders);
 
         if ( rendering.shadowMapping.enabled &&
             !rendering.shadowMapping.csm.enabled &&
@@ -154,6 +183,7 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(debug.useShaderBinaryCache);
         PUT_PARAM(debug.memFile);
         PUT_PARAM(language);
+        PUT_PARAM(runtime.title);
         PUT_PARAM(runtime.targetDisplay);
         PUT_PARAM(runtime.targetRenderingAPI);
         PUT_PARAM(runtime.maxWorkerThreads);
@@ -201,16 +231,46 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM_ATTRIB(rendering.lodThresholds, y);
         PUT_PARAM_ATTRIB(rendering.lodThresholds, z);
         PUT_PARAM_ATTRIB(rendering.lodThresholds, w);
-        PUT_PARAM(rendering.postFX.postAAType);
-        PUT_PARAM(rendering.postFX.PostAAQualityLevel);
-        PUT_PARAM(rendering.postFX.enableAdaptiveToneMapping);
-        PUT_PARAM(rendering.postFX.enableDepthOfField);
-        PUT_PARAM(rendering.postFX.enableScreenSpaceReflections);
-        PUT_PARAM(rendering.postFX.enablePerObjectMotionBlur);
-        PUT_PARAM(rendering.postFX.enableBloom);
-        PUT_PARAM(rendering.postFX.bloomThreshold);
-        PUT_PARAM(rendering.postFX.bloomFactor);
-        PUT_PARAM(rendering.postFX.velocityScale);
+        PUT_PARAM(rendering.postFX.postAA.type);
+        PUT_PARAM(rendering.postFX.postAA.qualityLevel);
+        PUT_PARAM(rendering.postFX.toneMap.adaptive);
+        PUT_PARAM(rendering.postFX.toneMap.manualExposureFactor);
+        PUT_PARAM(rendering.postFX.toneMap.minLogLuminance);
+        PUT_PARAM(rendering.postFX.toneMap.maxLogLuminance);
+        PUT_PARAM(rendering.postFX.toneMap.tau);
+        PUT_PARAM(rendering.postFX.toneMap.mappingFunction);
+        PUT_PARAM(rendering.postFX.dof.enabled);
+        PUT_PARAM_ATTRIB(rendering.postFX.dof.focalPoint, x);
+        PUT_PARAM_ATTRIB(rendering.postFX.dof.focalPoint, y);
+        PUT_PARAM(rendering.postFX.dof.focalDepth);
+        PUT_PARAM(rendering.postFX.dof.focalLength);
+        PUT_PARAM(rendering.postFX.dof.fStop);
+        PUT_PARAM(rendering.postFX.dof.ndofstart);
+        PUT_PARAM(rendering.postFX.dof.ndofdist);
+        PUT_PARAM(rendering.postFX.dof.fdofstart);
+        PUT_PARAM(rendering.postFX.dof.fdofdist);
+        PUT_PARAM(rendering.postFX.dof.vignout);
+        PUT_PARAM(rendering.postFX.dof.vignin);
+        PUT_PARAM(rendering.postFX.dof.autoFocus);
+        PUT_PARAM(rendering.postFX.dof.vignetting);
+        PUT_PARAM(rendering.postFX.dof.debugFocus);
+        PUT_PARAM(rendering.postFX.dof.manualdof);
+        PUT_PARAM(rendering.postFX.ssr.enabled);
+        PUT_PARAM(rendering.postFX.ssr.maxDistance);
+        PUT_PARAM(rendering.postFX.ssr.jitterAmount);
+        PUT_PARAM(rendering.postFX.ssr.stride);
+        PUT_PARAM(rendering.postFX.ssr.zThickness);
+        PUT_PARAM(rendering.postFX.ssr.strideZCutoff);
+        PUT_PARAM(rendering.postFX.ssr.screenEdgeFadeStart);
+        PUT_PARAM(rendering.postFX.ssr.eyeFadeStart);
+        PUT_PARAM(rendering.postFX.ssr.eyeFadeEnd);
+        PUT_PARAM(rendering.postFX.ssr.maxSteps);
+        PUT_PARAM(rendering.postFX.ssr.binarySearchIterations);
+        PUT_PARAM(rendering.postFX.motionBlur.enablePerObject);
+        PUT_PARAM(rendering.postFX.motionBlur.velocityScale);
+        PUT_PARAM(rendering.postFX.bloom.enabled);
+        PUT_PARAM(rendering.postFX.bloom.factor);
+        PUT_PARAM(rendering.postFX.bloom.threshold);
         PUT_PARAM(rendering.postFX.ssao.enable);
         PUT_PARAM(rendering.postFX.ssao.UseHalfResolution);
         PUT_PARAM(rendering.postFX.ssao.FullRes.Radius);
@@ -248,10 +308,9 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.shadowMapping.spot.maxAnisotropicFilteringLevel);
         PUT_PARAM(rendering.shadowMapping.point.enabled);
         PUT_PARAM(rendering.shadowMapping.point.shadowMapResolution);
+        PUT_PARAM(defaultAssetLocation.textures);
+        PUT_PARAM(defaultAssetLocation.shaders);
 
-        PUT_PARAM(title);
-        PUT_PARAM(defaultTextureLocation);
-        PUT_PARAM(defaultShadersLocation);
         LoadSave.write();
         return true;
     }

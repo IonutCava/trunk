@@ -72,8 +72,9 @@ struct aiScene;
 struct aiMaterial;
 
 namespace Divide {
+    enum class GeometryFormat : U8;
 
-namespace Import {
+    namespace Import {
     struct ImportData;
     struct SubMeshData;
     struct MaterialData;
@@ -90,7 +91,7 @@ class DVDConverter {
 
     explicit DVDConverter(PlatformContext& context, Import::ImportData& target, bool& result);
 
-    bool load(PlatformContext& context, Import::ImportData& target);
+    bool load(PlatformContext& context, Import::ImportData& target) const;
    private:
 
     void loadSubMeshGeometry(const aiMesh* source, 
@@ -100,10 +101,11 @@ class DVDConverter {
                              const aiScene* source,
                              U16 materialIndex,
                              const Str128& materialName,
+                             GeometryFormat format,
                              bool convertHeightToBumpMap) const;
 
   private:
-    void   buildGeometryBuffers(PlatformContext& context, Import::ImportData& target);
+    static void   BuildGeometryBuffers(PlatformContext& context, Import::ImportData& target);
 
     static hashMap<U32, TextureWrap> fillTextureWrapMap();
     static hashMap<U32, ShadingMode> fillShadingModeMap();

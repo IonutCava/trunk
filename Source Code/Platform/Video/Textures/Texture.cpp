@@ -140,6 +140,17 @@ void Texture::threadedLoad() {
     }
 }
 
+U8 Texture::numChannels() const noexcept {
+    switch(descriptor().baseFormat()) {
+        case GFXImageFormat::RED:  return 1u;
+        case GFXImageFormat::RG:   return 2u;
+        case GFXImageFormat::RGB:  return 3u;
+        case GFXImageFormat::RGBA: return 4u;
+    }
+
+    return 0u;
+}
+
 bool Texture::loadFile(const ResourcePath& name, ImageTools::ImageData& fileData) {
 
     if (!ImageTools::ImageDataInterface::CreateImageData(name, _width, _height, _descriptor.srgb(), fileData)) {

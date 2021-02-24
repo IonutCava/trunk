@@ -38,7 +38,7 @@ layout(location = 0) in vec4 vOffset[3];
 
 out vec2 _colourOut;
 
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepth;
+layout(binding = TEXTURE_DEPTH) uniform sampler2D texDepth;
 
 /**
  * Gathers current pixel, and the top-left neighbors.

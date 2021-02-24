@@ -47,7 +47,7 @@ MotionBlurPreRenderOperator::MotionBlurPreRenderOperator(GFXDevice& context, Pre
         _blurApplyPipeline = _context.newPipeline(pipelineDescriptor);
     });
 
-    velocityScale(_context.context().config().rendering.postFX.velocityScale);
+    parametersChanged();
 }
 
 bool MotionBlurPreRenderOperator::ready() const {
@@ -58,16 +58,15 @@ bool MotionBlurPreRenderOperator::ready() const {
     return false;
 }
 
-void MotionBlurPreRenderOperator::velocityScale(const F32 val) {
-    _velocityScale = val;
-    _context.context().config().rendering.postFX.velocityScale = val;
+void MotionBlurPreRenderOperator::parametersChanged() {
+    NOP();
 }
 
 bool MotionBlurPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
 
     const F32 fps = _context.parent().platformContext().app().timer().getFps();
-
-    const F32 velocityFactor = fps / Config::TARGET_FRAME_RATE * _velocityScale;
+    const F32 velocityScale = _context.context().config().rendering.postFX.motionBlur.velocityScale;
+    const F32 velocityFactor = fps / Config::TARGET_FRAME_RATE * velocityScale;
     _blurApplyConstants.set(_ID("dvd_velocityScale"), GFX::PushConstantType::FLOAT, velocityFactor);
     _blurApplyConstants.set(_ID("dvd_maxSamples"), GFX::PushConstantType::INT, to_I32(maxSamples()));
 

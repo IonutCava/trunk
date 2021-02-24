@@ -201,6 +201,16 @@ SimpleTime Sun::GetTimeOfDay() const noexcept {
         to_U8(_dateTime->tm_min)
     };
 }
+
+SimpleLocation Sun::GetGeographicLocation() const noexcept {
+    assert(_dateTime != nullptr);
+
+    return SimpleLocation{
+        _latitude,
+        _longitude
+    };
+}
+
 SunDetails Sun::GetDetails() const {
     SunDetails ret = {};
     ret._info = SunPosition::CalculateSunPosition(_dateTime, _latitude, _longitude);

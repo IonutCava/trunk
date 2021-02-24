@@ -65,6 +65,7 @@ namespace Divide {
         void SetLocation(F32 longitude, F32 latitude);
         void SetDate(struct tm *dateTime);
         SimpleTime GetTimeOfDay() const noexcept;
+        SimpleLocation GetGeographicLocation() const noexcept;
 
         [[nodiscard]] SunDetails GetDetails() const;
 

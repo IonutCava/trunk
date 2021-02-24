@@ -28,10 +28,6 @@ namespace Divide {
             "png", "jpg", "jpeg", "tga", "raw", "dds"
         };
 
-        const char* const g_geometryExtensions[] = {
-            "obj", "x", "md5mesh", "md2", "ase", "3ds"
-        };
-
         bool IsValidFile(const char* name) {
             for (const char* extension : g_extensions) {
                 if (hasExtension(name, extension)) {
@@ -51,30 +47,6 @@ namespace Divide {
 
             return false;
         }
-
-        ContentExplorerWindow::GeometryFormat GetGeometryFormatForExtension(const char* extension) {
-
-            if (Util::CompareIgnoreCase(extension, "obj")) {
-                return ContentExplorerWindow::GeometryFormat::OBJ;
-            }
-            if (Util::CompareIgnoreCase(extension, "x")) {
-                return ContentExplorerWindow::GeometryFormat::X;
-            }
-            if (Util::CompareIgnoreCase(extension, "md5mesh")) {
-                return ContentExplorerWindow::GeometryFormat::MD5;
-            }
-            if (Util::CompareIgnoreCase(extension, "md2")) {
-                return ContentExplorerWindow::GeometryFormat::MD2;
-            }
-            if (Util::CompareIgnoreCase(extension, "ase")) {
-                return ContentExplorerWindow::GeometryFormat::ASE;
-            }
-            if (Util::CompareIgnoreCase(extension, "3ds")) {
-                return ContentExplorerWindow::GeometryFormat::_3DS;
-            }
-
-            return ContentExplorerWindow::GeometryFormat::COUNT;
-        }
     }
 
     ContentExplorerWindow::ContentExplorerWindow(Editor& parent, const Descriptor& descriptor)
@@ -93,13 +65,18 @@ namespace Divide {
 
         _fileIcon = getTextureForPath(ResourcePath("icons"), ResourcePath("file_icon.png"));
 
-        _geometryIcons[to_base(GeometryFormat::_3DS)] = getTextureForPath(ResourcePath("icons"), ResourcePath("3ds_icon.png"));
-        _geometryIcons[to_base(GeometryFormat::ASE)]  = getTextureForPath(ResourcePath("icons"), ResourcePath("ase_icon.png"));
-        _geometryIcons[to_base(GeometryFormat::FBX)]  = getTextureForPath(ResourcePath("icons"), ResourcePath("fbx_icon.png"));
-        _geometryIcons[to_base(GeometryFormat::MD2)]  = getTextureForPath(ResourcePath("icons"), ResourcePath("md2_icon.png"));
-        _geometryIcons[to_base(GeometryFormat::MD5)]  = getTextureForPath(ResourcePath("icons"), ResourcePath("md5_icon.png"));
-        _geometryIcons[to_base(GeometryFormat::OBJ)]  = getTextureForPath(ResourcePath("icons"), ResourcePath("obj_icon.png"));
-        _geometryIcons[to_base(GeometryFormat::X)]    = getTextureForPath(ResourcePath("icons"), ResourcePath("x_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::_3DS)]     = getTextureForPath(ResourcePath("icons"), ResourcePath("3ds_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::ASE)]      = getTextureForPath(ResourcePath("icons"), ResourcePath("ase_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::FBX)]      = getTextureForPath(ResourcePath("icons"), ResourcePath("fbx_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::MD2)]      = getTextureForPath(ResourcePath("icons"), ResourcePath("md2_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::MD5)]      = getTextureForPath(ResourcePath("icons"), ResourcePath("md5_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::OBJ)]      = getTextureForPath(ResourcePath("icons"), ResourcePath("obj_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::DAE)]      = getTextureForPath(ResourcePath("icons"), ResourcePath("collada.png"));
+        _geometryIcons[to_base(GeometryFormat::GLTF)]     = getTextureForPath(ResourcePath("icons"), ResourcePath("gltf.png"));
+        _geometryIcons[to_base(GeometryFormat::X)]        = getTextureForPath(ResourcePath("icons"), ResourcePath("x_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::DVD_ANIM)] = getTextureForPath(ResourcePath("icons"), ResourcePath("divide.png"));
+        _geometryIcons[to_base(GeometryFormat::DVD_GEOM)] = getTextureForPath(ResourcePath("icons"), ResourcePath("divide.png"));
+        _geometryIcons[to_base(GeometryFormat::COUNT)]    = getTextureForPath(ResourcePath("icons"), ResourcePath("file_icon.png"));
     }
 
     void ContentExplorerWindow::update(const U64 deltaTimeUS) {

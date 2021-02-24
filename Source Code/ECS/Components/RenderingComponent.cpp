@@ -60,7 +60,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
         EditorComponentField occlusionCullField = {};
         occlusionCullField._name = "HiZ Occlusion Cull";
         occlusionCullField._data = &_occlusionCull;
-        occlusionCullField._type = EditorComponentFieldType::PUSH_TYPE;
+        occlusionCullField._type = EditorComponentFieldType::SWITCH_TYPE;
         occlusionCullField._basicType = GFX::PushConstantType::BOOL;
         occlusionCullField._readOnly = false;
         _editorComponent.registerField(MOV(occlusionCullField));
@@ -69,7 +69,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
         EditorComponentField vaxisField = {};
         vaxisField._name = "Show Axis";
         vaxisField._data = &_showAxis;
-        vaxisField._type = EditorComponentFieldType::PUSH_TYPE;
+        vaxisField._type = EditorComponentFieldType::SWITCH_TYPE;
         vaxisField._basicType = GFX::PushConstantType::BOOL;
         vaxisField._readOnly = false;
         _editorComponent.registerField(MOV(vaxisField));
@@ -78,7 +78,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
         EditorComponentField receivesShadowsField = {};
         receivesShadowsField._name = "Receives Shadows";
         receivesShadowsField._data = &_receiveShadows;
-        receivesShadowsField._type = EditorComponentFieldType::PUSH_TYPE;
+        receivesShadowsField._type = EditorComponentFieldType::SWITCH_TYPE;
         receivesShadowsField._basicType = GFX::PushConstantType::BOOL;
         receivesShadowsField._readOnly = false;
         _editorComponent.registerField(MOV(receivesShadowsField));
@@ -87,7 +87,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
         EditorComponentField castsShadowsField = {};
         castsShadowsField._name = "Casts Shadows";
         castsShadowsField._data = &_castsShadows;
-        castsShadowsField._type = EditorComponentFieldType::PUSH_TYPE;
+        castsShadowsField._type = EditorComponentFieldType::SWITCH_TYPE;
         castsShadowsField._basicType = GFX::PushConstantType::BOOL;
         castsShadowsField._readOnly = false;
         _editorComponent.registerField(MOV(castsShadowsField));
@@ -106,6 +106,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
     PipelineDescriptor pipelineDescriptor = {};
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
     pipelineDescriptor._shaderProgramHandle = ShaderProgram::DefaultShader()->getGUID();
+    _primitivePipeline[0] = _context.newPipeline(pipelineDescriptor);
 
     const SceneNode& node = _parentSGN->getNode();
     if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
@@ -121,8 +122,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
             _primitivePipeline[1] = _context.newPipeline(pipelineDescriptor);
         }
     }
-
-    _primitivePipeline[0] = _context.newPipeline(pipelineDescriptor);
 
     if_constexpr (Config::Build::ENABLE_EDITOR) {
         // Prepare it for line rendering
@@ -203,7 +202,7 @@ void RenderingComponent::instantiateMaterial(const Material_ptr& material) {
 
         EditorComponentField renderLodField = {};
         renderLodField._name = "Lock LoD";
-        renderLodField._type = EditorComponentFieldType::PUSH_TYPE;
+        renderLodField._type = EditorComponentFieldType::SWITCH_TYPE;
         renderLodField._basicType = GFX::PushConstantType::BOOL;
         renderLodField._data = &_lodLockLevels[to_base(RenderStage::DISPLAY)].first;
         renderLodField._readOnly = false;
@@ -369,7 +368,8 @@ bool RenderingComponent::hasDrawCommands(const RenderStagePass& stagePass) {
 
 void RenderingComponent::getMaterialData(NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) const {
     if (_materialInstance != nullptr) {
-        _materialInstance->getData(*this, dataOut, texturesOut);
+        //ProbeID: 0u = sky cubemap. Shader: (Probe - 1u) = environment cube array index and probe data lookup index
+        _materialInstance->getData(*this, _reflectionProbeIndex + 1u, dataOut, texturesOut);
         for (U8 i = 0u; i < MATERIAL_TEXTURE_COUNT; ++i) {
             // We don't overwrite custom reflection/refraction textures!
             if (texturesOut[i] == 0u) {
@@ -384,8 +384,6 @@ void RenderingComponent::getMaterialData(NodeMaterialData& dataOut, NodeMaterial
                 }
             }
         }
-        //0u = sky cubemap. Shader: (Probe - 1u) = environment cube array index and probe data lookup index
-        dataOut._data.w = _reflectionProbeIndex + 1u;
     }
 }
 
@@ -656,7 +654,7 @@ void RenderingComponent::drawSelectionGizmo(GFX::CommandBuffer& bufferInOut) {
         _selectionGizmo = _context.newIMP();
         _selectionGizmo->name("SelectionGizmo_" + _parentSGN->name());
         _selectionGizmo->skipPostFX(true);
-        _selectionGizmo->pipeline(*_primitivePipeline[2]);
+        _selectionGizmo->pipeline(*_primitivePipeline[0]);
         _selectionGizmoDirty = true;
     }
     
@@ -665,12 +663,10 @@ void RenderingComponent::drawSelectionGizmo(GFX::CommandBuffer& bufferInOut) {
 
         UColour4 colour = UColour4(64, 255, 128, 255);
         if_constexpr(Config::Build::ENABLE_EDITOR) {
-            const Editor& editor = _context.parent().platformContext().editor();
-            if (editor.inEditMode()) {
+            if (_context.parent().platformContext().editor().inEditMode()) {
                 colour = UColour4(255, 255, 255, 255);
             }
         }
-
         //draw something else (at some point ...)
         _selectionGizmo->fromBox(_boundsCache.getMin(), _boundsCache.getMax(), colour);
     }

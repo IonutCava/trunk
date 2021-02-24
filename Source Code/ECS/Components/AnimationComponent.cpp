@@ -19,7 +19,7 @@ AnimationComponent::AnimationComponent(SceneGraphNode* parentSGN, PlatformContex
     EditorComponentField vskelField = {};
     vskelField._name = "Show Skeleton";
     vskelField._data = &_showSkeleton;
-    vskelField._type = EditorComponentFieldType::PUSH_TYPE;
+    vskelField._type = EditorComponentFieldType::SWITCH_TYPE;
     vskelField._basicType = GFX::PushConstantType::BOOL;
     vskelField._readOnly = false;
     _editorComponent.registerField(MOV(vskelField));
@@ -27,7 +27,7 @@ AnimationComponent::AnimationComponent(SceneGraphNode* parentSGN, PlatformContex
     EditorComponentField playAnimationsField = {};
     playAnimationsField._name = "Play Animations";
     playAnimationsField._data = &_playAnimations;
-    playAnimationsField._type = EditorComponentFieldType::PUSH_TYPE;
+    playAnimationsField._type = EditorComponentFieldType::SWITCH_TYPE;
     playAnimationsField._basicType = GFX::PushConstantType::BOOL;
     playAnimationsField._readOnly = false;
     _editorComponent.registerField(MOV(playAnimationsField));

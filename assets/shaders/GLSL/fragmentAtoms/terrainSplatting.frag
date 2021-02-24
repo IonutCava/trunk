@@ -14,7 +14,7 @@
 
 vec4 TextureNoTile(in sampler2DArray tex, in vec3 texUV) {
 #if defined(HIGH_QUALITY_TILE_ARTIFACT_REDUCTION)
-    return textureNoTile(tex, texOMR, 3, texUV, 0.5f);
+    return textureNoTile(tex, texSpecular, 3, texUV, 0.5f);
 #else //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
     return textureNoTile(tex, texUV);
 #endif //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
@@ -167,7 +167,7 @@ vec2 getScaledCoords(vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
 }
 #endif //LOW_QUALITY || !HAS_PARALLAX
 
-vec3 getTerrainNormal() {
+vec4 getTerrainNormal() {
     float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(VAR._texCoord);
     const vec2 uv = getScaledCoords(VAR._texCoord, blendAmount);
 
@@ -176,7 +176,13 @@ vec3 getTerrainNormal() {
         normal = mix(normal, SampleTextureNoTile(texDiffuse1, vec3(uv * CURRENT_TILE_FACTORS[i], NORMAL_IDX[i])).rgb, blendAmount[i]);
     }
 
-    return normal;
+    return vec4(2.f * normal - 1.f, 0.f);
+}
+
+vec4 getUnderwaterNormal() {
+    const vec3 normal = texture(texSpecular, vec3(VAR._texCoord * UNDERWATER_TILE_SCALE, 2)).rgb;
+
+    return vec4(2.f * normal - 1.f, 0.f);
 }
 
 vec4 getTerrainAlbedo() {
@@ -196,13 +202,13 @@ vec4 getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
     const float time2 = MSToSeconds(dvd_time) * 0.1f;
     const vec4 uvNormal = vec4(uv + time2.xx, uv + vec2(-time2, time2));
 
-    return vec4(mix(0.5f * (texture(texOMR, vec3(uvNormal.xy, 0)).rgb + texture(texOMR, vec3(uvNormal.zw, 0)).rgb),
-                    texture(texOMR, vec3(uv, 1)).rgb,
+    return vec4(mix(0.5f * (texture(texSpecular, vec3(uvNormal.xy, 0)).rgb + texture(texSpecular, vec3(uvNormal.zw, 0)).rgb),
+                    texture(texSpecular, vec3(uv, 1)).rgb,
                     waterDepth),
                 0.3f);
 }
 
-vec4 BuildTerrainData(out vec3 normalWV) {
+vec4 BuildTerrainData(out vec3 normalWV, out float normalVariation) {
     const vec2 waterData = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
 
 #if defined(LOW_QUALITY)
@@ -210,15 +216,15 @@ vec4 BuildTerrainData(out vec3 normalWV) {
     return getTerrainAlbedo();
 #endif //LOW_QUALITY
     if (dvd_LoD > 1) {
-        normalWV = normalize(mat3(dvd_ViewMatrix) * cotangentFrame() * (getTerrainNormal() * 255.f / 127.f - 128.f / 127.f));
+        const vec4 normalMap = getTerrainNormal();
+        normalVariation = normalMap.w;
+        normalWV = normalize(mat3(dvd_ViewMatrix) * cotangentFrame() * normalMap.xyz);
         return getTerrainAlbedo();
     }
 
-    const vec3 normalMap = mix(getTerrainNormal(),
-                               texture(texOMR, vec3(VAR._texCoord * UNDERWATER_TILE_SCALE, 2)).rgb,
-                               saturate(waterData.x));
-
-    normalWV = normalize(mat3(dvd_ViewMatrix) * cotangentFrame() * (normalMap * 255.f / 127.f - 128.f / 127.f));
+    const vec4 normalMap = mix(getTerrainNormal(), getUnderwaterNormal(), saturate(waterData.x));
+    normalVariation = normalMap.w;
+    normalWV = normalize(mat3(dvd_ViewMatrix) * cotangentFrame() * normalMap.xyz);
     return mix(getTerrainAlbedo(), getUnderwaterAlbedo(VAR._texCoord * UNDERWATER_TILE_SCALE, waterData.y), saturate(waterData.x));
 }
 

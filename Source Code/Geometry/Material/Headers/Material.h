@@ -74,11 +74,16 @@ constexpr U8 g_TransparentSlots[] = {
 };
 
 constexpr U8 g_ExtraSlots[] = {
-    to_base(TextureUsage::UNIT1),
     to_base(TextureUsage::NORMALMAP),
-    to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS),
     to_base(TextureUsage::HEIGHTMAP),
+    to_base(TextureUsage::SPECULAR),
+    to_base(TextureUsage::METALNESS),
+    to_base(TextureUsage::ROUGHNESS),
+    to_base(TextureUsage::OCCLUSION),
+    to_base(TextureUsage::EMISSIVE),
+    to_base(TextureUsage::UNIT1),
     to_base(TextureUsage::PROJECTION)
+    // Reflection and Refraction are handled by the RenderingComponent
 };
 
 namespace TypeUtil {
@@ -138,9 +143,11 @@ class Material final : public CachedResource {
     bool setTexture(TextureUsage textureUsageSlot,
                     const Texture_ptr& texture,
                     size_t samplerHash,
-                    const TextureOperation& op = TextureOperation::NONE,
+                    TextureOperation op = TextureOperation::REPLACE,
                     bool applyToInstances = false);
-
+    void setTextureOperation(TextureUsage textureUsageSlot,
+                             TextureOperation op,
+                             bool applyToAllInstances = false);
     void textureUseForDepth(TextureUsage slot, bool state, bool applyToInstances = false);
     void hardwareSkinning(bool state, bool applyToInstances = false);
     void shadingMode(ShadingMode mode, bool applyToInstances = false);
@@ -148,6 +155,7 @@ class Material final : public CachedResource {
     void receivesShadows(bool state, bool applyToInstances = false);
     void refractive(bool state, bool applyToInstances = false);
     void isStatic(bool state, bool applyToInstances = false);
+    void ignoreTexDiffuseAlpha(bool state, bool applyToInstances = false);
     void usePlanarReflections(bool state, bool applyToInstances = false);
     void usePlanarRefractions(bool state, bool applyToInstances = false);
     void parallaxFactor(F32 factor, bool applyToInstances = false);
@@ -155,13 +163,21 @@ class Material final : public CachedResource {
     void toggleTransparency(bool state, bool applyToInstances = false);
     void baseColour(const FColour4& colour, bool applyToInstances = false);
     void emissiveColour(const FColour3& colour, bool applyToInstances = false);
+    void ambientColour(const FColour3& colour, bool applyToInstances = false);
+    void specularColour(const FColour3& colour, bool applyToInstances = false);
+    void shininess(F32 value, bool applyToInstances = false);
     void metallic(F32 value, bool applyToInstances = false);
+    void occlusion(F32 value, bool applyToInstances = false);
     void roughness(F32 value, bool applyToInstances = false);
 
     FColour4 getBaseColour(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
     FColour3 getEmissive(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
+    FColour3 getAmbient(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
+    FColour4 getSpecular(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
     F32 getMetallic(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
     F32 getRoughness(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
+    F32 getOcclusion(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
+    
 
     /// Add the specified shader to specific RenderStagePass parameters. Use "COUNT" and/or g_AllVariantsID for global options
     /// e.g. a RenderPassType::COUNT will use the shader in the specified stage+variant combo but for all of the passes
@@ -173,7 +189,7 @@ class Material final : public CachedResource {
     void getSortKeys(const RenderStagePass& renderStagePass, I64& shaderKey, I32& textureKey) const;
 
     // Returns the material's hash value (just for the uploadable data)
-    void getData(const RenderingComponent& parentComp, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut);
+    void getData(const RenderingComponent& parentComp, U32 bestProbeID, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut);
 
     size_t getRenderStateBlock(const RenderStagePass& renderStagePass) const;
     Texture_wptr getTexture(TextureUsage textureUsage) const;
@@ -216,7 +232,7 @@ class Material final : public CachedResource {
                                   ShaderProgramInfo& shaderInfo,
                                   RenderStage stage,
                                   RenderPassType pass,
-                                  U8 variant);
+                                  U8 variant) const;
 
     ShaderProgramInfo& shaderInfo(const RenderStagePass& renderStagePass);
 
@@ -236,23 +252,27 @@ class Material final : public CachedResource {
 
     PROPERTY_R(FColour4, baseColour, DefaultColours::WHITE);
     PROPERTY_R(FColour3, emissive, DefaultColours::BLACK);
+    PROPERTY_R(FColour3, ambient, DefaultColours::BLACK);
+    PROPERTY_R(FColour4, specular, DefaultColours::BLACK); //< Only used by WorkFlow::PHONG_SPECULAR. A = shininess
     PROPERTY_R(F32, metallic, 0.0f);
     PROPERTY_R(F32, roughness, 0.5f);
     PROPERTY_R(F32, occlusion, 1.0f);
+
     /// parallax/relief factor (higher value > more pronounced effect)
     PROPERTY_R(F32, parallaxFactor, 1.0f);
     PROPERTY_R(ShadingMode, shadingMode, ShadingMode::COUNT);
     PROPERTY_R(TranslucencySource, translucencySource, TranslucencySource::COUNT);
-    /// use the below map to define texture operation
-    PROPERTY_R(TextureOperation, textureOperation, TextureOperation::NONE);
     PROPERTY_R(BumpMethod, bumpMethod, BumpMethod::NONE);
     PROPERTY_R(bool, doubleSided, false);
     PROPERTY_R(bool, transparencyEnabled, true);
     PROPERTY_R(bool, receivesShadows, true);
     PROPERTY_R(bool, isStatic, false);
+    PROPERTY_R(bool, specTextureHasAlpha, false);
+    PROPERTY_R(bool, ignoreTexDiffuseAlpha, false);
     /// Use shaders that have bone transforms implemented
     PROPERTY_R(bool, hardwareSkinning, false);
-
+    /// If the metalness textures has 3 (or 4) channels, those channels are interpreted automatically as R: Occlusion, G: Metalness, B: Roughness
+    PROPERTY_R(bool, usePackedOMR, false);
     PROPERTY_RW(CustomShaderUpdateCBK, customShaderCBK);
     /// These settings don't affect Environment and SSR reflections! Just custom reflection/refraction textures 
     /// E.g. water and it's custom reflection and refraction render-to-texture passes
@@ -262,6 +282,10 @@ class Material final : public CachedResource {
     PROPERTY_R(bool, usePlanarRefractions, true);
 
     PROPERTY_R(bool, useBindlessTextures, false);
+
+    using TexOpArray = std::array<TextureOperation, to_base(TextureUsage::COUNT)>;
+    PROPERTY_R(TexOpArray, textureOperations);
+
    private:
     bool _isRefractive = false;
 
@@ -274,7 +298,6 @@ class Material final : public CachedResource {
     using ShaderVariantsPerPass = eastl::array<ShaderPerVariant, to_base(RenderPassType::COUNT)>;
     using ShaderPassesPerStage = eastl::array<ShaderVariantsPerPass, to_base(RenderStage::COUNT)>;
     ShaderPassesPerStage _shaderInfo{};
-    
 
     using StatesPerVariant = std::array<size_t, g_maxVariantsPerPass>;
     using StateVariantsPerPass = eastl::array<StatesPerVariant, to_base(RenderPassType::COUNT)>;

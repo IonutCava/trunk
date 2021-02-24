@@ -96,22 +96,22 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     }
 
     _postFX = eastl::make_unique<PostFX>(context, cache);
-    if (config.rendering.postFX.PostAAQualityLevel > 0) {
+    if (config.rendering.postFX.postAA.qualityLevel > 0) {
         _postFX->pushFilter(FilterType::FILTER_SS_ANTIALIASING);
     }
-    if (config.rendering.postFX.enableScreenSpaceReflections) {
+    if (config.rendering.postFX.ssr.enabled) {
         _postFX->pushFilter(FilterType::FILTER_SS_REFLECTIONS);
     }
     if (config.rendering.postFX.ssao.enable) {
         _postFX->pushFilter(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
     }
-    if (config.rendering.postFX.enableDepthOfField) {
+    if (config.rendering.postFX.dof.enabled) {
         _postFX->pushFilter(FilterType::FILTER_DEPTH_OF_FIELD);
     }
-    if (config.rendering.postFX.enablePerObjectMotionBlur) {
+    if (config.rendering.postFX.motionBlur.enablePerObject) {
         _postFX->pushFilter(FilterType::FILTER_MOTION_BLUR);
     }
-    if (config.rendering.postFX.enableBloom) {
+    if (config.rendering.postFX.bloom.enabled) {
         _postFX->pushFilter(FilterType::FILTER_BLOOM);
     }
     if_constexpr(false) {

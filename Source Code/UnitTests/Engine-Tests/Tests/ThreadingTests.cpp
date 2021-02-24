@@ -83,17 +83,19 @@ TEST(TaskCallbackTest)
     Start(*job, TaskPriority::DONT_CARE, [&testValue]() {
         std::cout << "TaskCallbackTest: Callback called!" << std::endl;
         testValue = true;
+        std::cout << "TaskCallbackTest: Value changed to: [ " << (testValue ? "true" : "false") << " ]!" << std::endl;
     });
 
     CHECK_FALSE(testValue);
     std::cout << "TaskCallbackTest: waiting for task!" << std::endl;
     Wait(*job);
-
+    CHECK_TRUE(Finished(*job));
     CHECK_FALSE(testValue);
 
     std::cout << "TaskCallbackTest: flushing queue!" << std::endl;
     test.flushCallbackQueue();
 
+    std::cout << "TaskCallbackTest: flushing test! Value: " << (testValue ? "true" : "false") << std::endl;
     CHECK_TRUE(testValue);
 }
 
@@ -106,11 +108,11 @@ namespace {
         }
 
         void setTestValue(const bool state) noexcept {
-            std::cout << "ThreadedTest: Setting value to - " << state << std::endl;
+            std::cout << "ThreadedTest: Setting value to [ " << (state ? "true" : "false") << " ]!" << std::endl;
             _testValue = state;
         }
 
-        bool getTestValue() const noexcept{
+        [[nodiscard]] bool getTestValue() const noexcept{
             return _testValue;
         }
 
@@ -118,8 +120,8 @@ namespace {
             ACKNOWLEDGE_UNUSED(parentTask);
             Time::ProfileTimer timer;
             timer.start();
-            std::cout << "ThreadedTest: Thread sleeping for 200ms" << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            std::cout << "ThreadedTest: Thread sleeping for 300ms" << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(300));
             timer.stop();
             const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - Time::ProfileTimer::overhead());
             std::cout << "ThreadedTest: Thread waking up (" << durationMS << "ms )" << std::endl;
@@ -151,11 +153,8 @@ TEST(TaskClassMemberCallbackTest)
         testObj.setTestValue(false);
     });
 
-    if (Finished(*job)) {
-        CHECK_TRUE(testObj.getTestValue());
-    } else {
-        CHECK_FALSE(testObj.getTestValue());
-    }
+    CHECK_FALSE(testObj.getTestValue());
+
     std::cout << "TaskClassMemberCallbackTest: Waiting for task!" << std::endl;
     Wait(*job);
 
@@ -164,7 +163,11 @@ TEST(TaskClassMemberCallbackTest)
     std::cout << "TaskClassMemberCallbackTest: Flushing callback queue!" << std::endl;
     test.flushCallbackQueue();
 
-    CHECK_FALSE(testObj.getTestValue());
+    const bool finalValue = testObj.getTestValue();
+
+    std::cout << "TaskClassMemberCallbackTest: final value is [ " << (finalValue ? "true" : "false") << " ] !" << std::endl;
+
+    CHECK_FALSE(finalValue);
 }
 
 TEST(TaskSpeedTest)

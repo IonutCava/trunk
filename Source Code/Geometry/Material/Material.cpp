@@ -117,6 +117,7 @@ Material::Material(GFXDevice& context, ResourceCache* parentCache, const size_t 
     receivesShadows(_context.context().config().rendering.shadowMapping.enabled);
 
     _textureAddresses.fill(0u);
+    _textureOperations.fill(TextureOperation::NONE);
 
     const ShaderProgramInfo defaultShaderInfo = {};
     // Could just direct copy the arrays, but this looks cool
@@ -147,17 +148,20 @@ Material_ptr Material::clone(const Str256& nameSuffix) {
 
     cloneMat->_baseColour = base._baseColour;
     cloneMat->_emissive = base._emissive;
+    cloneMat->_ambient = base._ambient;
+    cloneMat->_specular = base._specular;
     cloneMat->_metallic = base._metallic;
     cloneMat->_roughness = base._roughness;
     cloneMat->_parallaxFactor = base._parallaxFactor;
     cloneMat->_shadingMode = base._shadingMode;
     cloneMat->_translucencySource = base._translucencySource;
-    cloneMat->_textureOperation = base._textureOperation;
+    cloneMat->_textureOperations = base._textureOperations;
     cloneMat->_bumpMethod = base._bumpMethod;
     cloneMat->_doubleSided = base._doubleSided;
     cloneMat->_transparencyEnabled = base._transparencyEnabled;
     cloneMat->_receivesShadows = base._receivesShadows;
     cloneMat->_isStatic = base._isStatic;
+    cloneMat->_ignoreTexDiffuseAlpha = base._ignoreTexDiffuseAlpha;
     cloneMat->_usePlanarReflections = base._usePlanarReflections;
     cloneMat->_usePlanarRefractions = base._usePlanarRefractions;
     cloneMat->_hardwareSkinning = base._hardwareSkinning;
@@ -182,7 +186,7 @@ Material_ptr Material::clone(const Str256& nameSuffix) {
     for (U8 i = 0; i < to_U8(base._textures.size()); ++i) {
         const Texture_ptr& tex = base._textures[i];
         if (tex) {
-            cloneMat->setTexture(static_cast<TextureUsage>(i), tex, base._samplers[i]);
+            cloneMat->setTexture(static_cast<TextureUsage>(i), tex, base._samplers[i], base._textureOperations[i]);
         }
     }
     cloneMat->_needsNewShader = true;
@@ -223,7 +227,7 @@ bool Material::setSampler(const TextureUsage textureUsageSlot, const size_t samp
 // base = base texture
 // second = second texture used for multitexturing
 // bump = bump map
-bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr& texture, const size_t samplerHash, const TextureOperation& op, const bool applyToInstances) 
+bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr& texture, const size_t samplerHash, const TextureOperation op, const bool applyToInstances) 
 {
     setSampler(textureUsageSlot, samplerHash, applyToInstances);
 
@@ -233,12 +237,8 @@ bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr
         }
     }
 
-
     const U32 slot = to_U32(textureUsageSlot);
-
-    if (textureUsageSlot == TextureUsage::UNIT1) {
-        _textureOperation = op;
-    }
+    setTextureOperation(textureUsageSlot, op, false);
 
     {
         UniqueLock<SharedMutex> w_lock(_textureLock);
@@ -252,6 +252,10 @@ bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr
         _textures[slot] = texture;
         _textureAddresses[slot] = texture ? texture->getGPUAddress(samplerHash) : 0u;
 
+        if (textureUsageSlot == TextureUsage::METALNESS) {
+            _usePackedOMR = (texture != nullptr && texture->numChannels() > 2u);
+        }
+        
         if (textureUsageSlot == TextureUsage::NORMALMAP ||
             textureUsageSlot == TextureUsage::HEIGHTMAP)
         {
@@ -294,11 +298,29 @@ bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr
     return true;
 }
 
+void Material::setTextureOperation(const TextureUsage textureUsageSlot, 
+                                   const TextureOperation op, 
+                                   const bool applyToAllInstances) {
+
+    TextureOperation& crtOp = _textureOperations[to_base(textureUsageSlot)];
+
+    if (crtOp != op) {
+        crtOp = op;
+        _needsNewShader = true;
+    }
+
+    if (applyToAllInstances) {
+        for (Material* instance : _instances) {
+            instance->setTextureOperation(textureUsageSlot, op, true);
+        }
+    }
+}
+
 void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
                                         ShaderProgramInfo& shaderInfo,
                                         const RenderStage stage,
                                         const RenderPassType pass,
-                                        U8 variant)
+                                        U8 variant) const
 {
     if (shader != nullptr) {
         const ShaderProgram* oldShader = shaderInfo._shaderRef.get();
@@ -560,13 +582,34 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
         }
     }
 
-    if (!isDepthPass && _textures[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)] != nullptr) {
-        shaderName += ".MRgh";
-        fragDefines.emplace_back("USE_OCCLUSION_METALLIC_ROUGHNESS_MAP", true);
+    if (!isDepthPass) {
+        if (_textures[to_base(TextureUsage::SPECULAR)] != nullptr) {
+            shaderName += ".S";
+            fragDefines.emplace_back("USE_SPECULAR_MAP", true);
+        }
+        if (_textures[to_base(TextureUsage::METALNESS)] != nullptr) {
+            shaderName += ".M";
+            fragDefines.emplace_back("USE_METALLIC_MAP", true);
+        }
+        if (_textures[to_base(TextureUsage::ROUGHNESS)] != nullptr) {
+            shaderName += ".R";
+            fragDefines.emplace_back("USE_ROUGHNESS_MAP", true);
+        }
+        if (_textures[to_base(TextureUsage::OCCLUSION)] != nullptr) {
+            shaderName += ".O";
+            fragDefines.emplace_back("USE_OCCLUSION_MAP", true);
+        }
+        if (_textures[to_base(TextureUsage::EMISSIVE)] != nullptr) {
+            shaderName += ".E";
+            fragDefines.emplace_back("USE_EMISSIVE_MAP", true);
+        }
     }
 
     updateTransparency();
     if (hasTransparency()) {
+        shaderName += ".T";
+        fragDefines.emplace_back("HAS_TRANSPARENCY", true);
+
         if (renderStagePass._passType != RenderPassType::OIT_PASS) {
             shaderName += ".AD";
             fragDefines.emplace_back("USE_ALPHA_DISCARD", true);
@@ -583,9 +626,14 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
                     shaderName += ".OMapA";
                 }
             } break;
-            case TranslucencySource::ALBEDO: {
-                shaderName += ".AAlpha";
-                fragDefines.emplace_back("USE_ALBEDO_ALPHA", true);
+            case TranslucencySource::ALBEDO_COLOUR: {
+                shaderName += ".ACAlpha";
+                fragDefines.emplace_back("USE_ALBEDO_COLOUR_ALPHA", true);
+            } break; 
+            
+            case TranslucencySource::ALBEDO_TEX: {
+                shaderName += ".ATAlpha";
+                fragDefines.emplace_back("USE_ALBEDO_TEX_ALPHA", true);
             } break;
             default: break;
         };
@@ -651,6 +699,11 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
     if (_hardwareSkinning) {
         globalDefines.emplace_back("USE_GPU_SKINNING", true);
         shaderName += ".Sknd";
+    }
+
+    if (_usePackedOMR) {
+        globalDefines.emplace_back("SAMPLER_OMR_COMPACT", true);
+        shaderName += ".OMRCompact";
     }
 
     vertDefines.emplace_back("HAS_CLIPPING_OUT", true);
@@ -719,7 +772,7 @@ bool Material::getTextureData(const RenderStagePass& renderStagePass, TextureDat
 
     bool ret = false;
     const bool depthStage = renderStagePass.isDepthPass();
-    const bool transparencyState = hasTransparency();
+    const bool transparencyState = hasTransparency() && _translucencySource != TranslucencySource::ALBEDO_COLOUR;
 
     SharedLock<SharedMutex> r_lock(_textureLock);
     for (const U8 slot : g_TransparentSlots) {
@@ -810,6 +863,19 @@ void Material::isStatic(const bool state, const bool applyToInstances) {
     if (applyToInstances) {
         for (Material* instance : _instances) {
             instance->isStatic(state, true);
+        }
+    }
+}
+
+void Material::ignoreTexDiffuseAlpha(const bool state, const bool applyToInstances) {
+    if (_ignoreTexDiffuseAlpha != state) {
+        _ignoreTexDiffuseAlpha = state;
+        _needsNewShader = true;
+    }
+
+    if (applyToInstances) {
+        for (Material* instance : _instances) {
+            instance->ignoreTexDiffuseAlpha(state, true);
         }
     }
 }
@@ -941,6 +1007,16 @@ void Material::emissiveColour(const FColour3& colour, const bool applyToInstance
     }
 }
 
+void Material::ambientColour(const FColour3& colour, const bool applyToInstances) {
+    _ambient = colour;
+
+    if (applyToInstances) {
+        for (Material* instance : _instances) {
+            instance->ambientColour(colour, true);
+        }
+    }
+}
+
 void Material::metallic(const F32 value, const bool applyToInstances) {
     _metallic = CLAMPED_01(value);
 
@@ -957,6 +1033,36 @@ void Material::roughness(const F32 value, const bool applyToInstances) {
     if (applyToInstances) {
         for (Material* instance : _instances) {
             instance->roughness(value, true);
+        }
+    }
+}
+
+void Material::occlusion(const F32 value, const bool applyToInstances) {
+    _occlusion = CLAMPED_01(value);
+
+    if (applyToInstances) {
+        for (Material* instance : _instances) {
+            instance->occlusion(value, true);
+        }
+    }
+}
+
+void Material::specularColour(const FColour3& value, const bool applyToInstances) {
+    _specular.rgb = value;
+
+    if (applyToInstances) {
+        for (Material* instance : _instances) {
+            instance->specularColour(value, true);
+        }
+    }
+}
+
+void Material::shininess(const F32 value, const bool applyToInstances) {
+    _specular.a = value;
+
+    if (applyToInstances) {
+        for (Material* instance : _instances) {
+            instance->shininess(value, true);
         }
     }
 }
@@ -1007,14 +1113,14 @@ void Material::updateTransparency() {
 
     // In order of importance (less to more)!
     // diffuse channel alpha
-    if (baseColour().a < 0.95f) {
-        _translucencySource = TranslucencySource::ALBEDO;
+    if (baseColour().a < 0.95f && _textureOperations[to_base(TextureUsage::UNIT0)] != TextureOperation::REPLACE) {
+        _translucencySource = TranslucencySource::ALBEDO_COLOUR;
     }
 
     // base texture is translucent
     const Texture_ptr& albedo = _textures[to_base(TextureUsage::UNIT0)];
-    if (albedo && albedo->hasTransparency()) {
-        _translucencySource = TranslucencySource::ALBEDO;
+    if (albedo && albedo->hasTransparency() && !_ignoreTexDiffuseAlpha) {
+        _translucencySource = TranslucencySource::ALBEDO_TEX;
     }
 
     // opacity map
@@ -1072,61 +1178,90 @@ FColour4 Material::getBaseColour(bool& hasTextureOverride, Texture*& textureOut)
 
 FColour3 Material::getEmissive(bool& hasTextureOverride, Texture*& textureOut) const noexcept {
     textureOut = nullptr;
-    hasTextureOverride = false;
+    hasTextureOverride = _textures[to_base(TextureUsage::EMISSIVE)] != nullptr;
+    if (hasTextureOverride) {
+        textureOut = _textures[to_base(TextureUsage::EMISSIVE)].get();
+    }
 
     return emissive();
 }
 
+FColour3 Material::getAmbient(bool& hasTextureOverride, Texture*& textureOut) const noexcept {
+    textureOut = nullptr;
+    hasTextureOverride = false;
+
+    return ambient();
+}
+
+FColour4 Material::getSpecular(bool& hasTextureOverride, Texture*& textureOut) const noexcept {
+    textureOut = nullptr;
+    hasTextureOverride = _textures[to_base(TextureUsage::SPECULAR)] != nullptr;
+    if (hasTextureOverride) {
+        textureOut = _textures[to_base(TextureUsage::SPECULAR)].get();
+    }
+    return specular();
+}
+
 F32 Material::getMetallic(bool& hasTextureOverride, Texture*& textureOut) const noexcept {
     textureOut = nullptr;
-    hasTextureOverride = _textures[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)] != nullptr;
+    hasTextureOverride = _textures[to_base(TextureUsage::METALNESS)] != nullptr;
     if (hasTextureOverride) {
-        textureOut = _textures[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)].get();
+        textureOut = _textures[to_base(TextureUsage::METALNESS)].get();
     }
     return metallic();
 }
 
 F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const noexcept {
     textureOut = nullptr;
-    hasTextureOverride = _textures[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)] != nullptr;
+    hasTextureOverride = _textures[to_base(TextureUsage::ROUGHNESS)] != nullptr;
     if (hasTextureOverride) {
-        textureOut = _textures[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)].get();
+        textureOut = _textures[to_base(TextureUsage::ROUGHNESS)].get();
     }
     return roughness();
 }
 
-void Material::getData(const RenderingComponent& parentComp, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) {
-    constexpr F32 reserved = 1.f;
+F32 Material::getOcclusion(bool& hasTextureOverride, Texture*& textureOut) const noexcept {
+    textureOut = nullptr;
+    hasTextureOverride = _textures[to_base(TextureUsage::OCCLUSION)] != nullptr;
+    if (hasTextureOverride) {
+        textureOut = _textures[to_base(TextureUsage::OCCLUSION)].get();
+    }
+    return occlusion();
+}
 
+void Material::getData(const RenderingComponent& parentComp, const U32 bestProbeID, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) {
     for (U8 i = 0u; i < MATERIAL_TEXTURE_COUNT; ++i) {
         texturesOut[i] = _textureAddresses[to_base(g_materialTextures[i])];
     }
 
-    const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), reserved);
-    const U32 matTexturingPropertiesPacked = Util::PACK_UNORM4x8(to_U8(textureOperation()), to_U8(bumpMethod()), 1u, 1u);
-
-    dataOut._albedo.set(baseColour());
-    dataOut._emissiveAndParallax.set(emissive(), parallaxFactor());
-    dataOut._data.x = matPropertiesPacked;
-    dataOut._data.y = to_U32(reserved);
-    dataOut._data.z = matTexturingPropertiesPacked;
-
-    STUBBED("ToDo: [Material] Selection is hacky, but do this here, before the hashing so that we generate unique materials for selected/hovered nodes");
+    F32 selectionFlag = 0.0f;
     if (parentComp.getSGN()->hasFlag(SceneGraphNode::Flags::HOVERED)) {
-        dataOut._emissiveAndParallax.g += 1.25f;
-    } 
-    if (parentComp.getSGN()->hasFlag(SceneGraphNode::Flags::SELECTED)) {
-        bool skip = false;
+        selectionFlag = 0.5f;
+    }
+    // We don't propagate selection flags to children outside of the editor, so check for that
+    if (parentComp.getSGN()->hasFlag(SceneGraphNode::Flags::SELECTED) ||
+        parentComp.getSGN()->parent() && parentComp.getSGN()->parent()->hasFlag(SceneGraphNode::Flags::SELECTED)) {
         if_constexpr(Config::Build::ENABLE_EDITOR) {
             const Editor& editor = _context.parent().platformContext().editor();
-            if (editor.running() && !editor.showEmissiveSelections()) {
-                skip = true;
-            }
-        }
-        if (!skip) {
-            dataOut._emissiveAndParallax.b += 1.25f;
+            selectionFlag = (!editor.running() || editor.showEmissiveSelections()) ? 1.0f : selectionFlag;
+        } else {
+            selectionFlag = 1.0f;
         }
     }
+
+    constexpr F32 reserved = 1.f;
+    const FColour4& specColour = specular(); //< For PHONG_SPECULAR
+
+    dataOut._albedo.set(baseColour());
+    dataOut._colourData.set(ambient(), specColour.a);
+    dataOut._emissiveAndParallax.set(emissive(), parallaxFactor());
+    dataOut._data.x = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), selectionFlag);
+    dataOut._data.y = Util::PACK_UNORM4x8(specColour.r, specColour.g, specColour.b, reserved);
+    dataOut._data.z = Util::PACK_UNORM4x8(to_U8(_textureOperations[to_base(TextureUsage::UNIT0)]),
+                                          to_U8(_textureOperations[to_base(TextureUsage::UNIT1)]),
+                                          to_U8(_textureOperations[to_base(TextureUsage::SPECULAR)]),
+                                          to_U8(bumpMethod()));
+    dataOut._data.w = bestProbeID;
 }
 
 void Material::rebuild() {
@@ -1158,12 +1293,25 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
     pt.put(entryName + ".emissive.<xmlattr>.r", emissive().r);
     pt.put(entryName + ".emissive.<xmlattr>.g", emissive().g);
     pt.put(entryName + ".emissive.<xmlattr>.b", emissive().b);
+
+    pt.put(entryName + ".ambient.<xmlattr>.r", ambient().r);
+    pt.put(entryName + ".ambient.<xmlattr>.g", ambient().g);
+    pt.put(entryName + ".ambient.<xmlattr>.b", ambient().b);
+
+    pt.put(entryName + ".specular.<xmlattr>.r", specular().r);
+    pt.put(entryName + ".specular.<xmlattr>.g", specular().g);
+    pt.put(entryName + ".specular.<xmlattr>.b", specular().b);
+    pt.put(entryName + ".specular.<xmlattr>.a", specular().a);
+
     pt.put(entryName + ".metallic", metallic());
+
     pt.put(entryName + ".roughness", roughness());
 
     pt.put(entryName + ".doubleSided", doubleSided());
 
     pt.put(entryName + ".receivesShadows", receivesShadows());
+
+    pt.put(entryName + ".ignoreTexDiffuseAlpha", ignoreTexDiffuseAlpha());
 
     pt.put(entryName + ".bumpMethod", TypeUtil::BumpMethodToString(bumpMethod()));
 
@@ -1181,38 +1329,50 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
     if (ignoreXMLData()) {
         return;
     }
-    
+
     const size_t detectedVersion = pt.get<size_t>(entryName + ".version", 0);
     if (detectedVersion != g_materialXMLVersion) {
         Console::printfn(Locale::Get(_ID("MATERIAL_WRONG_VERSION")), assetName().c_str(), detectedVersion, g_materialXMLVersion);
         return;
     }
-    
-    shadingMode(TypeUtil::StringToShadingMode(pt.get<stringImpl>(entryName + ".shadingMode", "FLAT")), false);
-    
-    baseColour(FColour4(pt.get<F32>(entryName + ".colour.<xmlattr>.r", 0.6f),
-                        pt.get<F32>(entryName + ".colour.<xmlattr>.g", 0.6f),
-                        pt.get<F32>(entryName + ".colour.<xmlattr>.b", 0.6f),
-                        pt.get<F32>(entryName + ".colour.<xmlattr>.a", 1.f)), false);
+
+    shadingMode(TypeUtil::StringToShadingMode(pt.get<stringImpl>(entryName + ".shadingMode", TypeUtil::ShadingModeToString(shadingMode()))), false);
+
+    baseColour(FColour4(pt.get<F32>(entryName + ".colour.<xmlattr>.r", baseColour().r),
+                        pt.get<F32>(entryName + ".colour.<xmlattr>.g", baseColour().g),
+                        pt.get<F32>(entryName + ".colour.<xmlattr>.b", baseColour().b),
+                        pt.get<F32>(entryName + ".colour.<xmlattr>.a", baseColour().a)), false);
                           
-    emissiveColour(FColour3(pt.get<F32>(entryName + ".emissive.<xmlattr>.r", 0.f),
-                            pt.get<F32>(entryName + ".emissive.<xmlattr>.g", 0.f),
-                            pt.get<F32>(entryName + ".emissive.<xmlattr>.b", 0.f)), false);
-                           
-    metallic(pt.get<F32>(entryName + ".metallic", 0.2f), false);
-    roughness(pt.get<F32>(entryName + ".roughness", 0.8f), false);
+    emissiveColour(FColour3(pt.get<F32>(entryName + ".emissive.<xmlattr>.r", emissive().r),
+                            pt.get<F32>(entryName + ".emissive.<xmlattr>.g", emissive().g),
+                            pt.get<F32>(entryName + ".emissive.<xmlattr>.b", emissive().b)), false);  
     
-    doubleSided(pt.get<bool>(entryName + ".doubleSided", false), false);
+    ambientColour(FColour3(pt.get<F32>(entryName + ".ambient.<xmlattr>.r", ambient().r),
+                           pt.get<F32>(entryName + ".ambient.<xmlattr>.g", ambient().g),
+                           pt.get<F32>(entryName + ".ambient.<xmlattr>.b", ambient().b)), false);
 
-    receivesShadows(pt.get<bool>(entryName + ".receivesShadows", true), false);
+    specularColour(FColour4(pt.get<F32>(entryName + ".specular.<xmlattr>.r", specular().r),
+                            pt.get<F32>(entryName + ".specular.<xmlattr>.g", specular().g),
+                            pt.get<F32>(entryName + ".specular.<xmlattr>.b", specular().b),
+                            pt.get<F32>(entryName + ".specular.<xmlattr>.a", specular().a)), false);
 
-    bumpMethod(TypeUtil::StringToBumpMethod(pt.get<stringImpl>(entryName + ".bumpMethod", "NORMAL")), false);
+    metallic(pt.get<F32>(entryName + ".metallic", metallic()), false);
 
-    parallaxFactor(pt.get<F32>(entryName + ".parallaxFactor", 1.0f), false);
+    roughness(pt.get<F32>(entryName + ".roughness", roughness()), false);
 
-    toggleTransparency(pt.get<bool>(entryName + ".transparencyEnabled", true), false);
+    doubleSided(pt.get<bool>(entryName + ".doubleSided", doubleSided()), false);
 
-    refractive(pt.get<bool>(entryName + ".isRefractive", true), false);
+    receivesShadows(pt.get<bool>(entryName + ".receivesShadows", receivesShadows()), false);
+
+    ignoreTexDiffuseAlpha(pt.get<bool>(entryName + ".ignoreTexDiffuseAlpha", ignoreTexDiffuseAlpha()), false);
+
+    bumpMethod(TypeUtil::StringToBumpMethod(pt.get<stringImpl>(entryName + ".bumpMethod", TypeUtil::BumpMethodToString(bumpMethod()))), false);
+
+    parallaxFactor(pt.get<F32>(entryName + ".parallaxFactor", parallaxFactor()), false);
+
+    toggleTransparency(pt.get<bool>(entryName + ".transparencyEnabled", transparencyEnabled()), false);
+
+    refractive(pt.get<bool>(entryName + ".isRefractive", refractive()), false);
 
     loadRenderStatesFromXML(entryName, pt);
     loadTextureDataFromXML(entryName, pt);
@@ -1299,10 +1459,7 @@ void Material::saveTextureDataToXML(const stringImpl& entryName, boost::property
             pt.put(textureNode + ".name", texture->assetName().str());
             pt.put(textureNode + ".path", texture->assetLocation().str());
             pt.put(textureNode + ".flipped", texture->flipped());
-
-            if (usage == TextureUsage::UNIT1) {
-                pt.put(textureNode + ".usage", TypeUtil::TextureOperationToString(_textureOperation));
-            }
+            pt.put(textureNode + ".usage", TypeUtil::TextureOperationToString(_textureOperations[to_base(usage)]));
 
             const size_t samplerHash = _samplers[to_base(usage)];
 
@@ -1319,10 +1476,7 @@ void Material::saveTextureDataToXML(const stringImpl& entryName, boost::property
 void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
     hashMap<U32, size_t> previousHashValues;
 
-    std::atomic_uint loadTasks = 0;
-
     for (const TextureUsage usage : g_materialTextures) {
-
         if (pt.get_child_optional(entryName + ".texture." + TypeUtil::TextureUsageToString(usage) + ".name")) {
             const stringImpl textureNode = entryName + ".texture." + TypeUtil::TextureUsageToString(usage);
 
@@ -1347,9 +1501,8 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                 }
 
                 TextureOperation op = TextureOperation::NONE;
-                if (usage == TextureUsage::UNIT1) {
-                    _textureOperation = TypeUtil::StringToTextureOperation(pt.get<stringImpl>(textureNode + ".usage", "REPLACE"));
-                }
+                _textureOperations[to_base(usage)] = TypeUtil::StringToTextureOperation(pt.get<stringImpl>(textureNode + ".usage", TypeUtil::StringToTextureOperation(_textureOperations[to_base(usage)])));
+
                 {
                     UniqueLock<SharedMutex> w_lock(_textureLock);
                     const Texture_ptr& crtTex = _textures[to_base(usage)];
@@ -1362,23 +1515,17 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                 }
 
                 TextureDescriptor texDesc(TextureType::TEXTURE_2D);
-                loadTasks.fetch_add(1u);
                 ResourceDescriptor texture(texName.str());
                 texture.assetName(texName);
                 texture.assetLocation(texPath);
                 texture.propertyDescriptor(texDesc);
-                texture.waitForReady(false);
+                texture.waitForReady(true);
                 texture.flag(!flipped);
 
-                Texture_ptr tex =  CreateResource<Texture>(_context.parent().resourceCache(), texture);
-                tex->addStateCallback(ResourceState::RES_LOADED, [&, tex](CachedResource*) {
-                    setTexture(usage, tex, hash, op);
-                    loadTasks.fetch_sub(1u);
-                });
+                Texture_ptr tex = CreateResource<Texture>(_context.parent().resourceCache(), texture);
+                setTexture(usage, tex, hash, op);
             }
         }
-
-        WAIT_FOR_CONDITION(loadTasks.load() == 0u);
     }
 }
 

@@ -34,9 +34,9 @@
 #define _TEXTURE_H_
 
 #include "Core/Resources/Headers/Resource.h"
+#include "Platform/Video/Headers/DescriptorSets.h"
 
 #include "Platform/Video/Headers/GraphicsResource.h"
-#include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
 #include "Utility/Headers/ImageTools.h"
@@ -108,6 +108,8 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     PROPERTY_R(bool, hasTransparency, false);
     /// Flipped Y-coord
     PROPERTY_R(bool, flipped, false);
+
+    [[nodiscard]] U8 numChannels() const noexcept;
 
     static U16 ComputeMipCount(U16 width, U16 height) noexcept;
 #if defined(_DEBUG)

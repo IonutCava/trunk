@@ -201,6 +201,9 @@ template <typename T>
 [[nodiscard]] constexpr T MAP(T input, T in_min, T in_max, T out_min, T out_max, D64& slopeOut) noexcept;
 
 template <typename T>
+constexpr void REMAP(T& input, T in_min, T in_max, T out_min, T out_max, D64& slopeOut) noexcept;
+
+template <typename T>
 [[nodiscard]] constexpr T SQUARED(T input) noexcept;
 
 template <typename T>
@@ -210,6 +213,12 @@ template <typename T>
 [[nodiscard]] constexpr T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max) noexcept {
     D64 slope = 0.0;
     return MAP(input, in_min, in_max, out_min, out_max, slope);
+}
+
+template <typename T>
+constexpr void REMAP(T& input, T in_min, T in_max, T out_min, T out_max) noexcept {
+    D64 slope = 0.0;
+    input = MAP(input, in_min, in_max, out_min, out_max, slope);
 }
 
 template <typename T>
@@ -438,6 +447,11 @@ template <typename T, typename U>
 struct SimpleTime {
     U8 _hour = 0u;
     U8 _minutes = 0u;
+};
+
+struct SimpleLocation {
+    F32 _latitude = 0;
+    F32 _longitude = 0;
 };
 
 namespace Time {

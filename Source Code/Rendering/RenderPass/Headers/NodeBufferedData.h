@@ -32,6 +32,7 @@
 #pragma once
 #ifndef _RENDER_PASS_NODE_BUFFERED_DATA_H_
 #define _RENDER_PASS_NODE_BUFFERED_DATA_H_
+
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {
@@ -40,11 +41,15 @@ enum class TextureUsage : unsigned char;
 constexpr TextureUsage g_materialTextures[] = {
     TextureUsage::UNIT0,
     TextureUsage::OPACITY,
-    TextureUsage::UNIT1,
-    TextureUsage::OCCLUSION_METALLIC_ROUGHNESS,
-    TextureUsage::HEIGHTMAP,
-    TextureUsage::PROJECTION,
     TextureUsage::NORMALMAP,
+    TextureUsage::HEIGHTMAP,
+    TextureUsage::SPECULAR,
+    TextureUsage::METALNESS,
+    TextureUsage::ROUGHNESS,
+    TextureUsage::OCCLUSION,
+    TextureUsage::EMISSIVE,
+    TextureUsage::UNIT1,
+    TextureUsage::PROJECTION,
     TextureUsage::REFLECTION,
     TextureUsage::REFRACTION
 };
@@ -71,12 +76,15 @@ using NodeMaterialTextures = std::array<SamplerAddress, MATERIAL_TEXTURE_COUNT>;
     {
         //base colour
         vec4<F32> _albedo;
-        //rgb - emissive, 
+        //rgb - emissive
         //a   - parallax factor
         vec4<F32> _emissiveAndParallax;
-        //x = 4x8U: occlusion, metallic, roughness, reserved
-        //y = IBL texture size
-        //z = 4x8U: tex op, bump method, reserved, reserved
+        //rgb - ambientColour (Don't really need this. To remove eventually, but since we have the space, might as well)
+        //a - specular strength [0...1000]. Used mainly by Phong shading
+        vec4<F32> _colourData;
+        //x = 4x8U: occlusion, metallic, roughness, selection flag (1 == hovered, 2 == selected)
+        //y = 4x8U: specularR, specularG, specularB, reserved
+        //z = 4x8U: tex op Unit0, tex op Unit1, tex op Specular, bump method
         //w = Probe lookup index + 1 (0 = sky cubemap)
         vec4<U32> _data;
 

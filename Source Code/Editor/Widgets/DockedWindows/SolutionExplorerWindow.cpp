@@ -356,6 +356,8 @@ namespace Divide {
 
             ImGui::Text("Time of Day:");
             SimpleTime time = activeScene.getTimeOfDay();
+            SimpleLocation location = activeScene.getGeographicLocation();
+
             constexpr U8 min = 0u;
             constexpr U8 maxHour = 24u;
             constexpr U8 maxMinute = 59u;
@@ -363,6 +365,11 @@ namespace Divide {
             if (ImGui::SliderScalar("Hour", ImGuiDataType_U8, &time._hour, &min, &maxHour, "%02d") ||
                 ImGui::SliderScalar("Minute", ImGuiDataType_U8, &time._minutes, &min, &maxMinute, "%02d"))         {
                 activeScene.setTimeOfDay(time);
+            }
+
+            if (ImGui::SliderFloat("Latitude", &location._latitude, -90.f, 90.f, "%.6f") ||
+                ImGui::SliderFloat("Longitude", &location._longitude, -180.f, 180.f, "%.6f")) {
+                activeScene.setGeographicLocation(location);
             }
 
             if (!dayNightEnabled) {

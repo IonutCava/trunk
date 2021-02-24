@@ -8,6 +8,7 @@
 #define samplerUnit0 sampler2D
 #define samplerUnit0UVType vec2
 #endif //SAMPLER_UNIT0_IS_ARRAY
+
 #if defined(SAMPLER_OPACITY_IS_ARRAY)
 #define samplerOpacity sampler2DArray
 #define samplerOpacityUVType vec3
@@ -15,34 +16,7 @@
 #define samplerOpacity sampler2D
 #define samplerOpacityUVType vec2
 #endif //SAMPLER_OPACITY_IS_ARRAY
-#if defined(SAMPLER_UNIT1_IS_ARRAY)
-#define samplerUnit1 sampler2DArray
-#define samplerUnit1UVType vec3
-#else //SAMPLER_UNIT1_IS_ARRAY
-#define samplerUnit1 sampler2D
-#define samplerUnit1UVType vec2
-#endif //SAMPLER_UNIT1_IS_ARRAY
-#if defined(SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY)
-#define samplerOMR sampler2DArray
-#define samplerOMRUVType vec3
-#else //SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY
-#define samplerOMR sampler2D
-#define sampleOMRUVType vec3
-#endif //SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY
-#if defined(SAMPLER_HEIGHTMAP_IS_ARRAY)
-#define samplerHeight sampler2DArray
-#define samplerHeightUVType vec3
-#else //SAMPLER_HEIGHTMAP_IS_ARRAY
-#define samplerHeight sampler2D
-#define samplerHeightUVType vec3
-#endif //SAMPLER_HEIGHTMAP_IS_ARRAY
-#if defined(SAMPLER_PROJECTION_IS_ARRAY)
-#define samplerProj sampler2DArray
-#define samplerrProjUVType vec3
-#else //SAMPLER_PROJECTION_IS_ARRAY
-#define samplerProj sampler2D
-#define samplerrProjUVType vec3
-#endif //SAMPLER_PROJECTION_IS_ARRAY
+
 #if defined(SAMPLER_NORMALMAP_IS_ARRAY)
 #define samplerNormal sampler2DArray
 #define samplerNormalUVType vec3
@@ -50,6 +24,71 @@
 #define samplerNormal sampler2D
 #define samplerNormalUVType vec3
 #endif //SAMPLER_NORMALMAP_IS_ARRAY
+
+#if defined(SAMPLER_HEIGHTMAP_IS_ARRAY)
+#define samplerHeight sampler2DArray
+#define samplerHeightUVType vec3
+#else //SAMPLER_HEIGHTMAP_IS_ARRAY
+#define samplerHeight sampler2D
+#define samplerHeightUVType vec3
+#endif //SAMPLER_HEIGHTMAP_IS_ARRAY
+
+#if defined(SAMPLER_SPECULAR_IS_ARRAY)
+#define samplerSpecular sampler2DArray
+#define samplerSpecularUVType vec3
+#else //SAMPLER_SPECULAR_IS_ARRAY
+#define samplerSpecular sampler2D
+#define samplerSpecularUVType vec3
+#endif //SAMPLER_SPECULAR_IS_ARRAY
+
+#if defined(SAMPLER_METALNESS_IS_ARRAY)
+#define samplerMetalness sampler2DArray
+#define samplerMetalnessUVType vec3
+#else //SAMPLER_METALNESS_IS_ARRAY
+#define samplerMetalness sampler2D
+#define samplerMetalnessUVType vec3
+#endif //SAMPLER_METALNESS_IS_ARRAY
+
+#if defined(SAMPLER_ROUGHNESS_IS_ARRAY)
+#define samplerRoughness sampler2DArray
+#define samplerRoughnessUVType vec3
+#else //SAMPLER_ROUGHNESS_IS_ARRAY
+#define samplerRoughness sampler2D
+#define samplerRoughnessUVType vec3
+#endif //SAMPLER_ROUGHNESS_IS_ARRAY
+
+#if defined(SAMPLER_OCCLUSION_IS_ARRAY)
+#define samplerOcclusion sampler2DArray
+#define samplerOcclusionUVType vec3
+#else //SAMPLER_OCCLUSION_IS_ARRAY
+#define samplerOcclusion sampler2D
+#define samplerOcclusionUVType vec3
+#endif //SAMPLER_OCCLUSION_IS_ARRAY
+
+#if defined(SAMPLER_EMISSIVE_IS_ARRAY)
+#define samplerEmissive sampler2DArray
+#define samplerEmissiveUVType vec3
+#else //SAMPLER_EMISSIVE_IS_ARRAY
+#define samplerEmissive sampler2D
+#define samplerEmissiveUVType vec3
+#endif //SAMPLER_EMISSIVE_IS_ARRAY
+
+#if defined(SAMPLER_UNIT1_IS_ARRAY)
+#define samplerUnit1 sampler2DArray
+#define samplerUnit1UVType vec3
+#else //SAMPLER_UNIT1_IS_ARRAY
+#define samplerUnit1 sampler2D
+#define samplerUnit1UVType vec2
+#endif //SAMPLER_UNIT1_IS_ARRAY
+
+#if defined(SAMPLER_PROJECTION_IS_ARRAY)
+#define samplerProj sampler2DArray
+#define samplerrProjUVType vec3
+#else //SAMPLER_PROJECTION_IS_ARRAY
+#define samplerProj sampler2D
+#define samplerrProjUVType vec3
+#endif //SAMPLER_PROJECTION_IS_ARRAY
+
 #if defined(USE_PLANAR_REFLECTION)
 #define samplerReflect sampler2D
 #define samplerReflectUVType vec2
@@ -57,6 +96,7 @@
 #define samplerReflect samplerCube
 #define samplerReflectUVType vec3
 #endif //USE_PLANAR_REFLECTION
+
 #if defined(USE_PLANAR_REFRACTION)
 #define samplerRefract sampler2D
 #define samplerRefractUVType vec2
@@ -88,12 +128,15 @@ struct NodeMaterialData
 {
     //base colour
     vec4 _albedo;
-    //rgb - emissive, 
+    //rgb - emissive
     //a   - parallax factor
     vec4 _emissiveAndParallax;
-    //x = 4x8U: occlusion, metallic, roughness, reserved
-    //y = reserved
-    //z = 4x8U: tex op, bump method, reserved, reserved
+    //rgb - ambientColour (Don't really need this. To remove eventually, but since we have the space, might as well)
+    //a - specular strength [0...1000]. Used mainly by Phong shading
+    vec4 _colourData;
+    //x = 4x8U: occlusion, metallic, roughness, selection flag (1 == hovered, 2 == selected)
+    //y = 4x8U: specularR, specularG, specularB, reserved
+    //z = 4x8U: tex op Unit0, tex op Unit1, tex op Specular, bump method
     //w = Probe lookup index + 1 (0 = sky cubemap)
     uvec4 _data;
 
@@ -101,25 +144,31 @@ struct NodeMaterialData
     uvec4 _textures[(MATERIAL_TEXTURE_COUNT + 1) / 2];
 };
 
-#define PACKED_OMR(materialData) unpackUnorm4x8(materialData._data.x)
+struct NodeMaterialProperties
+{
+    vec3 _albedo;
+    vec3 _OMR;
+    vec3 _emissive;
+    vec3 _kS;
+    vec4 _specular;
+};
 
 #define BaseColour(materialData) materialData._albedo
-
 #define EmissiveColour(materialData) materialData._emissiveAndParallax.rgb
+#define PACKED_OMR(materialData) unpackUnorm4x8(materialData._data.x).rgb
+#define Specular(materialData) unpackUnorm4x8(materialData._data.y).rgb
+#define Ambient(materialData) materialData._colourData.rgb
+#define SpecularStrength(materialData) materialData._colourData.a
 
-#define Occlusion(materialData) PACKED_OMR(materialData).r
-
-#define Metallic(materialData) PACKED_OMR(materialData).g
-
-#define Roughness(materialData) PACKED_OMR(materialData).b
+#define dvd_selectionFlag(materialData) uint(unpackUnorm4x8(materialData._data.x).a * 2)
 
 #define dvd_probeIndex(materialData) materialData._data.w
 
-#define dvd_texOperation(materialData) uint(unpackUnorm4x8(materialData._data.z).x * 255)
+#define dvd_texOperations(materialData) uvec3(unpackUnorm4x8(materialData._data.z).xyz * 255)
 
-#define dvd_bumpMethod(X)  uint(unpackUnorm4x8(dvd_Materials[X]._data.z).y * 255)
+#define dvd_bumpMethod(X) uint(unpackUnorm4x8(dvd_Materials[X]._data.z).w * 255)
 
-#define dvd_parallaxFactor(X)  dvd_Materials[X]._emissiveAndParallax.a
+#define dvd_parallaxFactor(X) dvd_Materials[X]._emissiveAndParallax.a
 
 #endif //FRAG_SHADER || NEED_MATERIAL_DATA
 

@@ -120,7 +120,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
     descriptor.position = initialPosition;
     descriptor.dimensions = initialSize;
     descriptor.targetDisplay = to_U32(displayIndex);
-    descriptor.title = _context->config().title;
+    descriptor.title = _context->config().runtime.title;
     descriptor.externalClose = false;
     descriptor.targetAPI = renderingAPI;
 
@@ -428,6 +428,7 @@ ErrorCode WindowManager::configureAPISettings(const RenderAPI api, const U16 des
         Validate(SDL_GL_MakeCurrent(mainWindow()->getRawWindow(), static_cast<SDL_GLContext>(mainWindow()->userData())));
     } else {
         ValidateAssert(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
+        ValidateAssert(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, _context->config().rendering.MSAASamples));
         ValidateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
     }
 

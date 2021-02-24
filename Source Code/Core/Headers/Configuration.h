@@ -60,6 +60,7 @@ struct Configuration final : XML::IXMLSerializable {
     stringImpl language = "enGB";
     
     struct Runtime {
+        stringImpl title = "DIVIDE Framework";
         U8 targetDisplay = 0;
         U8 targetRenderingAPI = 0;
         I16 maxWorkerThreads = -1;
@@ -130,16 +131,59 @@ struct Configuration final : XML::IXMLSerializable {
         vec3<F32> fogColour = { 0.2f, 0.2f, 0.2f };
         vec4<U16> lodThresholds = { 25u, 45u, 85u, 165u };
         struct PostFX {
-            stringImpl postAAType = "FXAA";
-            U8 PostAAQualityLevel = 2;
-            bool enableAdaptiveToneMapping = true;
-            bool enableDepthOfField = false;
-            bool enableScreenSpaceReflections = false;
-            bool enablePerObjectMotionBlur = true;
-            bool enableBloom = false;
-            F32 bloomFactor = 0.8f;
-            F32 bloomThreshold = 0.75f;
-            F32 velocityScale = 1.f;
+            struct PostAA {
+                stringImpl type = "FXAA";
+                U8 qualityLevel = 2;
+            } postAA;
+            struct ToneMap {
+                bool adaptive = true;
+                F32 manualExposureFactor = 1.f;
+                F32 minLogLuminance = -4.f;
+                F32 maxLogLuminance = 3.f;
+                F32 tau = 1.1f;
+                stringImpl mappingFunction = "UNCHARTED_2";
+            } toneMap;
+            struct DOF
+            {
+                bool enabled = false;
+                vec2<F32> focalPoint = { 0.5f };
+                F32 focalDepth = 10.0f;
+                F32 focalLength = 12.0f;
+                stringImpl fStop = "f/1.4";
+                F32 ndofstart = 1.0f;
+                F32 ndofdist = 2.0f;
+                F32 fdofstart = 1.0f;
+                F32 fdofdist = 3.0f;
+                F32 vignout = 1.3f;
+                F32 vignin = 0.0f;
+                bool autoFocus = true;
+                bool vignetting = false;
+                bool debugFocus = false;
+                bool manualdof = false;
+            } dof;
+            struct SSR
+            {
+                bool enabled = true;
+                F32 maxDistance = 100.f;
+                F32 jitterAmount = 1.f;
+                F32 stride = 8.f;
+                F32 zThickness = 1.5f;
+                F32 strideZCutoff = 100.f;
+                F32 screenEdgeFadeStart = 0.75f;
+                F32 eyeFadeStart = 0.5f;
+                F32 eyeFadeEnd = 1.f;
+                U16 maxSteps = 256u;
+                U8 binarySearchIterations = 4u;
+            } ssr;
+            struct MotionBlur {
+                bool enablePerObject = true;
+                F32 velocityScale = 1.f;
+            } motionBlur;
+            struct Bloom {
+                bool enabled = true;
+                F32 factor = 0.8f;
+                F32 threshold = 0.85f;
+            } bloom;
             struct SSAO
             {
                 bool enable = false;
@@ -159,10 +203,10 @@ struct Configuration final : XML::IXMLSerializable {
             ShadowSettings point = {};
         } shadowMapping = {};
     } rendering = {};
-
-    stringImpl title = "DIVIDE Framework";
-    stringImpl defaultTextureLocation = "textures/";
-    stringImpl defaultShadersLocation = "shaders/";
+    struct DefaultAssetLocation {
+        stringImpl textures = "textures/";
+        stringImpl shaders = "shaders/";
+    } defaultAssetLocation;
 
     PROPERTY_RW(bool, changed, false);
 

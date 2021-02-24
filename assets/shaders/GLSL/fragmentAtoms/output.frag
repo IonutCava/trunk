@@ -19,7 +19,7 @@ layout(location = TARGET_MODULATE) out vec4  _modulate;
 #endif
 
 //layout(binding = TEXTURE_POST_FX_DATA) uniform sampler2D texTransmitance;
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
+layout(binding = TEXTURE_DEPTH) uniform sampler2D texDepthMap;
 
 // Shameless copy-paste from http://casual-effects.blogspot.co.uk/2015/03/colored-blended-order-independent.html
 void writePixel(in vec4 premultipliedReflect, in vec3 transmit, in float viewSpaceZ) {

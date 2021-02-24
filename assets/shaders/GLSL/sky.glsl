@@ -7,7 +7,7 @@ void main(void){
     VAR._vertexW = data._worldMatrix * dvd_Vertex + vec4(dvd_cameraPosition.xyz, 0.f);
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
-    gl_Position.z = gl_Position.w - SKY_OFFSET;
+    gl_Position.z = gl_Position.w - Z_TEST_SIGMA;
 }
 
 -- Vertex.Clouds
@@ -223,7 +223,7 @@ void main() {
     vAmbient = getIncidentLight(ray);
 
     gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
-    gl_Position.z = gl_Position.w - SKY_OFFSET;
+    gl_Position.z = gl_Position.w - Z_TEST_SIGMA;
 }
 
 --Fragment.PassThrough
@@ -245,10 +245,10 @@ layout(location = 12) in vec3 vAmbient;
 layout(location = 13) in vec3 vBetaR;
 layout(location = 14) in vec3 vBetaM;
 
-layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texSky;
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D weather;
-layout(binding = TEXTURE_OPACITY) uniform sampler2D curl;
-layout(binding = TEXTURE_OMR) uniform sampler3D worl;
+layout(binding = TEXTURE_UNIT0)     uniform samplerCubeArray texSky;
+layout(binding = TEXTURE_HEIGHTMAP) uniform sampler2D weather;
+layout(binding = TEXTURE_OPACITY)   uniform sampler2D curl;
+layout(binding = TEXTURE_SPECULAR)  uniform sampler3D worl;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler3D perlworl;
 
 uniform vec3 dvd_nightSkyColour;
@@ -668,11 +668,12 @@ void main() {
     switch (dvd_materialDebugFlag) {
         case DEBUG_ALBEDO:        ret = getRawAlbedo(rayDirection, lerpValue); break;
         case DEBUG_LIGHTING:      ret = getSkyColour(rayDirection, lerpValue); break;
-        case DEBUG_SPECULAR:      ret = vec3(0.0f); break;
+        case DEBUG_SPECULAR:      
+        case DEBUG_KS:            ret = vec3(0.f); break;
         case DEBUG_UV:            ret = vec3(fract(rayDirection)); break;
         case DEBUG_EMISSIVE:      ret = getSkyColour(rayDirection, lerpValue); break;
         case DEBUG_ROUGHNESS:
-        case DEBUG_METALLIC:
+        case DEBUG_METALNESS:
         case DEBUG_NORMALS:       ret = normalize(mat3(dvd_InverseViewMatrix) * VAR._normalWV); break;
         case DEBUG_TANGENTS:
         case DEBUG_BITANGENTS:    ret = vec3(0.0f); break;

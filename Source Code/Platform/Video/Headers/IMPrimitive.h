@@ -120,7 +120,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 #       endif
     }
 
-    virtual GFX::CommandBuffer& toCommandBuffer() const = 0;
+    GFX::CommandBuffer& toCommandBuffer() const;
 
     void fromOBB(const OBB& obb,
                  const UColour4& colour = DefaultColours::WHITE);

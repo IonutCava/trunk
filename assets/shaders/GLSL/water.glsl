@@ -51,9 +51,14 @@ void main()
     const vec2 uvNormal0 = (VAR._texCoord * _noiseTile) + vec2(time2, time2);
     const vec2 uvNormal1 = (VAR._texCoord * _noiseTile) + vec2(-time2, time2);
 
-    const vec3 normal0 = texture(texNormalMap, uvNormal0).rgb;
-    const vec3 normal1 = texture(texNormalMap, uvNormal1).rgb;
-    const vec3 normalWV = normalize(getTBNWV() * normalize(2.0f * ((normal0 + normal1) * 0.5f) - 1.0f));
+    const vec4 normalData0 = getNormalMapAndVariation(texNormalMap, uvNormal0);
+    const vec4 normalData1 = getNormalMapAndVariation(texNormalMap, uvNormal1);
+
+    const vec3 normal0 = normalData0.xyz;
+    const vec3 normal1 = normalData1.xyz;
+    const float normalVariation = max(normalData0.w, normalData1.w);
+
+    const vec3 normalWV = normalize(getTBNWV() * ((normal0 + normal1) * 0.5f));
     const vec3 normalW = normalize(mat3(dvd_InverseViewMatrix) * normalWV);
 
     //vec3 normal = normalPartialDerivativesBlend(normal0, normal1);
@@ -84,7 +89,7 @@ void main()
 
     vec3 MetalnessRoughnessProbeID = vec3(0.f, 1.f, 0.f);
     vec3 SpecularColourOut = vec3(0.f);
-    const vec4 outColour = getPixelColour(vec4(texColour, 1.0f), data, normalWV, VAR._texCoord, SpecularColourOut, MetalnessRoughnessProbeID);
+    const vec4 outColour = getPixelColour(vec4(texColour, 1.0f), data, normalWV, normalVariation, VAR._texCoord, SpecularColourOut, MetalnessRoughnessProbeID);
 
     // Guess work based on what "look right"
     const float lerpValue = saturate(2.95f * (dvd_sunDirection.y + 0.15f));

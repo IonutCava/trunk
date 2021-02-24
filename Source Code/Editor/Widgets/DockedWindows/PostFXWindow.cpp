@@ -2,6 +2,8 @@
 
 #include "Headers/PostFXWindow.h"
 
+
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Editor/Headers/Editor.h"
@@ -213,22 +215,19 @@ namespace {
         if (ImGui::CollapsingHeader("SS Reflections")) {
             checkBox(FilterType::FILTER_SS_REFLECTIONS);
 
-            PreRenderOperator* op = batch.getOperator(FilterType::FILTER_SS_REFLECTIONS);
-            SSRPreRenderOperator& ssrOp = static_cast<SSRPreRenderOperator&>(*op);
-            SSRPreRenderOperator::Parameters params = ssrOp.parameters();
+            auto& params = context().config().rendering.postFX.ssr;
+            F32& maxDistance = params.maxDistance;
+            F32& jitterAmount = params.jitterAmount;
+            F32& stride = params.stride;
+            F32& zThickness = params.zThickness;
+            F32& strideZCutoff = params.strideZCutoff;
+            F32& screenEdgeFadeStart = params.screenEdgeFadeStart;
+            F32& eyeFadeStart = params.eyeFadeStart;
+            F32& eyeFadeEnd = params.eyeFadeEnd;
+            U16& maxSteps = params.maxSteps;
+            U8&  binarySearchIterations = params.binarySearchIterations;
+
             bool dirty = false;
-
-            F32& maxDistance = params._maxDistance;
-            F32& jitterAmount = params._jitterAmount;
-            F32& stride = params._stride;
-            F32& zThickness = params._zThickness;
-            F32& strideZCutoff = params._strideZCutoff;
-            F32& screenEdgeFadeStart = params._screenEdgeFadeStart;
-            F32& eyeFadeStart = params._eyeFadeStart;
-            F32& eyeFadeEnd = params._eyeFadeEnd;
-            U16& maxSteps = params._maxSteps;
-            U8&  binarySearchIterations = params._binarySearchIterations;
-
             if (ImGui::SliderFloat("Max Distance", &maxDistance, 0.01f, 5000.0f)) {
                 dirty = true;
             }
@@ -267,29 +266,30 @@ namespace {
             }
 
             if (dirty) {
-                ssrOp.parameters(params);
+                PreRenderOperator* op = batch.getOperator(FilterType::FILTER_SS_REFLECTIONS);
+                static_cast<SSRPreRenderOperator&>(*op).parametersChanged();
+                context().config().changed(true);
             }
         }
         if (ImGui::CollapsingHeader("Depth of Field")) {
             checkBox(FilterType::FILTER_DEPTH_OF_FIELD);
-            PreRenderOperator* op = batch.getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
-            DoFPreRenderOperator& dofOp = static_cast<DoFPreRenderOperator&>(*op);
-            DoFPreRenderOperator::Parameters params = dofOp.parameters();
-            bool dirty = false;
 
-            F32& focalLength = params._focalLength;
+            auto& params = context().config().rendering.postFX.dof;
+           
+            bool dirty = false;
+            F32& focalLength = params.focalLength;
             if (ImGui::SliderFloat("Focal Length (mm)", &focalLength, 0.0f, 100.0f)) {
                 dirty = true;
             }
 
-            I32 crtStop = to_I32(params._fStop);
-            const char* crtStopName = TypeUtil::FStopsToString(params._fStop);
+            I32 crtStop = to_I32(TypeUtil::StringToFStops(params.fStop));
+            const char* crtStopName = params.fStop.c_str();
             if (ImGui::SliderInt("FStop", &crtStop, 0, to_base(FStops::COUNT) - 1, crtStopName)) {
-                params._fStop = static_cast<FStops>(crtStop);
+                params.fStop = TypeUtil::FStopsToString(static_cast<FStops>(crtStop));
                 dirty = true;
             }
 
-            bool& autoFocus = params._autoFocus;
+            bool& autoFocus = params.autoFocus;
             if (ImGui::Checkbox("Auto Focus", &autoFocus)) {
                 dirty = true;
             }
@@ -297,11 +297,11 @@ namespace {
             if (autoFocus) {
                 PushReadOnly();
             }
-            F32& focalDepth = params._focalDepth;
+            F32& focalDepth = params.focalDepth;
             if (ImGui::SliderFloat("Focal Depth (m)", &focalDepth, 0.0f, 100.0f)) {
                 dirty = true;
             }
-            vec2<F32>& focalPosition = params._focalPoint;
+            vec2<F32>& focalPosition = params.focalPoint;
             if (ImGui::SliderFloat2("Focal Position", focalPosition._v, 0.0f, 1.0f)) {
                 dirty = true;
             }
@@ -312,44 +312,44 @@ namespace {
                 PopReadOnly();
             }
 
-            bool& manualdof = params._manualdof;
+            bool& manualdof = params.manualdof;
             if (ImGui::Checkbox("Manual dof calculation", &manualdof)) {
                 dirty = true;
             }
             if (!manualdof) {
                 PushReadOnly();
             }
-            F32& ndofstart = params._ndofstart;
+            F32& ndofstart = params.ndofstart;
             if (ImGui::SliderFloat("Near dof blur start", &ndofstart, 0.0f, 100.0f)) {
                 dirty = true;
             }
-            F32& ndofdist = params._ndofdist;
+            F32& ndofdist = params.ndofdist;
             if (ImGui::SliderFloat("Near dof blur falloff distance", &ndofdist, 0.0f, 100.0f)) {
                 dirty = true;
             }
-            F32& fdofstart = params._fdofstart;
+            F32& fdofstart = params.fdofstart;
             if (ImGui::SliderFloat("Far dof blur start", &fdofstart, 0.0f, 100.0f)) {
                 dirty = true;
             }
-            F32& fdofdist = params._fdofdist;
+            F32& fdofdist = params.fdofdist;
             if (ImGui::SliderFloat("Far dof blur falloff distance", &fdofdist, 0.0f, 100.0f)) {
                 dirty = true;
             }
             if (!manualdof) {
                 PopReadOnly();
             }
-            bool& vignetting = params._vignetting;
+            bool& vignetting = params.vignetting;
             if (ImGui::Checkbox("Use optical lens vignetting", &vignetting)) {
                 dirty = true;
             }
             if (!vignetting) {
                 PushReadOnly();
             }
-            F32& vignout = params._vignout;
+            F32& vignout = params.vignout;
             if (ImGui::SliderFloat("Vignetting outer border", &vignout, 0.0f, 100.0f)) {
                 dirty = true;
             }
-            F32& vignin = params._vignin;
+            F32& vignin = params.vignin;
             if (ImGui::SliderFloat("Vignetting inner border", &vignin, 0.0f, 100.0f)) {
                 dirty = true;
             }
@@ -357,7 +357,7 @@ namespace {
                 PopReadOnly();
             }
           
-            bool& debugFocus = params._debugFocus;
+            bool& debugFocus = params.debugFocus;
             if (ImGui::Checkbox("Show debug focus point and focal range", &debugFocus)) {
                 dirty = true;
             }
@@ -366,7 +366,10 @@ namespace {
             }
  
             if (dirty) {
-                dofOp.parameters(params);
+                PreRenderOperator* op = batch.getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
+                DoFPreRenderOperator& dofOp = static_cast<DoFPreRenderOperator&>(*op);
+                dofOp.parametersChanged();
+                context().config().changed(true);
             }
         }
 
@@ -388,9 +391,10 @@ namespace {
             checkBox(FilterType::FILTER_MOTION_BLUR);
             PreRenderOperator* op = batch.getOperator(FilterType::FILTER_MOTION_BLUR);
             MotionBlurPreRenderOperator& blurOP = static_cast<MotionBlurPreRenderOperator&>(*op);
-            F32 velocity = blurOP.velocityScale();
+            F32& velocity = _context.config().rendering.postFX.motionBlur.velocityScale;
             if (ImGui::SliderFloat("Veclocity Scale", &velocity, 0.01f, 3.0f)) {
-                blurOP.velocityScale(velocity);
+                blurOP.parametersChanged();
+                _context.config().changed(true);
             }
             U8 samples = blurOP.maxSamples(); constexpr U8 min = 1u, max = 16u;
             if (ImGui::SliderScalar("Max Samples", ImGuiDataType_U8, &samples, &min, &max)) {
@@ -431,7 +435,7 @@ namespace {
                 }
             }
 
-            if (ImGui::SliderFloat("Manual exposure", &params._manualExposure, -20.0f, 100.0f)) {
+            if (ImGui::SliderFloat("Manual exposure", &params._manualExposureFactor, 0.01f, 100.0f)) {
                 dirty = true;
             }
 

@@ -25,6 +25,7 @@
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 #include "Core/Math/BoundingVolumes/Headers/OBB.h"
 #include "Headers/Utils.h"
+#include <Editor/Widgets/Headers/ImGuiExtensions.h>
 
 namespace Divide {
     namespace {
@@ -584,7 +585,15 @@ namespace Divide {
     }
 
     bool PropertyWindow::processField(EditorComponentField& field) {
-        ImGui::Text(field._name.c_str());
+        const bool sameLineText =  field._type != EditorComponentFieldType::BUTTON &&
+                                   field._type != EditorComponentFieldType::SEPARATOR &&
+                                  (field._type == EditorComponentFieldType::SLIDER_TYPE ||
+                                   field._type == EditorComponentFieldType::SWITCH_TYPE ||
+                                   field._type == EditorComponentFieldType::PUSH_TYPE);
+
+        if (!sameLineText) {
+            ImGui::Text("[ %s ]", field._name.c_str());
+        }
 
         if (field._readOnly) {
             PushReadOnly();
@@ -593,9 +602,11 @@ namespace Divide {
         bool ret = false;
         switch (field._type) {
             case EditorComponentFieldType::SEPARATOR: {
+                ImGui::Text(field._name.c_str());
                 ImGui::Separator();
             }break;
             case EditorComponentFieldType::BUTTON: {
+                ImGui::Text(field._name.c_str());
                 if (field._range.y - field._range.x > 1.0f) {
                     ret = ImGui::Button(field._name.c_str(), ImVec2(field._range.x, field._range.y));
                 } else {
@@ -603,9 +614,12 @@ namespace Divide {
                 }
             }break;
             case EditorComponentFieldType::SLIDER_TYPE:
-            case EditorComponentFieldType::PUSH_TYPE: {
+            case EditorComponentFieldType::PUSH_TYPE:
+            case EditorComponentFieldType::SWITCH_TYPE: {
+                ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
                 ret = processBasicField(field);
-            }break;
+                ImGui::PopItemWidth();
+            } break;
             case EditorComponentFieldType::DROPDOWN_TYPE: {
                 const U8 entryStart = to_U8(field._range.min);
                 const U8 entryCount = to_U8(field._range.max);
@@ -770,6 +784,11 @@ namespace Divide {
         if (!field._tooltip.empty() && ImGui::IsItemHovered()) {
             ImGui::SetTooltip(field._tooltip.c_str());
         }
+        if (sameLineText) {
+            ImGui::SameLine();
+            ImGui::Text("[ %s ]", field._name.c_str());
+        }
+
         return ret;
     }
 
@@ -907,8 +926,12 @@ namespace Divide {
             }
         }
 
-        if (ImGui::CollapsingHeader(Util::StringFormat("Render State: %zu", stateHash).c_str()) && stateHash > 0)
-        {
+        static bool renderStateWasOpen = false;
+        if (!ImGui::CollapsingHeader(Util::StringFormat("Render State: %zu", stateHash).c_str(), (renderStateWasOpen ? ImGuiTreeNodeFlags_DefaultOpen : 0u))) {
+            renderStateWasOpen = false;
+        } else if (stateHash > 0) {
+            renderStateWasOpen = true;
+
             RenderStateBlock block = RenderStateBlock::get(stateHash);
             bool changed = false;
             {
@@ -1310,12 +1333,13 @@ namespace Divide {
             }
         }
 
+        static bool shadingModeWasOpen = false;
         const ShadingMode crtMode = material->shadingMode();
         const char* crtModeName = TypeUtil::ShadingModeToString(crtMode);
-        if (ImGui::CollapsingHeader(Util::StringFormat("Shading Mode [ %s ]", crtModeName).c_str())) {
-            const auto diffuseSetter = [material](const void* data) {
-                material->baseColour(*(const FColour4*)data);
-            };
+        if (!ImGui::CollapsingHeader(Util::StringFormat("Shading Mode [ %s ]", crtModeName).c_str(), (shadingModeWasOpen ? ImGuiTreeNodeFlags_DefaultOpen : 0u))) {
+            shadingModeWasOpen = false;
+        } else {
+            shadingModeWasOpen = true;
             {
                 static UndoEntry<I32> modeUndo = {};
                 ImGui::PushItemWidth(250);
@@ -1359,8 +1383,7 @@ namespace Divide {
                 ImGui::Separator();
                 ImGui::PushItemWidth(250);
                 FColour4 diffuse = material->getBaseColour(fromTexture, texture);
-                if (Util::colourInput4(_parent, "[Albedo]", diffuse, readOnly, diffuseSetter)) {
-                    diffuseSetter(diffuse._v);
+                if (Util::colourInput4(_parent, "[Albedo]", diffuse, readOnly, [material](const FColour4& col) { material->baseColour(col); })) {
                     ret = true;
                 }
                 ImGui::PopItemWidth();
@@ -1377,15 +1400,62 @@ namespace Divide {
                 }
                 ImGui::Separator();
             }
+            { //Second texture
+                Texture_ptr detailTex = material->getTexture(TextureUsage::UNIT1).lock();
+                const bool ro = detailTex == nullptr;
+                ImGui::PushID(4321234 + id++);
+                if (ro || readOnly) {
+                    PushReadOnly();
+                }
+                if (ImGui::Button("Detail Texture")) {
+                    ret = true;
+                }
+                if (ro || readOnly) {
+                    PopReadOnly();
+                }
+                if (ImGui::IsItemHovered()) {
+                    if (ro) {
+                        ImGui::SetTooltip("No detail texture specified!");
+                    } else {
+                        ImGui::SetTooltip(Util::StringFormat("Preview texture : %s", detailTex->assetName().c_str()).c_str());
+                    }
+                }
+                ImGui::PopID();
+                if (ret && !ro) {
+                    _previewTexture = detailTex.get();
+                }
+            }
+            { //Normal
+                Texture_ptr normalTex = material->getTexture(TextureUsage::NORMALMAP).lock();
+                const bool ro = normalTex == nullptr;
+                ImGui::PushID(4321234 + id++);
+                if (ro || readOnly) {
+                    PushReadOnly();
+                }
+                if (ImGui::Button("Normal Map")) {
+                    ret = true;
+                }
+                if (ro || readOnly) {
+                    PopReadOnly();
+                }
+                if (ImGui::IsItemHovered()) {
+                    if (ro) {
+                        ImGui::SetTooltip("No normal map specified!");
+                    } else {
+                        ImGui::SetTooltip(Util::StringFormat("Preview texture : %s", normalTex->assetName().c_str()).c_str());
+                    }
+                }
+                ImGui::PopID();
+                if (ret && !ro) {
+                    _previewTexture = normalTex.get();
+                }
+            }
             { //Emissive
                 ImGui::Separator();
-                const auto emissiveSetter = [material](const void* data) {
-                    material->emissiveColour(*(const FColour3*)data);
-                };
+
                 ImGui::PushItemWidth(250);
                 FColour3 emissive = material->getEmissive(fromTexture, texture);
-                if (Util::colourInput3(_parent, "[Emissive]", emissive, fromTexture || readOnly, emissiveSetter)) {
-                    emissiveSetter(emissive._v);
+                if (Util::colourInput3(_parent, "[Emissive]", emissive, fromTexture || readOnly, [&material](const FColour3& col) {material->emissiveColour(col);})) {
                     ret = true;
                 }
                 ImGui::PopItemWidth();
@@ -1402,32 +1472,20 @@ namespace Divide {
                 }
                 ImGui::Separator();
             }
-            { // Metallic
+            { //Ambient
                 ImGui::Separator();
-                F32 metallic = material->getMetallic(fromTexture, texture);
-                EditorComponentField tempField = {};
-                tempField._name = "[Metallic]";
-                tempField._basicType = GFX::PushConstantType::FLOAT;
-                tempField._type = EditorComponentFieldType::SLIDER_TYPE;
-                tempField._readOnly = fromTexture || readOnly;
-                if (fromTexture) {
-                    tempField._tooltip = "Control managed by application (e.g. is overriden by a texture)";
+                ImGui::PushItemWidth(250);
+                FColour3 ambient = material->getAmbient(fromTexture, texture);
+                if (Util::colourInput3(_parent, "[Ambient]", ambient, fromTexture || readOnly, [material](const FColour3& colour) { material->ambientColour(colour); })) {
+                    ret = true;
                 }
-                tempField._data = &metallic;
-                tempField._range = { 0.0f, 1.0f };
-                tempField._dataSetter = [material](const void* m) {
-                    material->metallic(*static_cast<const F32*>(m));
-                };
-                
-                ImGui::PushItemWidth(175);
-                ret = processBasicField(tempField) || ret;
                 ImGui::PopItemWidth();
-
-                ImGui::SameLine();
-                ImGui::Text(tempField._name.c_str());
-                ApplyAllButton(id, tempField._readOnly, [&material]() {
+                if (fromTexture && ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Control managed by application (e.g. is overriden by a texture)");
+                }
+                ApplyAllButton(id, fromTexture || readOnly, [&material]() {
                     if (material->baseMaterial() != nullptr) {
-                        material->baseMaterial()->metallic(material->metallic(), true);
+                        material->baseMaterial()->ambientColour(material->ambient(), true);
                     }
                 });
                 if (PreviewTextureButton(id, texture, !fromTexture)) {
@@ -1435,42 +1493,159 @@ namespace Divide {
                 }
                 ImGui::Separator();
             }
-            { // Roughness
-                ImGui::Separator();
-                F32 roughness = material->getRoughness(fromTexture, texture);
-                EditorComponentField tempField = {};
-                tempField._name = "[Roughness]";
-                tempField._basicType = GFX::PushConstantType::FLOAT;
-                tempField._type = EditorComponentFieldType::SLIDER_TYPE;
-                tempField._readOnly = fromTexture || readOnly;
-                if (fromTexture) {
-                    tempField._tooltip = "Control managed by application (e.g. is overriden by a texture)";
+            if (material->shadingMode() != ShadingMode::OREN_NAYAR &&
+                material->shadingMode() != ShadingMode::COOK_TORRANCE) 
+            {
+                FColour4 specular = material->getSpecular(fromTexture, texture);
+
+                { //Specular power
+                    EditorComponentField tempField = {};
+                    tempField._name = "Specular Power";
+                    tempField._basicType = GFX::PushConstantType::FLOAT;
+                    tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                    tempField._readOnly = readOnly;
+                    tempField._data = &specular.a;
+                    tempField._range = { 0.0f, 1000.f };
+                    tempField._dataSetter = [&material](const void* s) {
+                        material->shininess(*static_cast<const F32*>(s));
+                    };
+
+                    ImGui::PushItemWidth(175);
+                    ret = processBasicField(tempField) || ret;
+                    ImGui::PopItemWidth();
+                    ImGui::SameLine();
+                    ImGui::Text(tempField._name.c_str());
+                    ApplyAllButton(id, tempField._readOnly, [&material, &specular]() {
+                        if (material->baseMaterial() != nullptr) {
+                            material->baseMaterial()->shininess(specular.a, true);
+                        }
+                    });
                 }
-                tempField._data = &roughness;
-                tempField._range = { 0.0f, 1.0f };
-                tempField._dataSetter = [material](const void* r) {
-                    material->roughness(*static_cast<const F32*>(r));
-                };
-                ImGui::PushItemWidth(175);
-                ret = processBasicField(tempField) || ret;
-                ImGui::PopItemWidth();
-                ImGui::SameLine();
-                ImGui::Text(tempField._name.c_str());
-                ApplyAllButton(id, tempField._readOnly, [&material]() {
-                    if (material->baseMaterial() != nullptr) {
-                        material->baseMaterial()->roughness(material->roughness(), true);
+                { //Specular colour
+                    ImGui::Separator();
+                    ImGui::PushItemWidth(250);
+                    if (Util::colourInput3(_parent, "[Specular]", specular.rgb, fromTexture || readOnly, [material](const FColour4& col) { material->specularColour(col); })) {
+                        ret = true;
                     }
-                });
-                if (PreviewTextureButton(id, texture, !fromTexture)) {
-                    _previewTexture = texture;
+                    ImGui::PopItemWidth();
+                    if (fromTexture && ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip("Control managed by application (e.g. is overriden by a texture)");
+                    }
+                    ApplyAllButton(id, fromTexture || readOnly, [&material]() {
+                        if (material->baseMaterial() != nullptr) {
+                            material->baseMaterial()->specularColour(material->specular(), true);
+                        }
+                    });
+                    if (PreviewTextureButton(id, texture, !fromTexture)) {
+                        _previewTexture = texture;
+                    }
+                    ImGui::Separator();
                 }
-                ImGui::Separator();
+            } else {
+                { // Metallic
+                    ImGui::Separator();
+                    F32 metallic = material->getMetallic(fromTexture, texture);
+                    EditorComponentField tempField = {};
+                    tempField._name = "Metallic";
+                    tempField._basicType = GFX::PushConstantType::FLOAT;
+                    tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                    tempField._readOnly = fromTexture || readOnly;
+                    if (fromTexture) {
+                        tempField._tooltip = "Control managed by application (e.g. is overriden by a texture)";
+                    }
+                    tempField._data = &metallic;
+                    tempField._range = { 0.0f, 1.0f };
+                    tempField._dataSetter = [material](const void* m) {
+                        material->metallic(*static_cast<const F32*>(m));
+                    };
+
+                    ImGui::PushItemWidth(175);
+                    ret = processBasicField(tempField) || ret;
+                    ImGui::PopItemWidth();
+
+                    ImGui::SameLine();
+                    ImGui::Text(tempField._name.c_str());
+                    ApplyAllButton(id, tempField._readOnly, [&material]() {
+                        if (material->baseMaterial() != nullptr) {
+                            material->baseMaterial()->metallic(material->metallic(), true);
+                        }
+                    });
+                    if (PreviewTextureButton(id, texture, !fromTexture)) {
+                        _previewTexture = texture;
+                    }
+                    ImGui::Separator();
+                }
+                { // Roughness
+                    ImGui::Separator();
+                    F32 roughness = material->getRoughness(fromTexture, texture);
+                    EditorComponentField tempField = {};
+                    tempField._name = "Roughness";
+                    tempField._basicType = GFX::PushConstantType::FLOAT;
+                    tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                    tempField._readOnly = fromTexture || readOnly;
+                    if (fromTexture) {
+                        tempField._tooltip = "Control managed by application (e.g. is overriden by a texture)";
+                    }
+                    tempField._data = &roughness;
+                    tempField._range = { 0.0f, 1.0f };
+                    tempField._dataSetter = [material](const void* r) {
+                        material->roughness(*static_cast<const F32*>(r));
+                    };
+                    ImGui::PushItemWidth(175);
+                    ret = processBasicField(tempField) || ret;
+                    ImGui::PopItemWidth();
+                    ImGui::SameLine();
+                    ImGui::Text(tempField._name.c_str());
+                    ApplyAllButton(id, tempField._readOnly, [&material]() {
+                        if (material->baseMaterial() != nullptr) {
+                            material->baseMaterial()->roughness(material->roughness(), true);
+                        }
+                    });
+                    if (PreviewTextureButton(id, texture, !fromTexture)) {
+                        _previewTexture = texture;
+                    }
+                    ImGui::Separator();
+                }
+
+                { // Occlusion
+                    ImGui::Separator();
+                    F32 occlusion = material->getOcclusion(fromTexture, texture);
+                    EditorComponentField tempField = {};
+                    tempField._name = "Occlusion";
+                    tempField._basicType = GFX::PushConstantType::FLOAT;
+                    tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                    tempField._readOnly = fromTexture || readOnly;
+                    if (fromTexture) {
+                        tempField._tooltip = "Control managed by application (e.g. is overriden by a texture)";
+                    }
+                    tempField._data = &occlusion;
+                    tempField._range = { 0.0f, 1.0f };
+                    tempField._dataSetter = [material](const void* m) {
+                        material->occlusion(*static_cast<const F32*>(m));
+                    };
+
+                    ImGui::PushItemWidth(175);
+                    ret = processBasicField(tempField) || ret;
+                    ImGui::PopItemWidth();
+
+                    ImGui::SameLine();
+                    ImGui::Text(tempField._name.c_str());
+                    ApplyAllButton(id, tempField._readOnly, [&material]() {
+                        if (material->baseMaterial() != nullptr) {
+                            material->baseMaterial()->occlusion(material->occlusion(), true);
+                        }
+                    });
+                    if (PreviewTextureButton(id, texture, !fromTexture)) {
+                        _previewTexture = texture;
+                    }
+                    ImGui::Separator();
+                }
             }
             { // Parallax
                 ImGui::Separator();
                 F32 parallax = material->parallaxFactor();
                 EditorComponentField tempField = {};
-                tempField._name = "[Parallax]";
+                tempField._name = "Parallax";
                 tempField._basicType = GFX::PushConstantType::FLOAT;
                 tempField._type = EditorComponentFieldType::SLIDER_TYPE;
                 tempField._readOnly = readOnly;
@@ -1491,11 +1666,75 @@ namespace Divide {
                 });
                 ImGui::Separator();
             }
+            { // Texture operations
+                const Material::TexOpArray& operations = material->textureOperations();
+                const char* names[] = {
+                    "Tex operation [Albedo - Tex0]",
+                    "Tex operation [(Albedo*Tex0) - Tex1]",
+                    "Tex operation [SpecColour - SpecMap]"
+                };
+
+                static UndoEntry<I32> opUndo = {};
+                for (U8 i = 0; i < 3; ++i) {
+                    const TextureUsage targetTex = i == 0 ? TextureUsage::UNIT0 
+                                                          : i == 1 ? TextureUsage::UNIT1
+                                                                   : TextureUsage::SPECULAR;
+
+                    const bool hasTexture = material->getTexture(targetTex).lock() != nullptr;
+
+                    ImGui::PushID(4321234 + id++);
+                    if (!hasTexture) {
+                        PushReadOnly();
+                    }
+                    const TextureOperation crtOp = operations[to_base(targetTex)];
+                    ImGui::Text(names[i]);
+                    if (ImGui::BeginCombo("", TypeUtil::TextureOperationToString(crtOp), ImGuiComboFlags_PopupAlignLeft)) {
+                        for (U8 n = 0; n < to_U8(TextureOperation::COUNT); ++n) {
+                            const TextureOperation op = static_cast<TextureOperation>(n);
+                            const bool isSelected = op == crtOp;
+
+                            if (ImGui::Selectable(TypeUtil::TextureOperationToString(op), isSelected)) {
+
+                                opUndo._type = GFX::PushConstantType::INT;
+                                opUndo._name = "Tex Operation " + Util::to_string(i);
+                                opUndo._oldVal = to_I32(crtOp);
+                                opUndo._newVal = to_I32(op);
+                                opUndo._dataSetter = [material, targetTex](const I32& data) {
+                                    material->setTextureOperation(targetTex, static_cast<TextureOperation>(data));
+                                };
+                                _context.editor().registerUndoEntry(opUndo);
+                                material->setTextureOperation(targetTex, op);
+                            }
+                            if (isSelected) {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+
+                    ApplyAllButton(id, readOnly, [&material, targetTex, i]() {
+                        if (material->baseMaterial() != nullptr) {
+                            material->baseMaterial()->setTextureOperation(targetTex, material->textureOperations()[to_base(targetTex)], true);
+                        }
+                    });
+                    if (!hasTexture) {
+                        PopReadOnly();
+                        if (ImGui::IsItemHovered()) {
+                            ImGui::SetTooltip("Insuficient input textures for this operation!");
+                        }
+                    }
+                    ImGui::PopID();
+                }
+
+                ImGui::Separator();
+            }
+            bool ignoreTexAlpha = material->ignoreTexDiffuseAlpha();
             bool doubleSided = material->doubleSided();
             bool refractive = material->refractive();
             const bool reflective = material->reflective();
 
-            if (ImGui::Checkbox("[Double Sided]", &doubleSided) && !readOnly) {
+            ImGui::Text("[Double Sided]"); ImGui::SameLine();
+            if (ImGui::ToggleButton("[Double Sided]", &doubleSided) && !readOnly) {
                 RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !doubleSided, doubleSided, "DoubleSided", [material](const bool& oldVal) {
                     material->doubleSided(oldVal);
                 });
@@ -1507,7 +1746,21 @@ namespace Divide {
                     material->baseMaterial()->doubleSided(material->doubleSided(), true);
                 }
             });
-            if (ImGui::Checkbox("[Refractive]", &refractive) && !readOnly) {
+            ImGui::Text("[Ignore texture Alpha]"); ImGui::SameLine();
+            if (ImGui::ToggleButton("[Ignore texture Alpha]", &ignoreTexAlpha) && !readOnly) {
+                RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !ignoreTexAlpha, ignoreTexAlpha, "IgnoretextureAlpha", [material](const bool& oldVal) {
+                    material->ignoreTexDiffuseAlpha(oldVal);
+                });
+                material->ignoreTexDiffuseAlpha(ignoreTexAlpha);
+                ret = true;
+            }
+            ApplyAllButton(id, false, [&material]() {
+                if (material->baseMaterial() != nullptr) {
+                    material->baseMaterial()->ignoreTexDiffuseAlpha(material->ignoreTexDiffuseAlpha(), true);
+                }
+            });
+            ImGui::Text("[Refractive]"); ImGui::SameLine();
+            if (ImGui::ToggleButton("[Refractive]", &refractive) && !readOnly) {
                 RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !refractive, refractive, "Refractive", [material](const bool& oldVal) {
                     material->refractive(oldVal);
                 });
@@ -1537,8 +1790,8 @@ namespace Divide {
 
     bool PropertyWindow::processBasicField(EditorComponentField& field) const {
           const bool isSlider = field._type == EditorComponentFieldType::SLIDER_TYPE &&
-                              field._basicType != GFX::PushConstantType::BOOL &&
-                              !field.isMatrix();
+                                field._basicType != GFX::PushConstantType::BOOL &&
+                                !field.isMatrix();
 
           const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue |
                                             ImGuiInputTextFlags_CharsNoBlank |
@@ -1554,9 +1807,14 @@ namespace Divide {
           switch (field._basicType) {
               case GFX::PushConstantType::BOOL: {
                   static UndoEntry<bool> undo = {};
-
                   bool val = field.get<bool>();
-                  ret = ImGui::Checkbox("", &val);
+                  if (field._type == EditorComponentFieldType::SWITCH_TYPE) {
+                      ImGui::SameLine();
+                      ret = ImGui::ToggleButton("", &val);
+                  } else {
+                      ImGui::SameLine();
+                      ret = ImGui::Checkbox("", &val);
+                  }
                   if (ret && !field._readOnly) {
                       RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !val, val, name, [&field](const bool& oldVal) {
                           field.set(oldVal);

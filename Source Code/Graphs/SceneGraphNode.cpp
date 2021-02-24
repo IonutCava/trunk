@@ -852,46 +852,31 @@ void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
     }
 }
 
-void SceneGraphNode::setFlag(Flags flag, bool recursive) noexcept {
-    const bool hadFlag = hasFlag(flag);
-    if (!hadFlag) {
+void SceneGraphNode::setFlag(const Flags flag, const bool recursive) noexcept {
+    if (!hasFlag(flag)) {
         SetBit(_nodeFlags, to_U32(flag));
-    }
-
-    if (recursive && PropagateFlagToChildren(flag)) {
-        forEachChild([flag, recursive](SceneGraphNode* child, I32 /*childIdx*/) {
-            child->setFlag(flag, recursive);
-            return true;
-        });
-    }
-
-    if (!hadFlag) {
         ECS::CustomEvent evt = {
-            ECS::CustomEvent::Type::EntityFlagChanged,
-            nullptr,
-            to_U32(flag)
+           ECS::CustomEvent::Type::EntityFlagChanged,
+           nullptr,
+           to_U32(flag)
         };
         evt._dataFirst = 1u;
         evt._dataSecond = recursive ? 1u : 0u;
 
         SendEvent(MOV(evt));
     }
-}
-
-void SceneGraphNode::clearFlag(Flags flag, bool recursive) noexcept {
-    const bool hadFlag = hasFlag(flag);
-    if (hadFlag) {
-        ClearBit(_nodeFlags, to_U32(flag));
-    }
 
     if (recursive && PropagateFlagToChildren(flag)) {
         forEachChild([flag, recursive](SceneGraphNode* child, I32 /*childIdx*/) {
-            child->clearFlag(flag, recursive);
+            child->setFlag(flag, true);
             return true;
         });
     }
-    
-    if (hadFlag) {
+}
+
+void SceneGraphNode::clearFlag(const Flags flag, const bool recursive) noexcept {
+    if (hasFlag(flag)) {
+        ClearBit(_nodeFlags, to_U32(flag));
         ECS::CustomEvent evt = {
             ECS::CustomEvent::Type::EntityFlagChanged,
             nullptr,
@@ -901,6 +886,13 @@ void SceneGraphNode::clearFlag(Flags flag, bool recursive) noexcept {
         evt._dataSecond = recursive ? 1u : 0u;
 
         SendEvent(MOV(evt));
+    }
+
+    if (recursive && PropagateFlagToChildren(flag)) {
+        forEachChild([flag, recursive](SceneGraphNode* child, I32 /*childIdx*/) {
+            child->clearFlag(flag, true);
+            return true;
+        });
     }
 }
 

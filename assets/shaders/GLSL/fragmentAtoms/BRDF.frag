@@ -23,40 +23,30 @@
 #endif
 
 #if defined(USE_SHADING_FLAT)
-#define getLightContribution(LoD, A, OMR, N, S) (A * OCCLUSSION(OMR) * getShadowMultiplier(N, LoD));
+#define getLightContribution(Prop, LoD, N, V) (Prop._albedo * Prop._OMR[0] * getShadowMultiplier(N, LoD));
 #else //USE_SHADING_FLAT
-vec3 getLightContribution(in uint LoD, in vec3 albedo, in vec3 OMR, in vec3 normalWV, in vec3 specularColour)
+vec3 getLightContribution(in NodeMaterialProperties properties, in uint LoD, in vec3 N, in vec3 V)
 {
     vec3 ret = vec3(0.f);
-
-    const vec3 viewVec = normalize(VAR._viewDirectionWV);
 
     const LightGrid grid        = lightGrid[GetClusterIndex(gl_FragCoord)];
     const uint dirLightCount    = dvd_LightData.x;
     const uint pointLightCount  = grid.countPoint;
     const uint spotLightCount   = grid.countSpot;
     const uint lightIndexOffset = grid.offset;
+    const float ndv = abs(dot(N, V)) + M_EPSILON;
 
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
         const vec3 lightVec = normalize(-light._directionWV.xyz);
-        const float ndl = GetNdotL(normalWV, lightVec);
+        const float ndl = GetNdotL(N, lightVec);
 #if defined(MAX_SHADOW_MAP_LOD)
         const float shadowMultiplier = LoD > MAX_SHADOW_MAP_LOD ? 1.f : getShadowMultiplierDirectional(light._options.y, TanAcosNdL(ndl));
 #else //MAX_SHADOW_MAP_LOD
         const float shadowMultiplier = getShadowMultiplierDirectional(light._options.y, TanAcosNdL(ndl));
 #endif //MAX_SHADOW_MAP_LOD
         if (shadowMultiplier > M_EPSILON) {
-            const vec3 BRDF = GetBRDF(lightVec,
-                                      viewVec,
-                                      normalWV,
-                                      albedo, 
-                                      specularColour,
-                                      ndl,
-                                      ROUGHNESS(OMR),
-                                      OCCLUSSION(OMR));
-
-            ret += BRDF * light._colour.rgb * shadowMultiplier;
+            ret += GetBRDF(lightVec, V, N, light._colour.rgb, shadowMultiplier, ndl, ndv, properties);
         }
     }
 
@@ -68,7 +58,7 @@ vec3 getLightContribution(in uint LoD, in vec3 albedo, in vec3 OMR, in vec3 norm
         const vec3 lightDir = light._positionWV.xyz - VAR._vertexWV.xyz;
         const vec3 lightVec = normalize(lightDir);
 
-        const float ndl = GetNdotL(normalWV, lightVec);
+        const float ndl = GetNdotL(N, lightVec);
 
 #if defined(MAX_SHADOW_MAP_LOD)
         const float shadowMultiplier = LoD > MAX_SHADOW_MAP_LOD ? 1.f : getShadowMultiplierPoint(light._options.y, TanAcosNdL(ndl));
@@ -80,17 +70,8 @@ vec3 getLightContribution(in uint LoD, in vec3 albedo, in vec3 OMR, in vec3 norm
             const float radiusSQ = SQUARED(light._positionWV.w);
             const float dist = length(lightDir);
             const float att = saturate(1.f - (SQUARED(dist) / radiusSQ));
-
-            const vec3 BRDF = GetBRDF(lightVec,
-                                      viewVec,
-                                      normalWV,
-                                      albedo,
-                                      specularColour,
-                                      ndl,
-                                      ROUGHNESS(OMR),
-                                      OCCLUSSION(OMR));
-
-            ret += BRDF * light._colour.rgb * SQUARED(att) * shadowMultiplier;
+            const float lightAtt = SQUARED(att) * shadowMultiplier;
+            ret += GetBRDF(lightVec, V, N, light._colour.rgb, lightAtt, ndl, ndv, properties);
         }
     }
 
@@ -101,7 +82,7 @@ vec3 getLightContribution(in uint LoD, in vec3 albedo, in vec3 OMR, in vec3 norm
         const vec3 lightDir = light._positionWV.xyz - VAR._vertexWV.xyz;
         const vec3 lightVec = normalize(lightDir);
 
-        const float ndl = GetNdotL(normalWV, lightVec);
+        const float ndl = GetNdotL(N, lightVec);
 
 #if defined(MAX_SHADOW_MAP_LOD)
         const float shadowMultiplier = LoD > MAX_SHADOW_MAP_LOD ? 1.f : getShadowMultiplierSpot(light._options.y, TanAcosNdL(ndl));
@@ -120,17 +101,9 @@ vec3 getLightContribution(in uint LoD, in vec3 albedo, in vec3 OMR, in vec3 norm
             const float dist = length(lightDir);
             const float radius = mix(float(light._SPOT_CONE_SLANT_HEIGHT), light._positionWV.w, 1.f - intensity);
             const float att = saturate(1.0f - (SQUARED(dist) / SQUARED(radius))) * intensity;
+            const float lightAtt = att * shadowMultiplier;
 
-            const vec3 BRDF = GetBRDF(lightVec,
-                                      viewVec,
-                                      normalWV,
-                                      albedo,
-                                      specularColour,
-                                      ndl,
-                                      ROUGHNESS(OMR),
-                                      OCCLUSSION(OMR));
-
-            ret += BRDF * light._colour.rgb * att * shadowMultiplier;
+            ret += GetBRDF(lightVec, V, N, light._colour.rgb, lightAtt, ndl, ndv, properties);
         }
     }
 #endif //!DIRECTIONAL_LIGHT_ONLY
@@ -244,45 +217,50 @@ vec3 CSMSplitColour() {
 #endif //DISABLE_SHADOW_MAPPING
 
 /// returns RGB - pixel lit colour, A - reserved
-vec4 getPixelColour(in uint LoD, in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv, out vec3 SpecularColourOut, out vec3 MetalnessRoughnessProbeID) {
-    const vec3 OMR = getOcclusionMetallicRoughness(materialData, uv);
+vec4 getPixelColour(in uint LoD, in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in float normalVariation, in vec2 uv, out vec3 SpecularColourOut, out vec3 MetalnessRoughnessProbeID) {
+    const vec3 viewVec = normalize(VAR._viewDirectionWV);
 
-#if defined(USE_SHADING_FLAT)
-    SpecularColourOut = vec3(0.f);
-#else //USE_SHADING_FLAT
-    SpecularColourOut = SpecularColour(albedo.rgb, METALLIC(OMR));
-#endif //USE_SHADING_FLAT
+    NodeMaterialProperties materialProperties;
+    initMaterialProperties(materialData, albedo.rgb, uv, viewVec, normalWV, normalVariation, materialProperties);
+    SpecularColourOut = materialProperties._kS;
 
-    MetalnessRoughnessProbeID = vec3(METALLIC(OMR), ROUGHNESS(OMR), float(dvd_probeIndex(materialData)));
+    MetalnessRoughnessProbeID = vec3(materialProperties._OMR[1], materialProperties._OMR[2], float(dvd_probeIndex(materialData)));
+
+    const uint selection = dvd_selectionFlag(materialData);
+    const vec4 overlayCol = vec4(0.f, selection == 1u ? 2.f : 0.f, selection == 2u ? 2.f : 0.f, 0.f);
 
     switch (dvd_materialDebugFlag) {
-        case DEBUG_ALBEDO:         return vec4(albedo.rgb, 1.f);
-        case DEBUG_LIGHTING:       return vec4(getLightContribution(LoD, vec3(1.f), OMR, normalWV, SpecularColourOut), 1.f);
-        case DEBUG_SPECULAR:       return vec4(SpecularColour(albedo.rgb, METALLIC(OMR)), 1.f);
-        case DEBUG_UV:             return vec4(fract(uv), 0.f, 1.f);
-        case DEBUG_EMISSIVE:       return vec4(EmissiveColour(materialData), 1.f);
-        case DEBUG_ROUGHNESS:      return vec4(vec3(ROUGHNESS(OMR)), 1.f);
-        case DEBUG_METALLIC:       return vec4(vec3(METALLIC(OMR)), 1.f);
-        case DEBUG_NORMALS:        return vec4(normalize(mat3(dvd_InverseViewMatrix) * normalWV), 1.f);
-        case DEBUG_TANGENTS:       return vec4(normalize(mat3(dvd_InverseViewMatrix) * getTBNWV()[0]), 1.f);
-        case DEBUG_BITANGENTS:     return vec4(normalize(mat3(dvd_InverseViewMatrix) * getTBNWV()[1]), 1.f);
-        case DEBUG_SHADOW_MAPS:    return vec4(vec3(getShadowMultiplier(normalWV, LoD)), 1.f);
+        case DEBUG_ALBEDO:         return vec4(materialProperties._albedo, 1.f) + overlayCol;
+        case DEBUG_LIGHTING:
+        {
+            materialProperties._albedo = vec3(1.f);
+            return vec4(getLightContribution(materialProperties, LoD, normalWV, viewVec), 1.f) + overlayCol;
+        }
+        case DEBUG_SPECULAR:       return vec4(materialProperties._specular.rgb, 1.f) + overlayCol;
+        case DEBUG_KS:             return vec4(SpecularColourOut, 1.f) + overlayCol;
+        case DEBUG_UV:             return vec4(fract(uv), 0.f, 1.f) + overlayCol;
+        case DEBUG_EMISSIVE:       return vec4(materialProperties._emissive, 1.f) + overlayCol;
+        case DEBUG_ROUGHNESS:      return vec4(vec3(materialProperties._OMR[2]), 1.f) + overlayCol;
+        case DEBUG_METALNESS:      return vec4(vec3(materialProperties._OMR[1]), 1.f) + overlayCol;
+        case DEBUG_NORMALS:        return vec4(normalize(mat3(dvd_InverseViewMatrix) * normalWV), 1.f) + overlayCol;
+        case DEBUG_TANGENTS:       return vec4(normalize(mat3(dvd_InverseViewMatrix) * getTBNWV()[0]), 1.f) + overlayCol;
+        case DEBUG_BITANGENTS:     return vec4(normalize(mat3(dvd_InverseViewMatrix) * getTBNWV()[1]), 1.f) + overlayCol;
+        case DEBUG_SHADOW_MAPS:    return vec4(vec3(getShadowMultiplier(normalWV, LoD)), 1.f) + overlayCol;
 #if defined(MAIN_DISPLAY_PASS)
-        case DEBUG_CSM_SPLITS:     return vec4(CSMSplitColour(), 1.f);
-        case DEBUG_LIGHT_HEATMAP:  return vec4(lightClusterColours(false), 1.f);
-        case DEBUG_DEPTH_CLUSTERS: return vec4(lightClusterColours(true), 1.f);
+        case DEBUG_CSM_SPLITS:     return vec4(CSMSplitColour(), 1.f) + overlayCol;
+        case DEBUG_LIGHT_HEATMAP:  return vec4(lightClusterColours(false), 1.f) + overlayCol;
+        case DEBUG_DEPTH_CLUSTERS: return vec4(lightClusterColours(true), 1.f) + overlayCol;
         case DEBUG_REFRACTIONS:
-        case DEBUG_REFLECTIONS:    return vec4(vec3(0.f), 1.f);
+        case DEBUG_REFLECTIONS:    return vec4(vec3(0.f), 1.f) + overlayCol;
 #endif //MAIN_DISPLAY_PASS
-        case DEBUG_MATERIAL_IDS:   return vec4(turboColormap(float(MATERIAL_IDX + 1) / MAX_CONCURRENT_MATERIALS), 1.f);
+        case DEBUG_MATERIAL_IDS:   return vec4(turboColormap(float(MATERIAL_IDX + 1) / MAX_CONCURRENT_MATERIALS), 1.f) + overlayCol;
     }
 
-    const vec3 oColour = getLightContribution(LoD, albedo.rgb, OMR, normalWV, SpecularColourOut) +
-                         EmissiveColour(materialData);
-
-    return vec4(oColour, albedo.a);
+    const vec3 oColour = getLightContribution(materialProperties, LoD, normalWV, viewVec) + materialProperties._emissive;
+    return vec4(oColour, albedo.a) + overlayCol;
 }
-vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv, out vec3 SpecularColourOut, out vec3 MetalnessRoughnessProbeID) {
-    return getPixelColour(0u, albedo, materialData, normalWV, uv, SpecularColourOut, MetalnessRoughnessProbeID);
+
+vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in float normalVariation, in vec2 uv, out vec3 SpecularColourOut, out vec3 MetalnessRoughnessProbeID) {
+    return getPixelColour(0u, albedo, materialData, normalWV, normalVariation, uv, SpecularColourOut, MetalnessRoughnessProbeID);
 }
 #endif //_BRDF_FRAG_

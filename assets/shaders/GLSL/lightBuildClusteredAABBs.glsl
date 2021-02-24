@@ -10,7 +10,7 @@
 vec4 screen2View(in vec4 screen);
 vec3 lineIntersectionToZPlane(vec3 A, vec3 B, float zDistance);
 
-layout(local_size_x = GRID_SIZE_X_THREADS, local_size_y = GRID_SIZE_Y_THREADS, local_size_z = GRID_SIZE_Z_THREADS) in;
+layout(local_size_x = GRID_SIZE_X, local_size_y = GRID_SIZE_Y, local_size_z = GRID_SIZE_Z_THREADS) in;
 
 void main() {
     //Shared between all clusters

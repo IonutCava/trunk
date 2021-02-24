@@ -2,26 +2,30 @@
 
 #include "Headers/NodeBufferedData.h"
 
-#include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {
     size_t HashMaterialData(const NodeMaterialData& dataIn) noexcept {
         size_t tempHash = 9999991;
         
-        Util::Hash_combine(tempHash, dataIn._albedo.x);
-        Util::Hash_combine(tempHash, dataIn._albedo.y);
-        Util::Hash_combine(tempHash, dataIn._albedo.z);
-        Util::Hash_combine(tempHash, dataIn._albedo.w);
+        Util::Hash_combine(tempHash, dataIn._albedo.x * 255);
+        Util::Hash_combine(tempHash, dataIn._albedo.y * 255);
+        Util::Hash_combine(tempHash, dataIn._albedo.z * 255);
+        Util::Hash_combine(tempHash, dataIn._albedo.w * 255);
 
-        Util::Hash_combine(tempHash, dataIn._emissiveAndParallax.x);
-        Util::Hash_combine(tempHash, dataIn._emissiveAndParallax.y);
-        Util::Hash_combine(tempHash, dataIn._emissiveAndParallax.z);
-        Util::Hash_combine(tempHash, dataIn._emissiveAndParallax.w);
+        Util::Hash_combine(tempHash, dataIn._emissiveAndParallax.x * 255);
+        Util::Hash_combine(tempHash, dataIn._emissiveAndParallax.y * 255);
+        Util::Hash_combine(tempHash, dataIn._emissiveAndParallax.z * 255);
+        Util::Hash_combine(tempHash, dataIn._emissiveAndParallax.w * 255);
 
-        Util::Hash_combine(tempHash, dataIn._data.x);
-        Util::Hash_combine(tempHash, dataIn._data.y);
-        Util::Hash_combine(tempHash, dataIn._data.z);
-        Util::Hash_combine(tempHash, dataIn._data.w);
+        Util::Hash_combine(tempHash, dataIn._colourData.x * 255);
+        Util::Hash_combine(tempHash, dataIn._colourData.y * 255);
+        Util::Hash_combine(tempHash, dataIn._colourData.z * 255);
+        Util::Hash_combine(tempHash, dataIn._colourData.w * 255);
+
+        Util::Hash_combine(tempHash, dataIn._data.x * 255);
+        Util::Hash_combine(tempHash, dataIn._data.y * 255);
+        Util::Hash_combine(tempHash, dataIn._data.z * 255);
+        Util::Hash_combine(tempHash, dataIn._data.w * 255);
         
         return tempHash;
     }

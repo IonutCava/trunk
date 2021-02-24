@@ -126,8 +126,6 @@ namespace Divide {
         void endBatch() override {}
         void clearBatch() override {}
         bool hasBatch() const override { return false; }
-
-        GFX::CommandBuffer& toCommandBuffer() const override { return *_cmdBuffer; }
     };
 
     class noVertexBuffer final : public VertexBuffer {

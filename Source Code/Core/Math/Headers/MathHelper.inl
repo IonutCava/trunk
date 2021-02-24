@@ -152,6 +152,11 @@ namespace Divide {
     }
 
     template <typename T>
+    constexpr void REMAP(T& input, T in_min, T in_max, T out_min, T out_max, D64& slopeOut) noexcept {
+        input = MAP(input, in_min, in_max, out_min, out_max, slopeOut);
+    }
+
+    template <typename T>
     constexpr T SQUARED(T input) noexcept {
         static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be squared!");
         return input * input;

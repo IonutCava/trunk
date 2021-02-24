@@ -35,7 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace ImGui {
 
-    void ToggleButton(const char* str_id, bool* v);
+    bool ToggleButton(const char* str_id, bool* v);
 
 } //namespace ImGui
 

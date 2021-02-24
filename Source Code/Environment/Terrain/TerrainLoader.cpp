@@ -309,7 +309,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
     terrainMaterial->setTexture(TextureUsage::UNIT0, CreateResource<Texture>(terrain->parentResourceCache(), textureAlbedoMaps), albedoHash);
     terrainMaterial->setTexture(TextureUsage::UNIT1, CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps), albedoHash);
     terrainMaterial->setTexture(TextureUsage::PROJECTION, CreateResource<Texture>(terrain->parentResourceCache(), textureExtraMaps), albedoHash);
-    terrainMaterial->setTexture(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics), albedoHash);
+    terrainMaterial->setTexture(TextureUsage::SPECULAR, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics), albedoHash);
     terrainMaterial->setTexture(TextureUsage::HEIGHTMAP, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture), heightSamplerHash);
     terrainMaterial->textureUseForDepth(TextureUsage::HEIGHTMAP, true);
 
@@ -420,7 +420,11 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
             shaderModule._defines.emplace_back("SAMPLER_OPACITY_IS_ARRAY", true);
             shaderModule._defines.emplace_back("SAMPLER_UNIT0_IS_ARRAY", true);
             shaderModule._defines.emplace_back("SAMPLER_PROJECTION_IS_ARRAY", true);
-            shaderModule._defines.emplace_back("SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY", true);
+            shaderModule._defines.emplace_back("SAMPLER_METALNESS_IS_ARRAY", true);
+            shaderModule._defines.emplace_back("SAMPLER_SPECULAR_IS_ARRAY", true);
+            shaderModule._defines.emplace_back("SAMPLER_ROUGHNESS_IS_ARRAY", true);
+            shaderModule._defines.emplace_back("SAMPLER_OCCLUSION_IS_ARRAY", true);
+            shaderModule._defines.emplace_back("SAMPLER_OMR_COMPACT", true);
 
             shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + Util::to_string(tileMapSize), true);
             shaderModule._defines.emplace_back("TERRAIN_HEIGHT_OFFSET " + Util::to_string(altitudeRange.x), true);

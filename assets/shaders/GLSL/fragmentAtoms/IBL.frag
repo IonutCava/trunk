@@ -86,8 +86,4 @@ vec3 GetCubeReflection(in vec3 worldReflect, in vec3 worldNormal, in vec3 worldP
 }
 
 
-vec3 computeFresnelSchlickRoughness(in float NdotV, in vec3 F0, in float roughness) {
-    return F0 + (max(vec3(1.f - roughness), F0) - F0) * pow(1.f - NdotV, 5.f);
-}
-
 #endif //_IMAGE_BASED_LIGHTING_FRAG_

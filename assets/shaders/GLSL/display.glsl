@@ -27,7 +27,7 @@ void main(void){
 
 layout(binding = TEXTURE_UNIT0)     uniform sampler2DMS colourTex;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2DMS velocityTex;
-layout(binding = TEXTURE_HEIGHT)    uniform sampler2DMS matDataTex;
+layout(binding = TEXTURE_HEIGHTMAP) uniform sampler2DMS matDataTex;
 layout(binding = TEXTURE_OPACITY)   uniform sampler2DMS specularDataTex;
 
 layout(location = TARGET_ALBEDO)                    out vec4 _colourOut;

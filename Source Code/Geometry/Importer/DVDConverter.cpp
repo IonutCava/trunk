@@ -36,7 +36,7 @@ namespace {
 
         std::atomic_bool g_wasSetUp = false;
 
-        struct assimpStream final : Assimp::LogStream {
+        struct AssimpStream final : Assimp::LogStream {
             void write(const char* message) override
             {
                 Console::printf("%s\n", message);
@@ -44,7 +44,7 @@ namespace {
         };
 
         // Select the kinds of messages you want to receive on this log stream
-        constexpr U32 severity = Config::Build::IS_DEBUG_BUILD ? Assimp::Logger::VERBOSE : Assimp::Logger::NORMAL;
+        constexpr U32 g_severity = Config::Build::IS_DEBUG_BUILD ? Assimp::Logger::VERBOSE : Assimp::Logger::NORMAL;
 
         constexpr bool g_removeLinesAndPoints = true;
 
@@ -54,7 +54,7 @@ namespace {
         };
 
         /// Recursively creates an internal node structure matching the current scene and animation.
-        Bone* createBoneTree(aiNode* pNode, Bone* parent) {
+        Bone* CreateBoneTree(aiNode* pNode, Bone* parent) {
             Bone* internalNode = MemoryManager_NEW Bone(pNode->mName.data);
             // set the parent; in case this is the root node, it will be null
             internalNode->_parent = parent;
@@ -67,12 +67,11 @@ namespace {
             // children recursively call this function on all children
             for (U32 i = 0; i < pNode->mNumChildren; ++i) {
                 internalNode->_children.push_back(
-                    createBoneTree(pNode->mChildren[i], internalNode));
+                    CreateBoneTree(pNode->mChildren[i], internalNode));
             }
 
             return internalNode;
         }
-
     };
 
     hashMap<U32, TextureWrap> DVDConverter::fillTextureWrapMap() {
@@ -123,13 +122,13 @@ DVDConverter::DVDConverter(PlatformContext& context, Import::ImportData& target,
     bool expected = false;
     if (g_wasSetUp.compare_exchange_strong(expected, true)) {
         Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
-        Assimp::DefaultLogger::get()->attachStream(new assimpStream(), severity);
+        Assimp::DefaultLogger::get()->attachStream(new AssimpStream(), g_severity);
     }
 
     result = load(context, target);
 }
 
-bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
+bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) const {
     const ResourcePath& filePath = target.modelPath();
     const ResourcePath& fileName = target.modelName();
 
@@ -138,9 +137,10 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
     importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, g_removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 0);
     //importer.SetPropertyInteger(AI_CONFIG_IMPORT_FBX_SEARCH_EMBEDDED_TEXTURES, 1);
     importer.SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS, 1);
+    importer.SetPropertyInteger(AI_CONFIG_GLOB_MEASURE_TIME, 1);
     importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
 
-    constexpr U32 ppsteps = aiProcess_CalcTangentSpace |
+    constexpr U32 ppSteps = aiProcess_CalcTangentSpace |
                             aiProcess_JoinIdenticalVertices |
                             aiProcess_ImproveCacheLocality |
                             aiProcess_GenSmoothNormals |
@@ -158,16 +158,24 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
                             aiProcess_OptimizeMeshes |
                             aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
 
-    const aiScene* aiScenePointer = importer.ReadFile((filePath.str() + "/" + fileName.str()).c_str(), ppsteps);
+    const aiScene* aiScenePointer = importer.ReadFile((filePath.str() + "/" + fileName.str()).c_str(), ppSteps);
 
     if (!aiScenePointer) {
         Console::errorfn(Locale::Get(_ID("ERROR_IMPORTER_FILE")), fileName.c_str(), importer.GetErrorString());
         return false;
     }
 
+    GeometryFormat format = GeometryFormat::COUNT;
+    for (const char* extension : g_geometryExtensions) {
+        if (hasExtension(fileName, extension)) {
+            format = GetGeometryFormatForExtension(extension);
+            break;
+        }
+    }
+
     target.hasAnimations(aiScenePointer->HasAnimations());
     if (target.hasAnimations()) {
-        target.skeleton(createBoneTree(aiScenePointer->mRootNode, nullptr));
+        target.skeleton(CreateBoneTree(aiScenePointer->mRootNode, nullptr));
         target._bones.reserve(to_I32(target.skeleton()->hierarchyDepth()));
 
         for (U16 meshPointer = 0; meshPointer < aiScenePointer->mNumMeshes; ++meshPointer) {
@@ -230,17 +238,18 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
                             aiScenePointer,
                             to_U16(currentMesh->mMaterialIndex),
                             Str128(subMeshTemp.name()) + "_material",
+                            format,
                             true);
 
 
         target._subMeshData.push_back(subMeshTemp);
     }
 
-    buildGeometryBuffers(context, target);
+    BuildGeometryBuffers(context, target);
     return true;
 }
 
-void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::ImportData& target) {
+void DVDConverter::BuildGeometryBuffers(PlatformContext& context, Import::ImportData& target) {
     target.vertexBuffer(context.gfx().newVB());
     VertexBuffer* vb = target.vertexBuffer();
 
@@ -258,13 +267,13 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
 
     U32 previousOffset = 0;
     for (U8 lod = 0; lod < Import::MAX_LOD_LEVELS; ++lod) {
-        U8 submeshBoneOffset = 0;
+        U8 subMeshBoneOffset = 0;
         for (Import::SubMeshData& data : target._subMeshData) {
             const size_t idxCount = data._indices[lod].size();
 
             if (idxCount == 0) {
                 assert(lod > 0);
-                submeshBoneOffset += data.boneCount();
+                subMeshBoneOffset += data.boneCount();
                 data._partitionIDs[lod] = data._partitionIDs[lod - 1];
                 continue;
             }
@@ -319,7 +328,7 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
                     Import::SubMeshData::Vertex& vert = vertices[i];
                     P32& boneIndices = vert.indices;
                     for (U8& idx : boneIndices.b) {
-                        idx += submeshBoneOffset;
+                        idx += subMeshBoneOffset;
                     }
 
                     vb->modifyBoneIndices(targetIdx, boneIndices);
@@ -332,7 +341,7 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
                 data.maxPos(importBB.getMax());
             }
 
-            submeshBoneOffset += data.boneCount();
+            subMeshBoneOffset += data.boneCount();
             previousOffset += to_U32(vertices.size());
             data._partitionIDs[lod] = vb->partitionBuffer();
         } //submesh data
@@ -497,294 +506,268 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                                        const aiScene* source,
                                        const U16 materialIndex,
                                        const Str128& materialName,
+                                       const GeometryFormat format,
                                        bool convertHeightToBumpMap) const
 {
 
     const aiMaterial* mat = source->mMaterials[materialIndex];
 
+    // ------------------------------- Part 1: Material properties --------------------------------------------
     material.name(materialName);
+    // Ignored properties: 
+    // - AI_MATKEY_ENABLE_WIREFRAME
+    // - AI_MATKEY_BLEND_FUNC
+    // - AI_MATKEY_REFLECTIVITY
+    // - AI_MATKEY_REFRACTI
+    // - AI_MATKEY_COLOR_TRANSPARENT
+    // - AI_MATKEY_COLOR_REFLECTIVE
+    // - AI_MATKEY_GLOBAL_BACKGROUND_IMAGE
+    // - AI_MATKEY_GLOBAL_SHADERLANG
+    // - AI_MATKEY_SHADER_VERTEX
+    // - AI_MATKEY_SHADER_FRAGMENT
+    // - AI_MATKEY_SHADER_GEO
+    // - AI_MATKEY_SHADER_TESSELATION
+    // - AI_MATKEY_SHADER_PRIMITIVE
+    // - AI_MATKEY_SHADER_COMPUTE
+    // - AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR
+    // - AI_MATKEY_GLTF_ALPHAMODE
+    // - AI_MATKEY_GLTF_ALPHACUTOFF
+    // - AI_MATKEY_GLTF_PBRSPECULARGLOSSINESS
+    // - AI_MATKEY_GLTF_PBRSPECULARGLOSSINESS_GLOSSINESS_FACTOR
 
-    // default shading model
-    I32 shadingModel = to_base(ShadingMode::PHONG);
-    // Load shading model
-    aiGetMaterialInteger(mat, AI_MATKEY_SHADING_MODEL, &shadingModel);
-    material.shadingMode(aiShadingModeInternalTable[shadingModel]);
-
-    // Load material opacity value
-    F32 alpha = 1.0f;
-    aiGetMaterialFloat(mat, AI_MATKEY_OPACITY, &alpha);
-
-    // default diffuse colour
-    material.baseColour(FColour4(0.8f, 0.8f, 0.8f, 1.0f));
-    // Load diffuse colour
-    aiColor4D diffuse;
-    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
-        material.baseColour(FColour4(diffuse.r, diffuse.g, diffuse.b, alpha));
-    } else {
-        Console::d_printfn(Locale::Get(_ID("MATERIAL_NO_DIFFUSE")), materialName.c_str());
-    }
-
-    // default emissive colour
-    material.emissive(FColour3(0.0f, 0.0f, 0.0f));
-    // Load emissive colour
-    aiColor4D emissive;
-    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_EMISSIVE, &emissive)) {
-        material.emissive(FColour3(emissive.r, emissive.g, emissive.b));
-    }
-
-    // Ignore ambient colour
-    vec4<F32> ambientTemp(0.0f, 0.0f, 0.0f, 1.0f);
-    aiColor4D ambient;
-    if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT, &ambient)) {
-        ambientTemp.set(&ambient.r);
-    } else {
-        // no ambient
-    }
-
-    // Default shininess values
-    F32 roughness = 0.0f, metallic = 0.0f;
-    // Load shininess
-    if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, &metallic)) {
-        material.metallic(metallic);
-    } else {
-    }
-
-    F32 bumpScalling = 0.0f;
-    if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_BUMPSCALING, &bumpScalling)) {
-        material.parallaxFactor(bumpScalling);
-    }
-    
-    if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, &roughness)) {
-        material.roughness(roughness);
-    } else {
-        // Load specular colour as a hack :/
-        aiColor4D specular;
-        if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &specular)) {
-            material.roughness(1.0f - CLAMPED_01(FColour3(specular.r, specular.g, specular.b).maxComponent()));
+    { // Load shading mode
+        // The default shading model should be set to the classic SpecGloss Phong
+        I32 shadingModel = 0, unlit = 0, flags = 0;
+        if (AI_SUCCESS == aiGetMaterialInteger(mat, AI_MATKEY_GLTF_UNLIT, &unlit) && unlit == 1) {
+            material.shadingMode(ShadingMode::FLAT);
+        } else if (AI_SUCCESS == aiGetMaterialInteger(mat, AI_MATKEY_SHADING_MODEL, &shadingModel)) {
+            material.shadingMode(aiShadingModeInternalTable[shadingModel]);
         } else {
-            F32 shininess = 0.f, strength = 1.f;
-            if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_SHININESS_STRENGTH, &strength) &&
-                AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_SHININESS, &shininess)) {
-                F32 temp = CLAMPED(shininess * strength, 0.f, 128.f);
-                if (temp > 1.f) {
-                    temp /= 128.0f;
-                }
-
-                material.roughness(1.0f - CLAMPED_01(temp));
-            }
+            material.shadingMode(ShadingMode::BLINN_PHONG);
+        }
+        aiGetMaterialInteger(mat, AI_MATKEY_TEXFLAGS_DIFFUSE(0), &flags);
+        const bool hasIgnoreAlphaFlag = (flags & aiTextureFlags_IgnoreAlpha) != 0;
+        if (hasIgnoreAlphaFlag) {
+            material.ignoreTexDiffuseAlpha(true);
+        }
+        const bool hasUseAlphaFlag = (flags & aiTextureFlags_UseAlpha) != 0;
+        if (hasUseAlphaFlag) {
+            material.ignoreTexDiffuseAlpha(false);
         }
     }
 
-       
-    // check if material is two sided
-    I32 two_sided = 0;
-    aiGetMaterialInteger(mat, AI_MATKEY_TWOSIDED, &two_sided);
-    material.doubleSided(two_sided != 0);
+    {// Load diffuse colour
+        material.baseColour(FColour4(0.8f, 0.8f, 0.8f, 1.f));
+        aiColor4D diffuse;
+        if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
+            material.baseColour(FColour4(diffuse.r, diffuse.g, diffuse.b, diffuse.a));
+        } else {
+            Console::d_printfn(Locale::Get(_ID("MATERIAL_NO_DIFFUSE")), materialName.c_str());
+        }
+        // Load material opacity value. Shouldn't really be used since we can use opacity maps for this
+        F32 alpha = 1.0f;
+        bool set = false;
+
+        if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_OPACITY, &alpha)) {
+            set = true;
+        } else  if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_TRANSPARENCYFACTOR, &alpha)) {
+            alpha = 1.f - alpha;
+            set = true;
+        }
+
+        if (set && alpha > 0.f && alpha < 1.f) {
+            FColour4 base = material.baseColour();
+            base.a *= alpha;
+            material.baseColour(base);
+        }
+    }
+
+    F32 specStrength = 1.f;
+    { // Load specular colour
+        F32 specShininess = 0.f;
+        aiGetMaterialFloat(mat, AI_MATKEY_SHININESS_STRENGTH, &specStrength);
+
+
+        if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_SHININESS, &specShininess)) {
+            // Adjust shininess range here so that it always maps to the range [0,1000]
+            switch (format) {
+                case GeometryFormat::_3DS:
+                case GeometryFormat::ASE:
+                case GeometryFormat::FBX:  specShininess *= 10.f;                         break; // percentage (0-100%)
+                case GeometryFormat::OBJ:  specShininess /= 4.f;                          break; // 4000.f
+                case GeometryFormat::DAE:  REMAP(specShininess, 0.f, 511.f, 0.f, 1000.f); break; // 511.f
+                case GeometryFormat::X:    specShininess = 1000.f;                        break; //no supported. 0 = gouraud shading
+            };
+            CLAMP(specShininess, 0.f, 1000.f);
+        }
+
+        material.specular({ specStrength, specStrength, specStrength, specShininess });
+
+        aiColor4D specular;
+        if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &specular)) {
+            material.specular({ specular.r * specStrength, specular.g * specStrength, specular.b * specStrength, specShininess });
+        }
+    }
+    { // Load emissive colour
+        material.emissive(FColour3(0.f, 0.f, 0.f));
+        // Load emissive colour
+        aiColor4D emissive;
+        if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_EMISSIVE, &emissive)) {
+            material.emissive(FColour3(emissive.r, emissive.g, emissive.b));
+        }
+    }
+    { // Load ambient colour
+        material.ambient(FColour3(0.f, 0.f, 0.f));
+        aiColor4D ambient;
+        if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT, &ambient)) {
+            // Don't use this. Set it manually in the editor!
+            //material.ambient(FColour3(ambient.r, ambient.g, ambient.b));
+        }
+    }
+    { // Load metallic & roughness
+        material.metallic(0.f);
+        material.roughness(1.f);
+
+        F32 roughness = 0.f, metallic = 0.f;
+        // Load metallic
+        if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, &metallic)) {
+            material.metallic(metallic);
+        }
+        // Load roughness
+        if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, &roughness)) {
+            material.roughness(roughness);
+        }
+    }
+    { // Other material properties
+        F32 bumpScaling = 0.0f;
+        if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_BUMPSCALING, &bumpScaling)) {
+            material.parallaxFactor(bumpScaling);
+        }
+
+        I32 twoSided = 0;
+        aiGetMaterialInteger(mat, AI_MATKEY_TWOSIDED, &twoSided);
+        material.doubleSided(twoSided != 0);
+    }
 
     aiString tName;
     aiTextureMapping mapping = aiTextureMapping_OTHER;
     U32 uvInd = 0;
     F32 blend = 0.0f;
     aiTextureOp op = aiTextureOp_Multiply;
-    aiTextureMapMode mode[3] = {_aiTextureMapMode_Force32Bit,
-                                _aiTextureMapMode_Force32Bit,
-                                _aiTextureMapMode_Force32Bit};
+    aiTextureMapMode mode[3] = { _aiTextureMapMode_Force32Bit,
+                                 _aiTextureMapMode_Force32Bit,
+                                 _aiTextureMapMode_Force32Bit };
 
-    U8 count = 0;
-    // Compare load results with the standard success value
-    aiReturn result = AI_SUCCESS;
-    // While we still have diffuse textures
-    while (result == AI_SUCCESS) {
-        // Load each one
-        result = mat->GetTexture(aiTextureType_DIFFUSE, count, &tName, &mapping, &uvInd, &blend, &op, mode);
-
-        if (result != AI_SUCCESS) {
-            break;
-        }
-        if (tName.length == 0) {
-            break;
-        }
+    const auto loadTexture = [&material](const TextureUsage usage, TextureOperation texOp, const aiString& name, aiTextureMapMode* wrapMode, const bool srgb = false) {
+        DIVIDE_ASSERT(name.length > 0);
 
         // it might be an embedded texture
-        /*const aiTexture* texture = mat->GetEmbeddedTexture(tName.C_Str());
-        
+        /*const aiTexture* texture = mat->GetEmbeddedTexture(name.C_Str());
+
         if (texture != nullptr )
         {
         }*/
-
-        // get full path
-        const ResourcePath path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
-
+        const ResourcePath path(Paths::g_assetsLocation + Paths::g_texturesLocation + name.C_Str());
         auto [img_name, img_path] = splitPathToNameAndLocation(path);
 
         // if we have a name and an extension
         if (!img_name.str().substr(img_name.str().find_first_of('.'), Str64::npos).empty()) {
-
-            const TextureUsage usage = count == 1 ? TextureUsage::UNIT1
-                                                                 : TextureUsage::UNIT0;
-
-            Import::TextureEntry& texture = material._textures[to_U32(usage)];
-
+            Import::TextureEntry& texture = material._textures[to_base(usage)];
             // Load the texture resource
-            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
-            {
-                texture.wrapU(aiTextureMapModeTable[mode[0]]);
-                texture.wrapV(aiTextureMapModeTable[mode[1]]);
-                texture.wrapW(aiTextureMapModeTable[mode[2]]);
+            if (IS_IN_RANGE_INCLUSIVE(wrapMode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(wrapMode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(wrapMode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal)) {
+                texture.wrapU(aiTextureMapModeTable[wrapMode[0]]);
+                texture.wrapV(aiTextureMapModeTable[wrapMode[1]]);
+                texture.wrapW(aiTextureMapModeTable[wrapMode[2]]);
             }
 
             texture.textureName(img_name);
             texture.texturePath(img_path);
-            // The first texture is always "Replace"
-            texture.operation(count == 0 ? TextureOperation::NONE
-                                         : aiTextureOperationTable[op]);
-            texture.srgb(true);
-            material._textures[to_U32(usage)] = texture;
-                                                                
-        }  // endif
-
-        tName.Clear();
-        count++;
-        if (count == 2) {
-            break;
+            texture.operation(texOp);
+            texture.srgb(srgb);
+            material._textures[to_base(usage)] = texture;
         }
+    };
 
-        STUBBED("ToDo: Use more than 2 textures for each material. Fix This! -Ionut")
-    }  // endwhile
-
+    // ------------------------------- Part 2: PBR or legacy material textures -------------------------------------
+    { // Albedo map
+        if (AI_SUCCESS == mat->GetTexture(aiTextureType_BASE_COLOR, 0, &tName, &mapping, &uvInd, &blend, &op, mode) ||
+            AI_SUCCESS == mat->GetTexture(aiTextureType_DIFFUSE, 0, &tName, &mapping, &uvInd, &blend, &op, mode)) 
+        {
+            // The first texture operation defines how we should mix the diffuse colour with the texture itself
+            loadTexture(TextureUsage::UNIT0, aiTextureOperationTable[op], tName, mode, true);
+        }
+    }
+    { // Detail map
+        if (AI_SUCCESS == mat->GetTexture(aiTextureType_BASE_COLOR, 1, &tName, &mapping, &uvInd, &blend, &op, mode) ||
+            AI_SUCCESS == mat->GetTexture(aiTextureType_DIFFUSE, 1, &tName, &mapping, &uvInd, &blend, &op, mode)) 
+        {
+            // The second operation is how we mix the albedo generated from the diffuse and Tex0 with this texture
+            loadTexture(TextureUsage::UNIT1, aiTextureOperationTable[op], tName, mode, true);
+        }
+    }
+    { // Validation
+        if (AI_SUCCESS == mat->GetTexture(aiTextureType_BASE_COLOR, 2, &tName, &mapping, &uvInd, &blend, &op, mode) ||
+            AI_SUCCESS == mat->GetTexture(aiTextureType_DIFFUSE, 2, &tName, &mapping, &uvInd, &blend, &op, mode)) {
+            Console::errorfn(Locale::Get(_ID("MATERIAL_EXTRA_DIFFUSE")), materialName.c_str());
+        }
+    }
     bool hasNormalMap = false;
-    result = mat->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
-    if (result == AI_SUCCESS) {
-        const ResourcePath path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
-
-        auto [img_name, img_path] = splitPathToNameAndLocation(path);
-
-        Import::TextureEntry& texture = material._textures[to_base(TextureUsage::NORMALMAP)];
-
-        if (img_name.str().rfind('.') != Str64::npos) {
-            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
-            {
-                texture.wrapU(aiTextureMapModeTable[mode[0]]);
-                texture.wrapV(aiTextureMapModeTable[mode[1]]);
-                texture.wrapW(aiTextureMapModeTable[mode[2]]);
-            }
-            texture.textureName(img_name);
-            texture.texturePath(img_path);
-            texture.operation(aiTextureOperationTable[op]);
-            texture.srgb(false);
-
-            material._textures[to_base(TextureUsage::NORMALMAP)] = texture;
+    { // Normal map
+        if (AI_SUCCESS == mat->GetTexture(aiTextureType_NORMAL_CAMERA, 0, &tName, &mapping, &uvInd, &blend, &op, mode) ||
+            AI_SUCCESS == mat->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode)) 
+        {
+            loadTexture(TextureUsage::NORMALMAP, aiTextureOperationTable[op], tName, mode);
             material.bumpMethod(BumpMethod::NORMAL);
             hasNormalMap = true;
-        }  // endif
-    } // endif
-
-    result = mat->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping,&uvInd, &blend, &op, mode);
-
-    if (result == AI_SUCCESS) {
-        const ResourcePath path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
-
-        auto [img_name, img_path] = splitPathToNameAndLocation(path);
-
-        Import::TextureEntry& texture = material._textures[to_base(TextureUsage::HEIGHTMAP)];
-        if (img_name.str().rfind('.') != Str64::npos) {
-            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
-            {
-                texture.wrapU(aiTextureMapModeTable[mode[0]]);
-                texture.wrapV(aiTextureMapModeTable[mode[1]]);
-                texture.wrapW(aiTextureMapModeTable[mode[2]]);
-            }
-            texture.textureName(img_name);
-            texture.texturePath(img_path);
-            texture.operation(aiTextureOperationTable[op]);
-            texture.srgb(false);
+        }
+    }
+    { // Height map or Displacement map. Just one here that acts as a parallax map. Height can act as a backup normalmap as well
+        if (AI_SUCCESS == mat->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode)) {
             if (convertHeightToBumpMap && !hasNormalMap) {
-                material._textures[to_base(TextureUsage::NORMALMAP)] = texture;
+                loadTexture(TextureUsage::NORMALMAP, aiTextureOperationTable[op], tName, mode);
                 material.bumpMethod(BumpMethod::NORMAL);
                 hasNormalMap = true;
             } else {
-                material._textures[to_base(TextureUsage::HEIGHTMAP)] = texture;
+                loadTexture(TextureUsage::HEIGHTMAP, aiTextureOperationTable[op], tName, mode);
                 material.bumpMethod(BumpMethod::PARALLAX);
             }
-        }  // endif
-    } // endif
+        }
 
-    I32 flags = 0;
-    aiGetMaterialInteger(mat, AI_MATKEY_TEXFLAGS_DIFFUSE(0), &flags);
-    material.ignoreAlpha((flags & aiTextureFlags_IgnoreAlpha) != 0);
-
-    if (!material.ignoreAlpha()) {
-        result = mat->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
-        if (result == AI_SUCCESS) {
-            const ResourcePath path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
-
-            auto [img_name, img_path] = splitPathToNameAndLocation(path);
-
-            Import::TextureEntry& texture = material._textures[to_base(TextureUsage::OPACITY)];
-
-            if (img_name.str().rfind('.') != Str64::npos) {
-                if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
-                    IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
-                    IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
-                {
-                    texture.wrapU(aiTextureMapModeTable[mode[0]]);
-                    texture.wrapV(aiTextureMapModeTable[mode[1]]);
-                    texture.wrapW(aiTextureMapModeTable[mode[2]]);
-                }
-                texture.textureName(img_name);
-                texture.texturePath(img_path);
-                texture.operation(aiTextureOperationTable[op]);
-                texture.srgb(false);
-                material.doubleSided(true);
-                material._textures[to_base(TextureUsage::OPACITY)] = texture;
-            }  // endif
-        } 
-    }
-
-    constexpr aiTextureType specularSource[] = {
-        aiTextureType_METALNESS,
-        aiTextureType_DIFFUSE_ROUGHNESS,
-        aiTextureType_AMBIENT_OCCLUSION,
-        aiTextureType_SPECULAR
-    };
-
-    result = mat->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, &tName, &mapping, &uvInd, &blend, &op, mode);
-    if (result != AI_SUCCESS) {
-        for (aiTextureType t : specularSource) {
-            result = mat->GetTexture(t, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
-            if (result == AI_SUCCESS) {
-                break;
-            }
+        if (AI_SUCCESS == mat->GetTexture(aiTextureType_DISPLACEMENT, 0, &tName, &mapping, &uvInd, &blend, &op, mode)) {
+            loadTexture(TextureUsage::HEIGHTMAP, aiTextureOperationTable[op], tName, mode);
+            material.bumpMethod(BumpMethod::PARALLAX);
         }
     }
-    if (result == AI_SUCCESS) {
-        const ResourcePath path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
-
-        auto [img_name, img_path] = splitPathToNameAndLocation(path);
-
-        Import::TextureEntry& texture = material._textures[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
-        if (img_name.str().rfind('.') != Str64::npos) {
-            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal)) {
-                texture.wrapU(aiTextureMapModeTable[mode[0]]);
-                texture.wrapV(aiTextureMapModeTable[mode[1]]);
-                texture.wrapW(aiTextureMapModeTable[mode[2]]);
-            }
-            texture.textureName(img_name);
-            texture.texturePath(img_path);
-            texture.operation(aiTextureOperationTable[op]);
-            texture.srgb(false);
-
-            material._textures[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)] = texture;
+    { // Opacity map
+        if (AI_SUCCESS == mat->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode)) {
+            loadTexture(TextureUsage::OPACITY, aiTextureOperationTable[op], tName, mode);
         }
     }
+    { // Specular map
+        if (AI_SUCCESS == mat->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping, &uvInd, &blend, &op, mode)) {
+            loadTexture(TextureUsage::SPECULAR, aiTextureOperationTable[op], tName, mode);
+            // Undo the spec colour and leave only the strength component in!
+            material.specular({ specStrength, specStrength, specStrength, material.specular().a });
+        }
+    }
+    { // Emissive map
+        if (AI_SUCCESS == mat->GetTexture(aiTextureType_EMISSIVE, 0, &tName, &mapping, &uvInd, &blend, &op, mode) ||
+            AI_SUCCESS == mat->GetTexture(aiTextureType_EMISSION_COLOR, 0, &tName, &mapping, &uvInd, &blend, &op, mode)) {
+            loadTexture(TextureUsage::EMISSIVE, aiTextureOperationTable[op], tName, mode);
+        }
+    }
+    if (AI_SUCCESS == mat->GetTexture(aiTextureType_METALNESS, 0, &tName, &mapping, &uvInd, &blend, &op, mode)) {
+        loadTexture(TextureUsage::METALNESS, aiTextureOperationTable[op], tName, mode);
+    }
+    if (AI_SUCCESS == mat->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &tName, &mapping, &uvInd, &blend, &op, mode)) {
+        loadTexture(TextureUsage::ROUGHNESS, aiTextureOperationTable[op], tName, mode);
+    }
+    if (AI_SUCCESS == mat->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &tName, &mapping, &uvInd, &blend, &op, mode)) {
+        loadTexture(TextureUsage::OCCLUSION, aiTextureOperationTable[op], tName, mode);
+    }
+
 }
 
 };

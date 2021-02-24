@@ -2,8 +2,8 @@
 
 #include "Headers/SSRPreRenderOperator.h"
 
-
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/Configuration.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/SceneManager.h"
@@ -18,8 +18,6 @@ namespace Divide {
 SSRPreRenderOperator::SSRPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
     : PreRenderOperator(context, parent, FilterType::FILTER_SS_REFLECTIONS)
 {
-    STUBBED("ToDo: Save SSR Parameters to disk!");
-
     SamplerDescriptor screenSampler = {};
     screenSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.minFilter(TextureFilter::LINEAR);
@@ -62,7 +60,7 @@ SSRPreRenderOperator::SSRPreRenderOperator(GFXDevice& context, PreRenderBatch& p
        0.f, 0.f, 1.f, 0.f,
        s.x, s.y, 0.f, 1.f
     };
-    parameters(_parameters);
+    parametersChanged();
 }
 
 bool SSRPreRenderOperator::ready() const {
@@ -73,18 +71,19 @@ bool SSRPreRenderOperator::ready() const {
     return false;
 }
 
-void SSRPreRenderOperator::parameters(const Parameters& params) noexcept {
-    _parameters = params;
-    _constants.set(_ID("maxSteps"), GFX::PushConstantType::FLOAT, to_F32(_parameters._maxSteps));
-    _constants.set(_ID("binarySearchIterations"), GFX::PushConstantType::FLOAT, to_F32(_parameters._binarySearchIterations));
-    _constants.set(_ID("jitterAmount"), GFX::PushConstantType::FLOAT, _parameters._jitterAmount);
-    _constants.set(_ID("maxDistance"), GFX::PushConstantType::FLOAT, _parameters._maxDistance);
-    _constants.set(_ID("stride"), GFX::PushConstantType::FLOAT, _parameters._stride);
-    _constants.set(_ID("zThickness"), GFX::PushConstantType::FLOAT, _parameters._zThickness);
-    _constants.set(_ID("strideZCutoff"), GFX::PushConstantType::FLOAT, _parameters._strideZCutoff);
-    _constants.set(_ID("screenEdgeFadeStart"), GFX::PushConstantType::FLOAT, _parameters._screenEdgeFadeStart);
-    _constants.set(_ID("eyeFadeStart"), GFX::PushConstantType::FLOAT, _parameters._eyeFadeStart);
-    _constants.set(_ID("eyeFadeEnd"), GFX::PushConstantType::FLOAT, _parameters._eyeFadeEnd);
+void SSRPreRenderOperator::parametersChanged() noexcept {
+
+    const auto& parameters = _context.context().config().rendering.postFX.ssr;
+    _constants.set(_ID("maxSteps"), GFX::PushConstantType::FLOAT, to_F32(parameters.maxSteps));
+    _constants.set(_ID("binarySearchIterations"), GFX::PushConstantType::FLOAT, to_F32(parameters.binarySearchIterations));
+    _constants.set(_ID("jitterAmount"), GFX::PushConstantType::FLOAT, parameters.jitterAmount);
+    _constants.set(_ID("maxDistance"), GFX::PushConstantType::FLOAT, parameters.maxDistance);
+    _constants.set(_ID("stride"), GFX::PushConstantType::FLOAT, parameters.stride);
+    _constants.set(_ID("zThickness"), GFX::PushConstantType::FLOAT, parameters.zThickness);
+    _constants.set(_ID("strideZCutoff"), GFX::PushConstantType::FLOAT, parameters.strideZCutoff);
+    _constants.set(_ID("screenEdgeFadeStart"), GFX::PushConstantType::FLOAT, parameters.screenEdgeFadeStart);
+    _constants.set(_ID("eyeFadeStart"), GFX::PushConstantType::FLOAT, parameters.eyeFadeStart);
+    _constants.set(_ID("eyeFadeEnd"), GFX::PushConstantType::FLOAT, parameters.eyeFadeEnd);
     _constantsDirty = true;
 }
 

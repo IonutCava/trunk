@@ -54,7 +54,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode* sgn, PlatformContext& context)
     vbbField._name = "Show AABB";
     vbbField._dataGetter = [this](void* dataOut) { *static_cast<bool*>(dataOut) = _showAABB; };
     vbbField._dataSetter = [this](const void* data) { showAABB(*static_cast<const bool*>(data)); };
-    vbbField._type = EditorComponentFieldType::PUSH_TYPE;
+    vbbField._type = EditorComponentFieldType::SWITCH_TYPE;
     vbbField._basicType = GFX::PushConstantType::BOOL;
     vbbField._readOnly = false;
 
@@ -64,7 +64,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode* sgn, PlatformContext& context)
     vbsField._name = "Show Bounding Sphere";
     vbsField._dataGetter = [this](void* dataOut) { *static_cast<bool*>(dataOut) = _showBS; };
     vbsField._dataSetter = [this](const void* data) { showBS(*static_cast<const bool*>(data)); };
-    vbsField._type = EditorComponentFieldType::PUSH_TYPE;
+    vbsField._type = EditorComponentFieldType::SWITCH_TYPE;
     vbsField._basicType = GFX::PushConstantType::BOOL;
     vbsField._readOnly = false;
     _editorComponent.registerField(MOV(vbsField));

@@ -23,6 +23,44 @@ namespace {
     const char* g_parsedAssetAnimationExt = "DVDAnim";
 };
 
+GeometryFormat GetGeometryFormatForExtension(const char* extension) {
+    if (Util::CompareIgnoreCase(extension, "3ds")) {
+        return GeometryFormat::_3DS;
+    }
+    if (Util::CompareIgnoreCase(extension, "ase")) {
+        return GeometryFormat::ASE;
+    }
+    if (Util::CompareIgnoreCase(extension, "fbx")) {
+        return GeometryFormat::FBX;
+    }
+    if (Util::CompareIgnoreCase(extension, "md2")) {
+        return GeometryFormat::MD2;
+    }
+    if (Util::CompareIgnoreCase(extension, "md5mesh")) {
+        return GeometryFormat::MD5;
+    }
+    if (Util::CompareIgnoreCase(extension, "obj")) {
+        return GeometryFormat::OBJ;
+    }
+    if (Util::CompareIgnoreCase(extension, "x")) {
+        return GeometryFormat::X;
+    }
+    if (Util::CompareIgnoreCase(extension, "dae")) {
+        return GeometryFormat::DAE;
+    }
+    if (Util::CompareIgnoreCase(extension, "gltf") ||
+        Util::CompareIgnoreCase(extension, "glb")) {
+        return GeometryFormat::GLTF;
+    }
+    if (Util::CompareIgnoreCase(extension, "DVDAnim")) {
+        return GeometryFormat::DVD_ANIM;
+    }
+    if (Util::CompareIgnoreCase(extension, "DVDGeom")) {
+        return GeometryFormat::DVD_GEOM;
+    }
+    return GeometryFormat::COUNT;
+}
+
 namespace Import {
     bool ImportData::saveToFile(PlatformContext& context, const ResourcePath& path, const ResourcePath& fileName) {
         ACKNOWLEDGE_UNUSED(context);
@@ -103,16 +141,18 @@ namespace Import {
     }
 
     bool MaterialData::serialize(ByteBuffer& dataOut) const {
-        dataOut << _ignoreAlpha;
+        dataOut << _ignoreTexDiffuseAlpha;
         dataOut << _doubleSided;
-        dataOut << _name;
+        dataOut << stringImpl(_name.c_str());
+        dataOut << to_U32(_shadingMode);
+        dataOut << to_U32(_bumpMethod);
         dataOut << baseColour();
         dataOut << emissive();
+        dataOut << ambient();
+        dataOut << specular();
         dataOut << CLAMPED_01(metallic());
         dataOut << CLAMPED_01(roughness());
         dataOut << CLAMPED_01(parallaxFactor());
-        dataOut << to_U32(_shadingMode);
-        dataOut << to_U32(_bumpMethod);
         for (const TextureEntry& texture : _textures) {
             if (!texture.serialize(dataOut)) {
                 //handle error
@@ -124,27 +164,24 @@ namespace Import {
     }
 
     bool MaterialData::deserialize(ByteBuffer& dataIn) {
-        dataIn >> _ignoreAlpha;
+        FColour3 tempColourRGB = {};
+        FColour4 tempColourRGBA = {};
+        stringImpl tempStr = "";
+        U32 temp = {};
+        F32 temp2 = {};
+
+        dataIn >> _ignoreTexDiffuseAlpha;
         dataIn >> _doubleSided;
-        dataIn >> _name;
-        FColour4 tempBase = {};
-        dataIn >> tempBase;
-        baseColour(tempBase);
-        FColour3 tempEmissive = {};
-        dataIn >> tempEmissive;
-        emissive(tempEmissive);
-        F32 temp = {};
-        dataIn >> temp;
-        metallic(temp);
-        dataIn >> temp;
-        roughness(temp);
-        dataIn >> temp;
-        parallaxFactor(temp);
-        U32 temp2 = {};
-        dataIn >> temp2;
-        _shadingMode = static_cast<ShadingMode>(temp2);
-        dataIn >> temp2;
-        _bumpMethod = static_cast<BumpMethod>(temp2);
+        dataIn >> tempStr; _name = tempStr.c_str();
+        dataIn >> temp; _shadingMode = static_cast<ShadingMode>(temp);
+        dataIn >> temp; _bumpMethod = static_cast<BumpMethod>(temp);
+        dataIn >> tempColourRGBA; baseColour(tempColourRGBA);
+        dataIn >> tempColourRGB;  emissive(tempColourRGB);
+        dataIn >> tempColourRGB;  ambient(tempColourRGB);
+        dataIn >> tempColourRGBA; specular(tempColourRGBA);
+        dataIn >> temp2; metallic(temp2);
+        dataIn >> temp2; roughness(temp2);
+        dataIn >> temp2; parallaxFactor(temp2);
         for (TextureEntry& texture : _textures) {
             if (!texture.deserialize(dataIn)) {
                 //handle error
@@ -167,18 +204,14 @@ namespace Import {
     }
 
     bool TextureEntry::deserialize(ByteBuffer& dataIn) {
-        U32 data = 0;
+        U32 data = 0u;
         dataIn >> _textureName;
         dataIn >> _texturePath;
         dataIn >> _srgb;
-        dataIn >> data;
-        _wrapU = static_cast<TextureWrap>(data);
-        dataIn >> data;
-        _wrapV = static_cast<TextureWrap>(data);
-        dataIn >> data;
-        _wrapW = static_cast<TextureWrap>(data);
-        dataIn >> data;
-        _operation = static_cast<TextureOperation>(data);
+        dataIn >> data; _wrapU = static_cast<TextureWrap>(data);
+        dataIn >> data; _wrapV = static_cast<TextureWrap>(data);
+        dataIn >> data; _wrapW = static_cast<TextureWrap>(data);
+        dataIn >> data; _operation = static_cast<TextureOperation>(data);
         return true;
     }
 };
@@ -191,6 +224,8 @@ namespace Import {
             Console::printfn(Locale::Get(_ID("MESH_NOT_LOADED_FROM_FILE")), dataOut.modelName().c_str());
 
             const DVDConverter converter(context, dataOut, success);
+            ACKNOWLEDGE_UNUSED(converter);
+
             if (success) {
                 if (dataOut.saveToFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, dataOut.modelName())) {
                     Console::printfn(Locale::Get(_ID("MESH_SAVED_TO_FILE")), dataOut.modelName().c_str());
@@ -200,6 +235,7 @@ namespace Import {
             }
         } else {
             Console::printfn(Locale::Get(_ID("MESH_LOADED_FROM_FILE")), dataOut.modelName().c_str());
+            dataOut.fromFile(true);
             success = true;
         }
 
@@ -211,7 +247,7 @@ namespace Import {
         return success;
     }
 
-    bool MeshImporter::loadMesh(const Mesh_ptr& mesh, PlatformContext& context, ResourceCache* cache, const Import::ImportData& dataIn) {
+    bool MeshImporter::loadMesh(const bool loadedFromCache, const Mesh_ptr& mesh, PlatformContext& context, ResourceCache* cache, const Import::ImportData& dataIn) {
         Time::ProfileTimer importTimer;
         importTimer.start();
 
@@ -276,7 +312,7 @@ namespace Import {
                                                                  subMeshData.maxPos());
 
                 if (!tempSubMesh->getMaterialTpl()) {
-                    tempSubMesh->setMaterialTpl(loadSubMeshMaterial(cache, subMeshData._material, subMeshData.boneCount() > 0, taskCounter));
+                    tempSubMesh->setMaterialTpl(loadSubMeshMaterial(cache, subMeshData._material, loadedFromCache, subMeshData.boneCount() > 0, taskCounter));
                 }
             }
 
@@ -297,7 +333,7 @@ namespace Import {
     }
 
     /// Load the material for the current SubMesh
-    Material_ptr MeshImporter::loadSubMeshMaterial(ResourceCache* cache, const Import::MaterialData& importData, bool skinned, std::atomic_uint& taskCounter) {
+    Material_ptr MeshImporter::loadSubMeshMaterial(ResourceCache* cache, const Import::MaterialData& importData, const bool loadedFromCache, bool skinned, std::atomic_uint& taskCounter) {
         ResourceDescriptor materialDesc(importData.name());
         if (skinned) {
             materialDesc.enumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
@@ -308,12 +344,18 @@ namespace Import {
         if (wasInCache) {
             return tempMaterial;
         }
+        if (!loadedFromCache) {
+            tempMaterial->ignoreXMLData(true);
+        }
+
         tempMaterial->baseColour(importData.baseColour());
         tempMaterial->emissiveColour(importData.emissive());
+        tempMaterial->ambientColour(importData.ambient());
+        tempMaterial->specularColour(importData.specular());
         tempMaterial->metallic(importData.metallic());
         tempMaterial->roughness(importData.roughness());
         tempMaterial->parallaxFactor(importData.parallaxFactor());
-
+        tempMaterial->ignoreTexDiffuseAlpha(importData.ignoreTexDiffuseAlpha());
         tempMaterial->shadingMode(importData.shadingMode());
         tempMaterial->bumpMethod(importData.bumpMethod());
         tempMaterial->doubleSided(importData.doubleSided());
@@ -342,26 +384,6 @@ namespace Import {
                 texPtr->addStateCallback(ResourceState::RES_LOADED, [tempMaterial, i, texPtr, tex, textureSampler](CachedResource*) {
                     tempMaterial->setTexture(static_cast<TextureUsage>(i), texPtr, textureSampler.getHash(),tex.operation());
                 });
-            }
-        }
-
-        // If we don't have a valid opacity map, try to find out whether the diffuse texture has any non-opaque pixels.
-        // If we find a few, use it as opacity texture
-        if (!importData.ignoreAlpha() && importData._textures[to_base(TextureUsage::OPACITY)].textureName().empty()) {
-            Texture_ptr diffuse = tempMaterial->getTexture(TextureUsage::UNIT0).lock();
-            if (diffuse && diffuse->hasTransparency()) {
-                ResourceDescriptor opacityDesc(diffuse->resourceName());
-                //These should not be needed. We should be able to just find the resource in cache!
-                opacityDesc.assetName(diffuse->assetName());
-                opacityDesc.assetLocation(diffuse->assetLocation());
-                opacityDesc.propertyDescriptor(diffuse->descriptor());
-                opacityDesc.threaded(Runtime::isMainThread());
-                opacityDesc.waitForReady(false);
-                Texture_ptr texPtr = CreateResource<Texture>(cache, opacityDesc, taskCounter);
-                texPtr->addStateCallback(ResourceState::RES_LOADED, [tempMaterial, texPtr](CachedResource*) {
-                    tempMaterial->setTexture(TextureUsage::OPACITY, texPtr, tempMaterial->getSampler(TextureUsage::UNIT0),TextureOperation::REPLACE);
-                });
-                
             }
         }
 

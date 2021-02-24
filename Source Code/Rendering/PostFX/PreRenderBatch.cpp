@@ -49,8 +49,18 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
       _parent(parent),
       _resCache(cache)
 {
+    const auto& configParams = _context.context().config().rendering.postFX.toneMap;
+
     std::atomic_uint loadTasks = 0;
-    _adaptiveExposureControl = context.context().config().rendering.postFX.enableAdaptiveToneMapping;
+    _toneMapParams._function = TypeUtil::StringToToneMapFunctions(configParams.mappingFunction);
+    _toneMapParams._manualExposureFactor = configParams.manualExposureFactor;
+    _toneMapParams._maxLogLuminance = configParams.maxLogLuminance;
+    _toneMapParams._minLogLuminance = configParams.minLogLuminance;
+    _toneMapParams._tau = configParams.tau;
+
+    _adaptiveExposureControl = configParams.adaptive && _toneMapParams._function != ToneMapParams::MapFunctions::COUNT;
+
+    
     // We only work with the resolved screen target
     _screenRTs._hdr._screenRef._targetID = RenderTargetID(RenderTargetUsage::SCREEN);
     _screenRTs._hdr._screenRef._rt = &context.renderTargetPool().renderTarget(_screenRTs._hdr._screenRef._targetID);
@@ -385,7 +395,8 @@ void PreRenderBatch::idle(const Configuration& config) {
 
 void PreRenderBatch::adaptiveExposureControl(const bool state) noexcept {
     _adaptiveExposureControl = state;
-    _context.context().config().rendering.postFX.enableAdaptiveToneMapping = state;
+    _context.context().config().rendering.postFX.toneMap.adaptive = state;
+    _context.context().config().changed(true);
 }
 
 F32 PreRenderBatch::adaptiveExposureValue() const {
@@ -402,6 +413,13 @@ F32 PreRenderBatch::adaptiveExposureValue() const {
 
 void PreRenderBatch::toneMapParams(const ToneMapParams params) noexcept {
     _toneMapParams = params;
+    auto& configParams = _context.context().config().rendering.postFX.toneMap;
+    configParams.manualExposureFactor = _toneMapParams._manualExposureFactor;
+    configParams.maxLogLuminance = _toneMapParams._maxLogLuminance;
+    configParams.minLogLuminance = _toneMapParams._minLogLuminance;
+    configParams.tau = _toneMapParams._tau;
+    configParams.mappingFunction = TypeUtil::ToneMapFunctionsToString(_toneMapParams._function);
+    _context.context().config().changed(true);
 }
 
 void PreRenderBatch::update(const U64 deltaTimeUS) noexcept {
@@ -747,7 +765,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
 
         const auto mappingFunction = to_base(_context.materialDebugFlag()._value == MaterialDebugFlag::COUNT ? _toneMapParams._function : ToneMapParams::MapFunctions::COUNT);
         _toneMapConstants.set(_ID("useAdaptiveExposure"), GFX::PushConstantType::BOOL, adaptiveExposureControl());
-        _toneMapConstants.set(_ID("manualExposure"), GFX::PushConstantType::FLOAT, _toneMapParams._manualExposure);
+        _toneMapConstants.set(_ID("manualExposureFactor"), GFX::PushConstantType::FLOAT, _toneMapParams._manualExposureFactor);
         _toneMapConstants.set(_ID("mappingFunction"), GFX::PushConstantType::INT, mappingFunction);
         _toneMapConstants.set(_ID("skipToneMapping"), GFX::PushConstantType::BOOL, _context.materialDebugFlag()._value != MaterialDebugFlag::COUNT);
         EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });

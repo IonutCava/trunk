@@ -41,6 +41,28 @@ vec3 overlayVec(in vec3 base, in vec3 blend) {
                 overlay(base.b, blend.b));
 }
 
+vec4 ApplyTexOperation(in vec4 a, in vec4 b, in uint texOperation) {
+    //hot pink to easily spot it in a crowd
+    vec4 retColour = a;
+
+    // Read from the second texture (if any)
+    switch (texOperation) {
+        
+        default             : retColour = vec4(0.7743f, 0.3188f, 0.5465f, 1.f);               break;
+        case TEX_NONE       : /*NOP*/                                                         break;
+        case TEX_MULTIPLY   : retColour *= b;                                                 break;
+        case TEX_ADD        : retColour.rgb += b.rgb; retColour.a *= b.a;                     break;
+        case TEX_SUBTRACT   : retColour -= b;                                                 break;
+        case TEX_DIVIDE     : retColour /= b;                                                 break;
+        case TEX_SMOOTH_ADD : retColour = (retColour + b) - (retColour * b);                  break;
+        case TEX_SIGNED_ADD : retColour += b - 0.5f;                                          break;
+        case TEX_DECAL      : retColour  = vec4(mix(retColour.rgb, b.rgb, b.a), retColour.a); break;
+        case TEX_REPLACE    : retColour  = b;                                                 break;
+    }
+
+    return retColour;
+}
+
 #if defined(PROJECTED_TEXTURE)
 void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
     targetTexture.xyz = mix(targetTexture.rgb, 

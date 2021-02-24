@@ -129,6 +129,7 @@ class Scene : public Resource, public PlatformContextComponent {
            F32 _timeAccumulatorSec = 0.0f;
            F32 _timeAccumulatorHour = 0.0f;
            SimpleTime _time = { 14u, 30u };
+           SimpleLocation _location = { 51.4545f, -2.5879f };
            bool _resetTime = true;
        };
 
@@ -221,6 +222,9 @@ class Scene : public Resource, public PlatformContextComponent {
 
     void setTimeOfDay(const SimpleTime& time) noexcept;
     const SimpleTime& getTimeOfDay() const noexcept;
+
+    void setGeographicLocation(const SimpleLocation& location) noexcept;
+    const SimpleLocation& getGeographicLocation() const noexcept;
 
     SunDetails getCurrentSunDetails() const noexcept;
     Sky::Atmosphere getCurrentAtmosphere() const noexcept;

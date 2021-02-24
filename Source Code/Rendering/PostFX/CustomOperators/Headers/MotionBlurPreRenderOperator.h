@@ -44,8 +44,7 @@ class MotionBlurPreRenderOperator final : public PreRenderOperator {
 
     [[nodiscard]] bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) override;
 
-    [[nodiscard]] F32 velocityScale() const noexcept { return _velocityScale; }
-    void velocityScale(F32 val);
+    void parametersChanged();
 
     [[nodiscard]] bool ready() const override;
 
@@ -54,8 +53,6 @@ class MotionBlurPreRenderOperator final : public PreRenderOperator {
     ShaderProgram_ptr _blurApply = nullptr;
     Pipeline* _blurApplyPipeline = nullptr;
     PushConstants _blurApplyConstants;
-
-    F32 _velocityScale = 1.0f;
 };
 
 }  // namespace Divide

@@ -41,11 +41,12 @@ namespace Divide {
         DEPTH,
         LIGHTING,
         SPECULAR,
+        KS,
         UV,
         SSAO,
         EMISSIVE,
         ROUGHNESS,
-        METALLIC,
+        METALNESS,
         NORMALS,
         TANGENTS,
         BITANGENTS,
@@ -93,7 +94,8 @@ namespace Divide {
     };
 
     enum class TranslucencySource : U8 {
-        ALBEDO,
+        ALBEDO_COLOUR,
+        ALBEDO_TEX,
         OPACITY_MAP_R, //single channel
         OPACITY_MAP_A, //rgba texture
         COUNT

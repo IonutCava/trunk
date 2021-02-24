@@ -70,6 +70,7 @@ namespace Divide {
 
     enum class EditorComponentFieldType : U8 {
         PUSH_TYPE = 0,
+        SWITCH_TYPE,
         SLIDER_TYPE,
         SEPARATOR,
         BUTTON,

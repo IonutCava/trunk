@@ -77,7 +77,11 @@ enum class TextureUsage : U8 {
     SHADOW_SINGLE,
     SHADOW_CUBE,
     OPACITY,
-    OCCLUSION_METALLIC_ROUGHNESS,
+    SPECULAR,
+    METALNESS,
+    ROUGHNESS,
+    OCCLUSION,
+    EMISSIVE,
     UNIT1,
     PROJECTION,
     REFLECTION,
@@ -86,7 +90,7 @@ enum class TextureUsage : U8 {
     REFLECTION_SKY,
     POST_FX_DATA,
     SCENE_NORMALS,
-    COUNT,
+    COUNT
 };
 
 namespace Names {
@@ -99,7 +103,11 @@ namespace Names {
         "SHADOW_SINGLE",
         "SHADOW_CUBE",
         "OPACITY",
-        "OCCLUSION_METALLIC_ROUGHNESS",
+        "SPECULAR",
+        "METALNESS",
+        "ROUGHNESS",
+        "OCCLUSION",
+        "EMISSIVE",
         "UNIT1",
         "PROJECTION",
         "REFLECTION",

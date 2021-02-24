@@ -3,56 +3,46 @@
 #include "prePass.frag"
 
 void main() {
-#if defined(USE_ALPHA_DISCARD)
+#if defined(HAS_TRANSPARENCY)
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-    const float alpha = getAlbedo(data, VAR._texCoord).a;
+    const float alpha = getAlpha(data, VAR._texCoord);
     writeGBuffer(alpha);
-#else
+#else //HAS_TRANSPARENCY
     writeGBuffer();
-#endif
+#endif //HAS_TRANSPARENCY
 }
 
 -- Fragment.Shadow
 
-#if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
-#   define HAS_TRANSPARENCY
-#endif
-
 #if defined(HAS_TRANSPARENCY)
 #include "materialData.frag"
-#endif
+#endif //HAS_TRANSPARENCY
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-    if (getAlbedo(data, VAR._texCoord).a < INV_Z_TEST_SIGMA) {
+    if (getAlpha(data, VAR._texCoord).a < INV_Z_TEST_SIGMA) {
         discard;
     }
-#endif
+#endif //HAS_TRANSPARENCY
 }
 
 --Fragment.Shadow.VSM
-
-#if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
-#   define HAS_TRANSPARENCY
-#endif
 
 #include "vsm.frag"
 out vec2 _colourOut;
 
 #if defined(HAS_TRANSPARENCY)
 #include "materialData.frag"
-#endif
-
+#endif //HAS_TRANSPARENCY
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
     const NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-    const vec4 albedo = getAlbedo(data, VAR._texCoord);
-    if (albedo .a < INV_Z_TEST_SIGMA) {
+    if (getAlpha(data, VAR._texCoord) < INV_Z_TEST_SIGMA) {
         discard;
     }
-#endif
+#endif //HAS_TRANSPARENCY
 
     _colourOut = computeMoments();
 }
@@ -62,7 +52,7 @@ void main() {
 
 #include "utility.frag"
 
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepth;
+layout(binding = TEXTURE_DEPTH) uniform sampler2D texDepth;
 
 //r - ssao, g - linear depth
 out vec2 _output;

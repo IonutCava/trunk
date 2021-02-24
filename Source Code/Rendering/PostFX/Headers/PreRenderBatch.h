@@ -6,6 +6,7 @@
 
 namespace Divide {
 
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 class PostFX;
 
 struct ToneMapParams
@@ -25,11 +26,11 @@ struct ToneMapParams
 
     U16 _width = 1u;
     U16 _height = 1u;
-    F32 _minLogLuminance = -4.0f;
-    F32 _maxLogLuminance = 3.0f;
+    F32 _minLogLuminance = -4.f;
+    F32 _maxLogLuminance = 3.f;
     F32 _tau = 1.1f;
 
-    F32 _manualExposure = 11.2f;
+    F32 _manualExposureFactor = 1.f;
 
     MapFunctions _function = MapFunctions::UNCHARTED_2;
 };

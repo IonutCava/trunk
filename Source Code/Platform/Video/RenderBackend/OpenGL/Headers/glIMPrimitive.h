@@ -78,7 +78,6 @@ class glIMPrimitive final : public IMPrimitive {
     void draw(const GenericDrawCommand& cmd) override;
     void pipeline(const Pipeline& pipeline) noexcept override;
 
-    GFX::CommandBuffer& toCommandBuffer() const override;
    protected:
     /// Rendering API specific implementation
     NS_GLIM::GLIM_BATCH* _imInterface;

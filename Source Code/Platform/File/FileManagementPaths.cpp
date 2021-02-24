@@ -144,8 +144,8 @@ void Paths::updatePaths(const PlatformContext& context) {
     const XMLEntryData& entryData = context.entryData();
         
     g_assetsLocation = ResourcePath(entryData.assetsLocation + "/");
-    g_shadersLocation = ResourcePath(config.defaultShadersLocation + "/");
-    g_texturesLocation = ResourcePath(config.defaultTextureLocation + "/");
+    g_shadersLocation = ResourcePath(config.defaultAssetLocation.shaders + "/");
+    g_texturesLocation = ResourcePath(config.defaultAssetLocation.textures + "/");
     g_xmlDataLocation = ResourcePath(entryData.scriptLocation + "/");
     g_scenesLocation = ResourcePath(entryData.scenesLocation + "/");
     Scripts::g_scriptsLocation = g_assetsLocation + "scripts/";

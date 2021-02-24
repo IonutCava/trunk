@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _EDITOR_CONTENT_EXPLORER_WINDOW_H_
 
 #include "Editor/Widgets/Headers/DockedWindow.h"
+#include "Geometry/Importer/Headers/MeshImporter.h"
 
 namespace Divide {
     FWD_DECLARE_MANAGED_CLASS(Texture);
@@ -47,17 +48,6 @@ namespace Divide {
 
     class ContentExplorerWindow final : public DockedWindow {
     public:
-        enum class GeometryFormat : U8 {
-            _3DS = 0, //Studio max format
-            ASE, //ASCII Scene Export. Old Unreal format
-            FBX,
-            MD2,
-            MD5,
-            OBJ,
-            X, //DirectX format
-            COUNT
-        };
-
         ContentExplorerWindow(Editor& parent, const Descriptor& descriptor);
         ~ContentExplorerWindow() = default;
 
@@ -74,7 +64,7 @@ namespace Divide {
         
     private:
         Texture_ptr _fileIcon = nullptr;
-        std::array<Texture_ptr, to_base(GeometryFormat::COUNT)> _geometryIcons = {};
+        std::array<Texture_ptr, to_base(GeometryFormat::COUNT) + 1> _geometryIcons = {};
         mutable const Directory* _selectedDir = nullptr;
         vectorEASTLFast<Directory> _currentDirectories;
 

@@ -141,28 +141,28 @@ bool FindSSRHit(vec3 csOrig,          // Camera-space ray origin, which must be 
     return intersect;
 }
 
-float ComputeBlendFactorForIntersection(float iterationCount,
-                                        vec2 hitPixel,
-                                        vec3 hitPoint,
-                                        vec3 vsRayOrigin,
-                                        vec3 vsRayDirection) {
-    float alpha = 1.0f;
-
+float ComputeBlendFactorForIntersection(in float iterationCount,
+                                        in vec2 hitPixel,
+                                        in vec3 hitPoint,
+                                        in vec3 vsRayOrigin,
+                                        in vec3 vsRayDirection)
+{
     // Fade ray hits that approach the maximum iterations
-    alpha *= 1.0 - pow(iterationCount / maxSteps, 8.0);
+    float alpha = 1.f - pow(iterationCount / maxSteps, 8.f);
 
     // Fade ray hits that approach the screen edge
-    float screenFade = screenEdgeFadeStart;
-    vec2 hitPixelNDC = (hitPixel * 2.0 - 1.0);
-    float maxDimension = min(1.0, max(abs(hitPixelNDC.x), abs(hitPixelNDC.y)));
-    alpha *= 1.0 - (max(0.0, maxDimension - screenFade) / (1.0 - screenFade));
+    const float screenFade = screenEdgeFadeStart;
+    const vec2 hitPixelNDC = 2.f * hitPixel - 1.f;
+    const float maxDimension = min(1.f, max(abs(hitPixelNDC.x), abs(hitPixelNDC.y)));
+
+    alpha *= 1.f - (max(0.f, maxDimension - screenFade) / (1.f - screenFade));
 
     // Fade ray hits base on how much they face the camera
-    float eyeDirection = clamp(vsRayDirection.z, eyeFadeStart, eyeFadeEnd);
-    alpha *= 1.0 - ((eyeDirection - eyeFadeStart) / (eyeFadeEnd - eyeFadeStart));
+    const float eyeDirection = clamp(vsRayDirection.z, eyeFadeStart, eyeFadeEnd);
+    alpha *= 1.f - ((eyeDirection - eyeFadeStart) / (eyeFadeEnd - eyeFadeStart));
 
     // Fade ray hits based on distance from ray origin
-    //alpha *= 1.0 - clamp(distance(vsRayOrigin, hitPoint) / maxDistance, 0.0, 1.0);
+    //alpha *= 1.f - saturate(distance(vsRayOrigin, hitPoint) / maxDistance);
 
     return alpha;
 }

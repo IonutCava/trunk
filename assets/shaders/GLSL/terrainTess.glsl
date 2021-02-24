@@ -173,7 +173,8 @@ void main(void)
         gl_TessLevelOuter[2] = SphereToScreenSpaceTessellation(gl_in[2].gl_Position.xyz, gl_in[3].gl_Position.xyz, sideLen, worldViewMat);
         gl_TessLevelOuter[3] = SphereToScreenSpaceTessellation(gl_in[1].gl_Position.xyz, gl_in[2].gl_Position.xyz, sideLen, worldViewMat);
 
-#if !defined(LOW_QUALITY)
+//#if !defined(LOW_QUALITY)
+        // Sadly can't disable this for reflection/refraction cases as it the cracks get really obvious at certain angles
         // Edges that need adjacency adjustment are identified by the per-instance ip[0].adjacency 
         // scalars, in *conjunction* with a patch ID that puts them on the edge of a tile.
         const int PatchID = gl_PrimitiveID;
@@ -215,7 +216,7 @@ void main(void)
                 gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen, worldViewMat);	// NB: irregular index pattern - it's correct.
             }
         }
-#endif //LOW_QUALITY
+//#endif //LOW_QUALITY
 
 #else //MAX_TESS_LEVEL > 1
         // Outer tessellation level
@@ -517,15 +518,15 @@ layout(location = 12) in vec3 tes_debugColour;
 #include "output.frag"
 #include "terrainUtils.cmn"
 
-float _private_roughness = 0.0f;
-vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
-    return vec3(1.0f, 0.0f, _private_roughness);
+float _private_roughness = 0.f;
+vec3 getOMR(in NodeMaterialData matData, in vec2 uv) {
+    return vec3(1.f, 0.f, _private_roughness);
 }
 
 void main(void) {
 
-    vec3 normalWV;
-    const vec4 albedo = BuildTerrainData(normalWV);
+    vec3 normalWV; float normalVariation;
+    const vec4 albedo = BuildTerrainData(normalWV, normalVariation);
     _private_roughness = albedo.a;
 
     vec3 MetalnessRoughnessProbeID = vec3(0.f, 1.f, 0.f);
@@ -552,7 +553,7 @@ void main(void) {
     }
 #else //TOGGLE_BLEND_MAP
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, VAR._texCoord, SpecularColourOut, MetalnessRoughnessProbeID);
+    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, normalVariation, VAR._texCoord, SpecularColourOut, MetalnessRoughnessProbeID);
 
 #endif //TOGGLE_BLEND_MAP
 #endif //TOGGLE_TESS_LEVEL

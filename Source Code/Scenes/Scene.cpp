@@ -239,6 +239,8 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view>& msgCallback, const D
         pt.put("dayNight.<xmlattr>.enabled", dayNightCycleEnabled());
         pt.put("dayNight.timeOfDay.<xmlattr>.hour", _dayNightData._time._hour);
         pt.put("dayNight.timeOfDay.<xmlattr>.minute", _dayNightData._time._minutes);
+        pt.put("dayNight.location.<xmlattr>.latitude", _dayNightData._location._latitude);
+        pt.put("dayNight.location.<xmlattr>.longitude", _dayNightData._location._longitude);
         pt.put("dayNight.timeOfDay.<xmlattr>.timeFactor", _dayNightData._speedFactor);
 
         if (copyFile(scenePath.c_str(), (resourceName() + ".xml").c_str(), scenePath.c_str(), (resourceName() + ".xml.bak").c_str(), true) == FileError::NONE) {
@@ -300,21 +302,23 @@ bool Scene::loadXML(const Str256& name) {
     boost::property_tree::ptree pt;
     XML::readXML(sceneDataFile.c_str(), pt);
 
-    state()->renderState().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
-    state()->renderState().treeVisibility(pt.get("vegetation.treeVisibility", 1000.0f));
-    state()->renderState().generalVisibility(pt.get("options.visibility", 1000.0f));
+    state()->renderState().grassVisibility(pt.get("vegetation.grassVisibility", state()->renderState().grassVisibility()));
+    state()->renderState().treeVisibility(pt.get("vegetation.treeVisibility", state()->renderState().treeVisibility()));
+    state()->renderState().generalVisibility(pt.get("options.visibility", state()->renderState().generalVisibility()));
 
-    state()->windDirX(pt.get("wind.windDirX", 1.0f));
-    state()->windDirZ(pt.get("wind.windDirZ", 1.0f));
-    state()->windSpeed(pt.get("wind.windSpeed", 1.0f));
+    state()->windDirX(pt.get("wind.windDirX", state()->windDirX()));
+    state()->windDirZ(pt.get("wind.windDirZ", state()->windDirZ()));
+    state()->windSpeed(pt.get("wind.windSpeed", state()->windSpeed()));
 
-    state()->lightBleedBias(pt.get("shadowing.<xmlattr>.lightBleedBias", 0.2f));
-    state()->minShadowVariance(pt.get("shadowing.<xmlattr>.minShadowVariance", 0.001f));
+    state()->lightBleedBias(pt.get("shadowing.<xmlattr>.lightBleedBias", state()->lightBleedBias()));
+    state()->minShadowVariance(pt.get("shadowing.<xmlattr>.minShadowVariance", state()->minShadowVariance()));
 
     dayNightCycleEnabled(pt.get("dayNight.<xmlattr>.enabled", false));
-    _dayNightData._time._hour = pt.get<U8>("dayNight.timeOfDay.<xmlattr>.hour", 14u);
-    _dayNightData._time._minutes = pt.get<U8>("dayNight.timeOfDay.<xmlattr>.minute", 30u);
-    _dayNightData._speedFactor = pt.get("dayNight.timeOfDay.<xmlattr>.timeFactor", 1.0f);
+    _dayNightData._time._hour = pt.get<U8>("dayNight.timeOfDay.<xmlattr>.hour", _dayNightData._time._hour);
+    _dayNightData._time._minutes = pt.get<U8>("dayNight.timeOfDay.<xmlattr>.minute", _dayNightData._time._minutes);
+    _dayNightData._location._latitude = pt.get<F32>("dayNight.location.<xmlattr>.latitude", _dayNightData._location._latitude);
+    _dayNightData._location._longitude = pt.get<F32>("dayNight.location.<xmlattr>.longitude", _dayNightData._location._longitude);
+    _dayNightData._speedFactor = pt.get("dayNight.timeOfDay.<xmlattr>.timeFactor", _dayNightData._speedFactor);
     _dayNightData._resetTime = true;
 
     if (pt.get_child_optional("options.cameraStartPosition")) {
@@ -1466,8 +1470,7 @@ void Scene::processTasks(const U64 deltaTimeUS) {
                 _dayNightData._timeAccumulatorHour = 0.f;
             }
             FColour3 moonColour = Normalized(_dayNightData._skyInstance->moonColour().rgb);
-
-            const SunDetails details = _dayNightData._skyInstance->setDateTime(localtime(&now));
+            const SunDetails details = _dayNightData._skyInstance->setDateTimeAndLocation(localtime(&now), _dayNightData._location);
             Light* light = _dayNightData._sunLight;
 
             const FColour3 sunsetOrange = FColour3(99.2f, 36.9f, 32.5f) / 100.f;
@@ -1887,6 +1890,15 @@ void Scene::setTimeOfDay(const SimpleTime& time) noexcept {
 
 const SimpleTime& Scene::getTimeOfDay() const noexcept {
     return _dayNightData._time;
+}
+
+void Scene::setGeographicLocation(const SimpleLocation& location) noexcept {
+    _dayNightData._location = location;
+    _dayNightData._resetTime = true;
+}
+
+const SimpleLocation& Scene::getGeographicLocation() const noexcept {
+    return _dayNightData._location;
 }
 
 SunDetails Scene::getCurrentSunDetails() const noexcept {

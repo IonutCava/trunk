@@ -2,6 +2,10 @@
 
 #include "Headers/DoFPreRenderOperator.h"
 
+
+
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
@@ -19,8 +23,6 @@ namespace {
 DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
     : PreRenderOperator(context, parent, FilterType::FILTER_DEPTH_OF_FIELD)
 {
-    STUBBED("ToDo: Save DOF Parameters to disk!");
-
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "baseVertexShaders.glsl";
@@ -55,7 +57,7 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
 
     _constants.set(_ID("size"), GFX::PushConstantType::VEC2, _parent.screenRT()._rt->getResolution());
 
-    parameters(_parameters);
+    parametersChanged();
 }
 
 bool DoFPreRenderOperator::ready() const {
@@ -66,21 +68,21 @@ bool DoFPreRenderOperator::ready() const {
     return false;
 }
 
-void DoFPreRenderOperator::parameters(const Parameters& params) noexcept {
-    _parameters = params;
+void DoFPreRenderOperator::parametersChanged() noexcept {
+    const auto& params = _context.context().config().rendering.postFX.dof;
 
-    _constants.set(_ID("focus"), GFX::PushConstantType::VEC2, params._focalPoint);
-    _constants.set(_ID("focalDepth"), GFX::PushConstantType::FLOAT, params._focalDepth);
-    _constants.set(_ID("focalLength"), GFX::PushConstantType::FLOAT, params._focalLength);
-    _constants.set(_ID("fstop"), GFX::PushConstantType::FLOAT, g_FStopValues[to_base(params._fStop)]);
-    _constants.set(_ID("ndofstart "), GFX::PushConstantType::FLOAT, params._ndofstart);
-    _constants.set(_ID("ndofdist"), GFX::PushConstantType::FLOAT, params._ndofdist);
-    _constants.set(_ID("fdofstart"), GFX::PushConstantType::FLOAT, params._fdofstart);
-    _constants.set(_ID("fdofdist"), GFX::PushConstantType::FLOAT, params._fdofdist);
-    _constants.set(_ID("autofocus "), GFX::PushConstantType::BOOL, params._autoFocus);
-    _constants.set(_ID("vignetting "), GFX::PushConstantType::BOOL, params._vignetting);
-    _constants.set(_ID("showFocus"), GFX::PushConstantType::BOOL, params._debugFocus);
-    _constants.set(_ID("manualdof "), GFX::PushConstantType::BOOL, params._manualdof);
+    _constants.set(_ID("focus"), GFX::PushConstantType::VEC2, params.focalPoint);
+    _constants.set(_ID("focalDepth"), GFX::PushConstantType::FLOAT, params.focalDepth);
+    _constants.set(_ID("focalLength"), GFX::PushConstantType::FLOAT, params.focalLength);
+    _constants.set(_ID("fstop"), GFX::PushConstantType::FLOAT, g_FStopValues[to_base(TypeUtil::StringToFStops(params.fStop))]);
+    _constants.set(_ID("ndofstart "), GFX::PushConstantType::FLOAT, params.ndofstart);
+    _constants.set(_ID("ndofdist"), GFX::PushConstantType::FLOAT, params.ndofdist);
+    _constants.set(_ID("fdofstart"), GFX::PushConstantType::FLOAT, params.fdofstart);
+    _constants.set(_ID("fdofdist"), GFX::PushConstantType::FLOAT, params.fdofdist);
+    _constants.set(_ID("autofocus "), GFX::PushConstantType::BOOL, params.autoFocus);
+    _constants.set(_ID("vignetting "), GFX::PushConstantType::BOOL, params.vignetting);
+    _constants.set(_ID("showFocus"), GFX::PushConstantType::BOOL, params.debugFocus);
+    _constants.set(_ID("manualdof "), GFX::PushConstantType::BOOL, params.manualdof);
 
     _constantsDirty = true;
 }

@@ -38,6 +38,28 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Geometry/Animations/Headers/SceneAnimator.h"
 
 namespace Divide {
+    enum class GeometryFormat : U8
+    {
+        _3DS = 0, //Studio max format
+        ASE, //ASCII Scene Export. Old Unreal format
+        FBX,
+        MD2,
+        MD5,
+        OBJ,
+        X, //DirectX format
+        DAE, //Collada
+        GLTF,
+        DVD_ANIM,
+        DVD_GEOM,
+        COUNT
+    };
+
+    GeometryFormat GetGeometryFormatForExtension(const char* extension);
+
+    const char* const g_geometryExtensions[] = {
+        "3ds", "ase", "fbx", "md2", "md5mesh", "obj", "x", "dae", "gltf", "glb", "DVDAnim", "DVDGeom"
+    };
+
     class PlatformContext;
     class ByteBuffer;
     class VertexBuffer;
@@ -64,7 +86,7 @@ namespace Divide {
             bool serialize(ByteBuffer& dataOut) const;
             bool deserialize(ByteBuffer& dataIn);
 
-            PROPERTY_RW(bool, ignoreAlpha, false);
+            PROPERTY_RW(bool, ignoreTexDiffuseAlpha, false);
             PROPERTY_RW(bool, doubleSided, true);
             PROPERTY_RW(Str128, name);
             PROPERTY_RW(ShadingMode, shadingMode, ShadingMode::FLAT);
@@ -72,10 +94,11 @@ namespace Divide {
 
             PROPERTY_RW(FColour4, baseColour, DefaultColours::WHITE);
             PROPERTY_RW(FColour3, emissive, DefaultColours::BLACK);
+            PROPERTY_RW(FColour3, ambient, DefaultColours::BLACK);
+            PROPERTY_RW(FColour4, specular, DefaultColours::BLACK); //<For Phong
             PROPERTY_RW(F32, metallic, 0.0f);
-            PROPERTY_RW(F32, roughness, 0.5f);
+            PROPERTY_RW(F32, roughness, 1.0f);
             PROPERTY_RW(F32, parallaxFactor, 1.0f);
-
             std::array<TextureEntry, to_base(TextureUsage::COUNT)> _textures;
         };
 
@@ -132,7 +155,7 @@ namespace Divide {
             // Name and path
             PROPERTY_RW(ResourcePath, modelName);
             PROPERTY_RW(ResourcePath, modelPath);
-
+            PROPERTY_RW(bool, fromFile, false);
             vectorEASTL<Bone*> _bones;
             vectorEASTL<SubMeshData> _subMeshData;
             vectorEASTL<std::shared_ptr<AnimEvaluator>> _animations;
@@ -147,10 +170,10 @@ namespace Divide {
     {
         public:
             static bool loadMeshDataFromFile(PlatformContext& context, Import::ImportData& dataOut);
-            static bool loadMesh(const Mesh_ptr& mesh, PlatformContext& context, ResourceCache* cache, const Import::ImportData& dataIn);
+            static bool loadMesh(bool loadedFromCache, const Mesh_ptr& mesh, PlatformContext& context, ResourceCache* cache, const Import::ImportData& dataIn);
 
         protected:
-            static Material_ptr loadSubMeshMaterial(ResourceCache* cache, const Import::MaterialData& importData, bool skinned, std::atomic_uint& taskCounter);
+            static Material_ptr loadSubMeshMaterial(ResourceCache* cache, const Import::MaterialData& importData, bool loadedFromCache, bool skinned, std::atomic_uint& taskCounter);
     };
 
 };  // namespace Divide

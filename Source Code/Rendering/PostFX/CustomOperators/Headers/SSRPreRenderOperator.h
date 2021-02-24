@@ -40,29 +40,13 @@ namespace Divide {
 
 class SSRPreRenderOperator final : public PreRenderOperator {
    public:
-       struct Parameters {
-           F32 _maxDistance = 100.f;   // Maximum camera-space distance to trace before returning a miss
-           F32 _jitterAmount = 1.f;
-           F32 _stride = 8.f;
-           F32 _zThickness = 1.5f; // Camera space thickness to ascribe to each pixel in the depth buffer
-           F32 _strideZCutoff = 100.f;
-           F32 _screenEdgeFadeStart = 0.75f;
-           F32 _eyeFadeStart = 0.5f;
-           F32 _eyeFadeEnd = 1.f;
-           U16 _maxSteps = 256;  // Maximum number of iterations. Higher gives better images but may be slow
-           U8  _binarySearchIterations = 4u;
-       };
-
-   public:
     SSRPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~SSRPreRenderOperator() = default;
 
     [[nodiscard]] bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) override;
     void reshape(U16 width, U16 height) override;
 
-    PROPERTY_R(Parameters, parameters);
-
-    void parameters(const Parameters& params) noexcept;
+    void parametersChanged() noexcept;
 
     [[nodiscard]] bool ready() const override;
 
