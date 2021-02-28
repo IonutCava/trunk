@@ -69,6 +69,7 @@ class UnitComponent;
 class SceneShaderData;
 class ShaderComputeQueue;
 class SSRPreRenderOperator;
+class DirectionalLightSystem;
 class SolutionExplorerWindow;
 class GUIConsoleCommandParser;
 FWD_DECLARE_MANAGED_CLASS(Player);
@@ -386,6 +387,7 @@ class SceneManagerCameraAccessor {
     friend class Divide::Editor;
     friend class Divide::ShadowMap;
     friend class Divide::RenderPass;
+    friend class Divide::DirectionalLightSystem;
     friend class Divide::SolutionExplorerWindow;
     friend class Divide::GUIConsoleCommandParser;
 };

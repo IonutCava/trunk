@@ -8,17 +8,23 @@
 
 namespace Divide {
     RigidBodyComponent::RigidBodyComponent(SceneGraphNode* parentSGN, PlatformContext& context)
-        : BaseComponentType<RigidBodyComponent, ComponentType::RIGID_BODY>(parentSGN, context),
-          _physicsCollisionGroup(PhysicsGroup::GROUP_STATIC)
+        : Parent(parentSGN, context),
+          _physicsCollisionGroup(parentSGN->usageContext() == NodeUsageContext::NODE_STATIC ? PhysicsGroup::GROUP_STATIC : PhysicsGroup::GROUP_DYNAMIC)
     {
-        _rigidBody.reset(context.pfx().createRigidActor(parentSGN, *this));
     }
 
-    void RigidBodyComponent::cookCollisionMesh(const char* sceneName) {
-        ACKNOWLEDGE_UNUSED(sceneName);
+    RigidBodyComponent::~RigidBodyComponent()
+    {
     }
 
-    bool RigidBodyComponent::filterCollission(const RigidBodyComponent& collider) {
+    void RigidBodyComponent::physicsCollisionGroup(const PhysicsGroup group) {
+        _physicsCollisionGroup = group;
+        if (_rigidBody != nullptr) {
+            _rigidBody->physicsCollisionGroup(group);
+        }
+    }
+
+    bool RigidBodyComponent::filterCollision(const RigidBodyComponent& collider) {
         ACKNOWLEDGE_UNUSED(collider);
         // filter by mask, type, etc
         return true;
@@ -27,7 +33,7 @@ namespace Divide {
     void RigidBodyComponent::onCollision(const RigidBodyComponent& collider) {
         //handle collision
         if (_collisionCbk) {
-            if (filterCollission(collider)) {
+            if (filterCollision(collider)) {
                 assert(getSGN()->getGUID() != collider.getSGN()->getGUID());
                 _collisionCbk(collider);
             }

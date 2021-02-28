@@ -3,6 +3,8 @@
 #include "Headers/Scene.h"
 
 #include "Core/Debugging/Headers/DebugInterface.h"
+#include "Core/Headers/Application.h"
+#include "Core/Headers/ByteBuffer.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/EngineTaskPool.h"
 #include "Core/Headers/ParamHandler.h"
@@ -41,14 +43,13 @@
 #include "Dynamics/Entities/Triggers/Headers/Trigger.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "ECS/Components/Headers/UnitComponent.h"
+#include "Physics/Headers/PXDevice.h"
 
 #include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
-
-#include "Physics/Headers/PhysicsSceneInterface.h"
 
 namespace Divide {
 
@@ -63,17 +64,15 @@ Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& paren
       _resCache(cache),
       _LRSpeedFactor(5.0f)
 {
-    _sceneTimerUS = 0UL;
-    _sceneState = MemoryManager_NEW SceneState(*this);
-    _input = MemoryManager_NEW SceneInput(*this);
-    _sceneGraph = MemoryManager_NEW SceneGraph(*this);
-    _aiManager = MemoryManager_NEW AI::AIManager(*this, _context.taskPool(TaskPoolType::HIGH_PRIORITY));
-    _lightPool = MemoryManager_NEW LightPool(*this, _context);
-    _envProbePool = MemoryManager_NEW SceneEnvironmentProbePool(*this);
-
-    _GUI = MemoryManager_NEW SceneGUIElements(*this, _context.gui());
-
     _loadingTasks.store(0);
+
+    _sceneState = eastl::make_unique<SceneState>(*this);
+    _input = eastl::make_unique<SceneInput>(*this);
+    _sceneGraph = eastl::make_unique<SceneGraph>(*this);
+    _aiManager = eastl::make_unique<AI::AIManager>(*this, _context.taskPool(TaskPoolType::HIGH_PRIORITY));
+    _lightPool = eastl::make_unique<LightPool>(*this, _context);
+    _envProbePool = eastl::make_unique<SceneEnvironmentProbePool>(*this);
+    _GUI = eastl::make_unique<SceneGUIElements>(*this, _context.gui());
 
     _linesPrimitive = _context.gfx().newIMP();
     _linesPrimitive->name("GenericLinePrimitive");
@@ -89,13 +88,6 @@ Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& paren
 
 Scene::~Scene()
 {
-    MemoryManager::DELETE(_sceneState);
-    MemoryManager::DELETE(_input);
-    MemoryManager::DELETE(_sceneGraph);
-    MemoryManager::DELETE(_aiManager);
-    MemoryManager::DELETE(_lightPool);
-    MemoryManager::DELETE(_envProbePool);
-    MemoryManager::DELETE(_GUI);
     for (IMPrimitive*& prim : _octreePrimitives) {
         _context.gfx().destroyIMP(prim);
     }
@@ -126,13 +118,6 @@ bool Scene::frameEnded() {
 }
 
 bool Scene::idle() {  // Called when application is idle
-    if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
-        if (_context.gfx().frameCount() > 1) {
-            _sceneGraph->getRoot()->get<RigidBodyComponent>()->cookCollisionMesh(resourceName().c_str());
-            _cookCollisionMeshesScheduled = false;
-        }
-    }
-
     LightPool::idle();
 
     {
@@ -220,7 +205,6 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view>& msgCallback, const D
         pt.put("options.visibility", state()->renderState().generalVisibility());
         pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str())));
         pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str())));
-        pt.put("options.autoCookPhysicsAssets", true);
 
         pt.put("fog.fogDensityB", state()->renderState().fogDetails()._colourAndDensity.a);
         pt.put("fog.fogDensityC", state()->renderState().fogDetails()._colourSunScatter.a);
@@ -332,12 +316,6 @@ bool Scene::loadXML(const Str256& name) {
         par.setParam(_ID((name + ".options.cameraStartPositionOverride").c_str()), false);
     }
 
-    if (pt.get_child_optional("options.autoCookPhysicsAssets")) {
-        par.setParam(_ID((name + ".options.autoCookPhysicsAssets").c_str()), pt.get<bool>("options.autoCookPhysicsAssets", false));
-    } else {
-        par.setParam(_ID((name + ".options.autoCookPhysicsAssets").c_str()), false);
-    }
-
     if (pt.get_child_optional("options.cameraSpeed")) {
         par.setParam(_ID((name + ".options.cameraSpeed.move").c_str()), pt.get("options.cameraSpeed.<xmlattr>.move", 35.0f));
         par.setParam(_ID((name + ".options.cameraSpeed.turn").c_str()), pt.get("options.cameraSpeed.<xmlattr>.turn", 35.0f));
@@ -438,7 +416,8 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
         bool nodeStatic = true;
 
         if (IsPrimitive(sceneNode.typeHash)) {// Primitive types (only top level)
-            normalMask |= to_base(ComponentType::RENDERING);
+            normalMask |= to_base(ComponentType::RENDERING) | 
+                          to_base(ComponentType::RIGID_BODY);
 
             if (!modelName.empty()) {
                 _loadingTasks.fetch_add(1);
@@ -499,8 +478,6 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
                     addWater(parent, nodeTree, sceneNode.name);
                 } break;
                 case _ID("MESH"): {
-                    // No rendering component for meshes. Only for SubMeshes
-                    //normalMask |= to_base(ComponentType::RENDERING);
                     if (!modelName.empty()) {
                         _loadingTasks.fetch_add(1);
                         ResourceDescriptor model(modelName.str());
@@ -526,7 +503,6 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
                             parentTask->_parentPool->threadWaiting();
                         }
                     }
-                    normalMask |= to_base(ComponentType::RENDERING);
                     SceneGraphNode* subMesh = parent->findChild(_ID(sceneNode.name.c_str()), false, false);
                     if (subMesh != nullptr) {
                         subMesh->loadFromXML(nodeTree);
@@ -648,7 +624,6 @@ void Scene::addTerrain(SceneGraphNode* parentNode, const boost::property_tree::p
         NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
         nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
 
-        terrainTemp->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
         terrainTemp->loadFromXML(pt);
         _loadingTasks.fetch_sub(1);
     };
@@ -1121,13 +1096,7 @@ bool Scene::unload() {
     }
 
     clearTasks();
-    if (_pxScene != nullptr) {
-        /// Destroy physics (:D)
-        _pxScene->release();
-        MemoryManager::DELETE(_pxScene);
-    }
-
-    _context.pfx().setPhysicsScene(nullptr);
+    _context.pfx().destroyPhysicsScene();
     clearObjects();
     _loadComplete = false;
     assert(_scenePlayers.empty());
@@ -1138,14 +1107,8 @@ bool Scene::unload() {
 void Scene::postLoad() {
     _sceneGraph->postLoad();
 
-    if (_pxScene == nullptr) {
-        _pxScene = _context.pfx().NewSceneInterface(*this);
-        _pxScene->init();
-    }
-
-    // Cook geometry
-    if (_context.paramHandler().getParam<bool>(_ID((resourceName() + ".options.autoCookPhysicsAssets").c_str()), true)) {
-        _cookCollisionMeshesScheduled = true;
+    if (!_context.pfx().initPhysicsScene(*this)) {
+        DIVIDE_UNEXPECTED_CALL();
     }
 }
 
@@ -1189,7 +1152,6 @@ void Scene::currentPlayerPass(const PlayerIndex idx) {
 }
 
 void Scene::onSetActive() {
-    _context.pfx().setPhysicsScene(_pxScene);
     _aiManager->pauseUpdate(false);
 
     input()->onSetActive();
@@ -1199,7 +1161,7 @@ void Scene::onSetActive() {
     for (U32 i = 0; i < to_base(MusicType::COUNT); ++i) {
         const SceneState::MusicPlaylist& playlist = state()->music(static_cast<MusicType>(i));
         if (!playlist.empty()) {
-            for (const SceneState::MusicPlaylist::value_type& song : playlist) {
+            for (const auto& song : playlist) {
                 _context.sfx().addMusic(i, song.second);
             }
         }
@@ -1372,7 +1334,7 @@ void Scene::updateSceneState(const U64 deltaTimeUS) {
     _aiManager->update(deltaTimeUS);
 }
 
-void Scene::onStartUpdateLoop(const U8 loopNumber) {
+void Scene::onStartUpdateLoop(const U8 loopNumber) const {
     OPTICK_EVENT()
 
     _sceneGraph->onStartUpdateLoop(loopNumber);
@@ -1451,7 +1413,9 @@ void Scene::processTasks(const U64 deltaTimeUS) {
             _dayNightData._resetTime = false;
             _dayNightData._timeAccumulatorSec = Time::Seconds(1.1f);
             _dayNightData._timeAccumulatorHour = 0.f;
-            SceneEnvironmentProbePool::OnTimeOfDayChange(_envProbePool);
+            if (_envProbePool != nullptr) {
+                SceneEnvironmentProbePool::OnTimeOfDayChange(*_envProbePool);
+            }
         }
 
         const F32 speedFactor = dayNightCycleEnabled() ? _dayNightData._speedFactor : 0.f;
@@ -1466,7 +1430,9 @@ void Scene::processTasks(const U64 deltaTimeUS) {
             _dayNightData._timeAccumulatorSec = 0.f;
 
             if (_dayNightData._timeAccumulatorHour > 1.f) {
-                SceneEnvironmentProbePool::OnTimeOfDayChange(_envProbePool);
+                if (_envProbePool != nullptr) {
+                    SceneEnvironmentProbePool::OnTimeOfDayChange(*_envProbePool);
+                }
                 _dayNightData._timeAccumulatorHour = 0.f;
             }
             FColour3 moonColour = Normalized(_dayNightData._skyInstance->moonColour().rgb);

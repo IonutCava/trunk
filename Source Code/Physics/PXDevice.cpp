@@ -3,7 +3,6 @@
 #include "Headers/PXDevice.h"
 
 #include "Utility/Headers/Localization.h"
-
 #include "Physics/PhysX/Headers/PhysX.h"
 
 #ifndef _PHYSICS_API_FOUND_
@@ -80,16 +79,20 @@ void PXDevice::idle() {
     _api->idle();
 }
 
-void PXDevice::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
-    _api->setPhysicsScene(targetScene);
+bool PXDevice::initPhysicsScene(Scene& scene) {
+    return _api->initPhysicsScene(scene);
 }
 
-PhysicsSceneInterface* PXDevice::NewSceneInterface(Scene& scene) {
-    return _api->NewSceneInterface(scene);
+bool PXDevice::destroyPhysicsScene() {
+    return _api->destroyPhysicsScene();
 }
 
-PhysicsAsset* PXDevice::createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) {
+PhysicsAsset* PXDevice::createRigidActor(SceneGraphNode* node, RigidBodyComponent& parentComp) {
     return _api->createRigidActor(node, parentComp);
+}
+
+bool PXDevice::convertActor(PhysicsAsset* actor, const PhysicsGroup newGroup) {
+    return _api->convertActor(actor, newGroup);
 }
 
 }; //namespace Divide

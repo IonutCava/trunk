@@ -40,6 +40,7 @@ enum class CacheType : U8 {
     SHADER_BIN,
     TERRAIN,
     MODELS,
+    COLLISION,
     TEXTURES,
     COUNT
 };
@@ -82,6 +83,7 @@ struct Paths {
     static ResourcePath g_cacheLocation;
     static ResourcePath g_terrainCacheLocation;
     static ResourcePath g_geometryCacheLocation;
+    static ResourcePath g_collisionMeshCacheLocation;
 
     struct Editor {
         static ResourcePath g_saveLocation;

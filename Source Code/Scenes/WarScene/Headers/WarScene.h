@@ -36,9 +36,9 @@
 #include "Scenes/Headers/Scene.h"
 
 namespace Divide {
-
-class SkinnedSubMesh;
 class NPC;
+class RigidBodyComponent;
+class SkinnedSubMesh;
 
 namespace AI {
 class AITeam;

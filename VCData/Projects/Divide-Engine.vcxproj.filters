@@ -593,6 +593,24 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\SSRPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\NavigationSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\RigidBodySystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\DirectionalLightSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\PointLightSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\SpotLightSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\EnvironmentProbeSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -1049,6 +1067,24 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\SSRPreRenderOperator.h">
       <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\RigidBodySystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\NavigationSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\PointLightSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\SpotLightSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\DirectionalLightSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\EnvironmentProbeSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

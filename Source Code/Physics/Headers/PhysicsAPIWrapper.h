@@ -50,16 +50,18 @@ enum class RigidBodyShape : U8 {
 
 class Scene;
 class PhysicsAsset;
-class PhysicsSceneInterface;
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 enum class ErrorCode : I8;
+enum class PhysicsGroup : U8;
 class RigidBodyComponent;
 
 class NOINITVTABLE PhysicsAPIWrapper {
    public:
     virtual ~PhysicsAPIWrapper() = default;
+
+    virtual bool convertActor(PhysicsAsset* actor, PhysicsGroup newGroup) = 0;
 
    protected:
     friend class PXDevice;
@@ -69,11 +71,10 @@ class NOINITVTABLE PhysicsAPIWrapper {
     virtual void update(U64 deltaTimeUS) = 0;
     virtual void process(U64 deltaTimeUS) = 0;
     virtual void idle() = 0;
-    virtual PhysicsSceneInterface* NewSceneInterface(Scene& scene) = 0;
+    virtual bool initPhysicsScene(Scene& scene) = 0;
+    virtual bool destroyPhysicsScene() = 0;
 
-    virtual void setPhysicsScene(PhysicsSceneInterface* targetScene) = 0;
-
-    virtual PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) = 0;
+    virtual PhysicsAsset* createRigidActor(SceneGraphNode* node, RigidBodyComponent& parentComp) = 0;
 };
 
 };  // namespace Divide

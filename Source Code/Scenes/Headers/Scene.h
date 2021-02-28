@@ -49,7 +49,6 @@
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 #include "AI/Headers/AIManager.h"
-#include "Physics/Headers/PXDevice.h"
 #include "SceneEnvironmentProbePool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Environment/Sky/Headers/Sky.h"
@@ -57,15 +56,14 @@
 #include "Utility/Headers/XMLParser.h"
 
 namespace Divide {
-    class SceneShaderData;
-    class Sky;
+class SceneShaderData;
+class Sky;
 class Light;
 class Object3D;
 class LoadSave;
 class ParamHandler;
 class TerrainDescriptor;
 class ParticleEmitter;
-class PhysicsSceneInterface;
 class EnvironmentProbeComponent;
 
 FWD_DECLARE_MANAGED_CLASS(Mesh);
@@ -153,16 +151,16 @@ class Scene : public Resource, public PlatformContextComponent {
 
     /// Update animations, network data, sounds, triggers etc.
     void updateSceneState(U64 deltaTimeUS);
-    void onStartUpdateLoop(U8 loopNumber);
+    void onStartUpdateLoop(U8 loopNumber) const;
     /// Override this for Scene specific updates
     virtual void updateSceneStateInternal(U64 deltaTimeUS) { ACKNOWLEDGE_UNUSED(deltaTimeUS); }
 
     SceneRenderState& renderState() { return _sceneState->renderState(); }
     const SceneRenderState& renderState() const { return _sceneState->renderState(); }
 
-    SceneState* state()      const noexcept { return _sceneState; }
-    SceneInput* input()      const noexcept { return _input; }
-    SceneGraph* sceneGraph() const noexcept { return _sceneGraph; }
+    SceneState* state()      const noexcept { return _sceneState.get(); }
+    SceneInput* input()      const noexcept { return _input.get(); }
+    SceneGraph* sceneGraph() const noexcept { return _sceneGraph.get(); }
 
     void registerTask(Task& taskItem, bool start = true, TaskPriority priority = TaskPriority::DONT_CARE);
     void clearTasks();
@@ -321,11 +319,11 @@ class Scene : public Resource, public PlatformContextComponent {
    protected:
        /// Global info
        SceneManager& _parent;
-
        ResourceCache* _resCache = nullptr;
-       SceneGraph*    _sceneGraph = nullptr;
-       AI::AIManager* _aiManager = nullptr;
-       SceneGUIElements* _GUI = nullptr;
+
+       eastl::unique_ptr<SceneGraph>    _sceneGraph;
+       eastl::unique_ptr<AI::AIManager> _aiManager;
+       eastl::unique_ptr<SceneGUIElements> _GUI;
 
        vectorEASTL<Player*> _scenePlayers;
        U64 _sceneTimerUS = 0ULL;
@@ -345,22 +343,18 @@ class Scene : public Resource, public PlatformContextComponent {
        hashMap<PlayerIndex, U32> _cameraUpdateListeners;
        /// Scene::load must be called by every scene. Add a load flag to make sure!
        bool _loadComplete = false;
-       /// Schedule a scene graph parse with the physics engine to recreate/recheck
-       /// the collision meshes used by each node
-       bool _cookCollisionMeshesScheduled = false;
 
    private:
        SharedMutex _tasksMutex;
        vectorEASTL<Task*> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
-       SceneState* _sceneState = nullptr;
+       eastl::unique_ptr<SceneState> _sceneState;
        vectorEASTL<SGNRayResult> _sceneSelectionCandidates;
 
    protected:
-       LightPool* _lightPool = nullptr;
-       SceneInput* _input = nullptr;
-       PhysicsSceneInterface* _pxScene = nullptr;
-       SceneEnvironmentProbePool* _envProbePool = nullptr;
+       eastl::unique_ptr<LightPool> _lightPool;
+       eastl::unique_ptr<SceneInput> _input;
+       eastl::unique_ptr<SceneEnvironmentProbePool> _envProbePool;
 
        IMPrimitive* _linesPrimitive = nullptr;
        vectorEASTL<IMPrimitive*> _octreePrimitives;
@@ -441,7 +435,7 @@ class SceneManager {
     }
 
     static SceneGUIElements* gui(Scene& scene) noexcept {
-        return scene._GUI;
+        return scene._GUI.get();
     }
 
     static void resetSelection(Scene& scene, const PlayerIndex idx) {
@@ -461,7 +455,7 @@ class SceneManager {
     }
 
     static SceneEnvironmentProbePool* getEnvProbes(const Scene& scene) noexcept {
-        return scene._envProbePool;
+        return scene._envProbePool.get();
     }
 
     friend class Divide::SceneManager;
@@ -469,7 +463,7 @@ class SceneManager {
 
 class SceneRenderPass {
     static SceneEnvironmentProbePool* getEnvProbes(const Scene& scene) noexcept {
-        return scene._envProbePool;
+        return scene._envProbePool.get();
     }
 
     friend class Divide::RenderPass;
@@ -479,10 +473,14 @@ class SceneRenderPass {
 class SceneEnvironmentProbeComponent
 {
     static void registerProbe(Scene& scene, EnvironmentProbeComponent* probe) noexcept {
+        DIVIDE_ASSERT(scene._envProbePool != nullptr);
+
         scene._envProbePool->registerProbe(probe);
     }
 
     static void unregisterProbe(Scene& scene, EnvironmentProbeComponent* probe) noexcept {
+        DIVIDE_ASSERT(scene._envProbePool != nullptr);
+
         scene._envProbePool->unregisterProbe(probe);
     }
     friend class Divide::EnvironmentProbeComponent;
@@ -506,7 +504,7 @@ class SceneGraph {
     }
 
     static SceneEnvironmentProbePool* getEnvProbes(const Scene& scene) noexcept {
-        return scene._envProbePool;
+        return scene._envProbePool.get();
     }
 
     friend class Divide::SceneGraph;
@@ -514,7 +512,7 @@ class SceneGraph {
 
 class SceneGUI {
     static SceneGUIElements* guiElements(Scene& scene) noexcept {
-        return scene._GUI;
+        return scene._GUI.get();
     }
 
     friend class Divide::GUI;

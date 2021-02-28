@@ -81,8 +81,8 @@ public:
     static bool ProbesDirty()                 noexcept { return s_probesDirty; }
     static void ProbesDirty(const bool state) noexcept { s_probesDirty = state; }
 
-    static void OnNodeUpdated(SceneEnvironmentProbePool* probePool, const SceneGraphNode& node);
-    static void OnTimeOfDayChange(SceneEnvironmentProbePool* probePool);
+    static void OnNodeUpdated(SceneEnvironmentProbePool& probePool, const SceneGraphNode& node);
+    static void OnTimeOfDayChange(SceneEnvironmentProbePool& probePool);
 
 protected:
     mutable SharedMutex _probeLock;

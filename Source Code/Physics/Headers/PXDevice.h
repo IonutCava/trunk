@@ -63,11 +63,12 @@ public:
     void update(U64 deltaTimeUS) override;
     void process(U64 deltaTimeUS) override;
     void idle() override;
-    void setPhysicsScene(PhysicsSceneInterface* targetScene) override;
+    bool convertActor(PhysicsAsset* actor, PhysicsGroup newGroup) override;
 
-    PhysicsSceneInterface* NewSceneInterface(Scene& scene) override;
+    bool initPhysicsScene(Scene& scene) override;
+    bool destroyPhysicsScene() override;
 
-    PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) override;
+    PhysicsAsset* createRigidActor(SceneGraphNode* node, RigidBodyComponent& parentComp) override;
 
     [[nodiscard]] PhysicsAPIWrapper& getImpl() noexcept { assert(_api != nullptr); return *_api; }
     [[nodiscard]] const PhysicsAPIWrapper& getImpl() const noexcept { assert(_api != nullptr); return *_api; }

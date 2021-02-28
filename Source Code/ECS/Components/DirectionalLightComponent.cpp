@@ -76,24 +76,6 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode* sgn, Platfo
     _feedbackContainers.resize(csmSplitCount());
 }
 
-void DirectionalLightComponent::PreUpdate(const U64 deltaTime) {
-    using Parent = BaseComponentType<DirectionalLightComponent, ComponentType::DIRECTIONAL_LIGHT>;
-
-    if (drawImpostor() || showDirectionCone()) {
-        const F32 coneDist = 11.f;
-        const Camera* playerCam = getSGN()->sceneGraph()->parentScene().playerCamera();
-        // Try and place the cone in such a way that it's always in view, because directional lights have no "source"
-        const vec3<F32> min = -coneDist * directionCache() + 
-                              playerCam->getEye() + 
-                             playerCam->getForwardDir() * 10.0f + 
-                             playerCam->getRightDir() * 2.0f;
-
-        context().gfx().debugDrawCone(min, directionCache(), coneDist, 1.f, getDiffuseColour());
-    }
-
-    Parent::PreUpdate(deltaTime);
-}
-
 void DirectionalLightComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
         updateCache(data);

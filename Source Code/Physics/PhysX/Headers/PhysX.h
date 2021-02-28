@@ -38,6 +38,7 @@
 #endif
 
 #include "PhysXActor.h"
+#include "PhysXSceneInterface.h"
 #include "Physics/Headers/PhysicsAPIWrapper.h"
 
 constexpr auto MAX_ACTOR_QUEUE = 30;
@@ -45,16 +46,13 @@ constexpr auto MAX_ACTOR_QUEUE = 30;
 namespace Divide {
 
 class PhysX;
-class PhysXSceneInterface;
-
-
 class PxDefaultAllocator final : public physx::PxAllocatorCallback {
     void* allocate(const size_t size, const char*, const char*, int)  override {
-    	return malloc_aligned(size, 16);
+        return malloc_aligned(size, 16);
     }
 
     void deallocate(void* ptr)  override {
-    	malloc_free(ptr);
+        malloc_free(ptr);
     }
 };
 
@@ -66,7 +64,6 @@ public:
     PhysX() = default;
     ~PhysX();
 
-public:
     ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) override;
     bool closePhysicsAPI() override;
     void update(U64 deltaTimeUS) override;
@@ -75,25 +72,30 @@ public:
 
     void updateTimeStep(U8 timeStepFactor, F32 simSpeed) override;
 
-    PhysicsSceneInterface* NewSceneInterface(Scene& scene) override;
+    bool initPhysicsScene(Scene& scene) override;
+    bool destroyPhysicsScene() override;
 
     [[nodiscard]] physx::PxPhysics* getSDK() const noexcept { return _gPhysicsSDK; }
-    void setPhysicsScene(PhysicsSceneInterface* targetScene) override;
 
-    PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) override;
+    PhysicsAsset* createRigidActor(SceneGraphNode* node, RigidBodyComponent& parentComp) override;
 
-
+    bool convertActor(PhysicsAsset* actor, PhysicsGroup newGroup) override;
     void togglePvdConnection() const;
     void createPvdConnection(const char* ip, physx::PxU32 port, physx::PxU32 timeout, bool useFullConnection);
 
+#if PX_SUPPORT_GPU_PHYSX
+    POINTER_R(physx::PxCudaContextManager, cudaContextManager, nullptr);
+#endif //PX_SUPPORT_GPU_PHYSX
+
 protected:
-    PhysicsSceneInterface* _targetScene = nullptr;
+    eastl::unique_ptr<PhysXSceneInterface> _targetScene;
 
 private:
     F32 _simulationSpeed = 1.0f;
     physx::PxPhysics* _gPhysicsSDK = nullptr;
     physx::PxCooking* _cooking = nullptr;
     physx::PxFoundation* _foundation = nullptr;
+    physx::PxMaterial* _defaultMaterial = nullptr;
     physx::PxReal _timeStep = 0.0f;
     physx::PxU8   _timeStepFactor = 0;
     physx::PxReal _accumulator = 0.0f;
@@ -102,9 +104,9 @@ private:
     physx::PxPvdInstrumentationFlags  _pvdFlags{};
 
     static physx::PxDefaultAllocator _gDefaultAllocatorCallback;
-    static physx::PxDefaultErrorCallback _gDefaultErrorCallback;
 
-    static hashMap<stringImpl, physx::PxTriangleMesh*> _gMeshCache;
+    static SharedMutex s_meshCacheLock;
+    static hashMap<U64, physx::PxTriangleMesh*> s_gMeshCache;
 };
 
 };  // namespace Divide

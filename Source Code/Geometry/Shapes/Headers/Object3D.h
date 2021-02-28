@@ -102,38 +102,53 @@ class Object3D : public SceneNode {
     /// (and all subobjects) on or off
     virtual void playAnimations(const SceneGraphNode* sgn, bool state);
 
-    void setGeometryPartitionID(const U8 lodIndex, const U16 ID) noexcept {
+    [[nodiscard]] U8 getGeometryPartitionCount() const noexcept {
+        U8 ret = 0;
+        for (auto partition : _geometryPartitionIDs) {
+            if (partition == VertexBuffer::INVALID_PARTITION_ID) {
+                break;
+            }
+            ++ret;
+        }
+
+        return ret;
+    }
+
+    [[nodiscard]] U16 getGeometryPartitionID(const U8 lodIndex) noexcept {
+        return _geometryPartitionIDs[std::min(lodIndex, to_U8(_geometryPartitionIDs.size()))];
+    }
+
+    void setGeometryPartitionID(const U8 lodIndex, const U16 partitionID) noexcept {
         if (lodIndex < _geometryPartitionIDs.size()) {
-            _geometryPartitionIDs[lodIndex] = ID;
+            _geometryPartitionIDs[lodIndex] = partitionID;
         }
     }
 
-    /// Procedural geometry deformation support?
-    vectorEASTL<vec3<U32> >& getTriangles() noexcept {
-        return _geometryTriangles;
+    [[nodiscard]] vectorEASTL<vec3<U32>>& getTriangles(const U16 partitionID) noexcept {
+        if (partitionID >= _geometryTriangles.size()) {
+            _geometryTriangles.resize(partitionID + 1);
+        }
+
+        return _geometryTriangles[std::min(partitionID, to_U16(_geometryTriangles.size()))];
     }
 
-    const vectorEASTL<vec3<U32> >& getTriangles() const noexcept {
-        return _geometryTriangles;
+    [[nodiscard]] const vectorEASTL<vec3<U32>>& getTriangles(const U16 partitionID) const noexcept {
+        DIVIDE_ASSERT(partitionID < _geometryTriangles.size());
+        return _geometryTriangles[std::min(partitionID, to_U16(_geometryTriangles.size()))];
     }
 
-    void reserveTriangleCount(const U32 size) {
-        _geometryTriangles.reserve(size);
-    }
+    void addTriangles(const U16 partitionID, const vectorEASTL<vec3<U32>>& triangles) {
+        if (partitionID >= _geometryTriangles.size()) {
+            _geometryTriangles.resize(partitionID + 1);
+        }
 
-    void addTriangle(const vec3<U32>& triangle) {
-        _geometryTriangles.push_back(triangle);
-    }
-
-    void addTriangles(const vectorEASTL<vec3<U32>>& triangles) {
-        reserveTriangleCount(to_U32(triangles.size() + _geometryTriangles.size()));
-        _geometryTriangles.insert(cend(_geometryTriangles),
-                                  cbegin(triangles),
-                                  cend(triangles));
+        _geometryTriangles[partitionID].insert(cend(_geometryTriangles[partitionID]),
+                                               cbegin(triangles),
+                                               cend(triangles));
     }
 
     // Create a list of triangles from the vertices + indices lists based on primitive type
-    bool computeTriangleList();
+    bool computeTriangleList(U16 partitionID, bool force = false);
 
     static vectorEASTL<SceneGraphNode*> filterByType(const vectorEASTL<SceneGraphNode*>& nodes, ObjectType filter);
 
@@ -169,7 +184,8 @@ class Object3D : public SceneNode {
     RigidBodyShape _rigidBodyShape;
     /// 3 indices, pointing to position values, that form a triangle in the mesh.
     /// used, for example, for cooking collision meshes
-    vectorEASTL<vec3<U32> > _geometryTriangles;
+    /// We keep separate triangle lists per partition
+    vectorEASTL<vectorEASTL<vec3<U32>>> _geometryTriangles;
 
   private:
      /// A custom, override vertex buffer

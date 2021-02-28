@@ -77,6 +77,7 @@ void Mesh::postLoad(SceneGraphNode* sgn) {
                                to_base(ComponentType::TRANSFORM) |
                                to_base(ComponentType::BOUNDS) |
                                to_base(ComponentType::RENDERING) |
+                               to_base(ComponentType::RIGID_BODY) |
                                to_base(ComponentType::NAVIGATION);
 
     constexpr U32 skinnedMask = normalMask |
@@ -96,15 +97,8 @@ void Mesh::postLoad(SceneGraphNode* sgn) {
 
         subMeshDescriptor._node = submesh;
         subMeshDescriptor._componentMask = subMeshSkinned ? skinnedMask : normalMask;
-        if (sgn->get<RigidBodyComponent>() != nullptr) {
-            subMeshDescriptor._componentMask |= to_base(ComponentType::RIGID_BODY);
-        }
         subMeshDescriptor._name = Util::StringFormat("%s_%d", sgn->name().c_str(), submesh->getID());
         SceneGraphNode* subSGN = sgn->addChildNode(subMeshDescriptor);
-
-        if (BitCompare(subMeshDescriptor._componentMask, ComponentType::RIGID_BODY)) {
-            subSGN->get<RigidBodyComponent>()->physicsGroup(sgn->get<RigidBodyComponent>()->physicsGroup());
-        }
 
         RenderingComponent* rComp = sgn->get<RenderingComponent>();
         if (rComp != nullptr) {

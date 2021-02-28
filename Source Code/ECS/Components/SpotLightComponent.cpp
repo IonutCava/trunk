@@ -81,16 +81,6 @@ F32 SpotLightComponent::coneSlantHeight() const noexcept {
     return Sqrt(SQUARED(coneRadius) + SQUARED(coneHeight));
 }
 
-void SpotLightComponent::PreUpdate(const U64 deltaTime) {
-    using Parent = BaseComponentType<SpotLightComponent, ComponentType::SPOT_LIGHT>;
-
-    if (_drawImpostor) {
-        _parentPool.context().gfx().debugDrawCone(positionCache(), directionCache(), range(), outerConeRadius(), getDiffuseColour());
-    }
-
-    Parent::PreUpdate(deltaTime);
-}
-
 void SpotLightComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
         updateCache(data);

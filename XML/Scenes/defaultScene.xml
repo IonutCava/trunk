@@ -13,7 +13,6 @@
 <options>
     <visibility>1000</visibility>
     <cameraSpeed move="35" turn="35"/>
-    <autoCookPhysicsAssets>true</autoCookPhysicsAssets>
 </options>
 <fog>
     <fogDensity>0.001</fogDensity>

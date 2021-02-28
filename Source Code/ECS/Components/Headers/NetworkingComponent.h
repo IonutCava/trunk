@@ -41,7 +41,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class LocalClient;
-class NetworkingComponent final : public BaseComponentType<NetworkingComponent, ComponentType::NETWORKING> {
+BEGIN_COMPONENT(Networking, ComponentType::NETWORKING)
 public:
     NetworkingComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     ~NetworkingComponent();
@@ -69,9 +69,7 @@ private:
     
 
     static hashMap<I64, NetworkingComponent*> s_NetComponents;
-};
-
-INIT_COMPONENT(NetworkingComponent);
+END_COMPONENT(Networking);
 
 } //namespace Divide
 

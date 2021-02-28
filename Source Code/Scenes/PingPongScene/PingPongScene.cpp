@@ -305,7 +305,7 @@ bool PingPongScene::load(const Str256& name) {
         to_base(ComponentType::NETWORKING);
     _ballSGN = _sceneGraph->getRoot()->addChildNode(ballNodeDescriptor);
     _ballSGN->get<TransformComponent>()->translate(vec3<F32>(0, 2, 2));
-    _ballSGN->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_KINEMATIC);
+    _ballSGN->get<RigidBodyComponent>()->physicsCollisionGroup(PhysicsGroup::GROUP_KINEMATIC);
     // Add some taunts
     _quotes.push_back("Ha ha ... even Odin's laughin'!");
     _quotes.push_back("If you're a ping-pong player, I'm Jimmy Page");

@@ -46,10 +46,6 @@ namespace Divide {
         return _ID(Util::StringFormat("%s_%s", _parentSGN->name().c_str(), _editorComponent.name().c_str()).c_str());
     }
 
-    void SGNComponent::PreUpdate(const U64 deltaTime) {
-        ACKNOWLEDGE_UNUSED(deltaTime);
-    }
-
     bool SGNComponent::enabled() const {
         return _enabled;
     }
@@ -58,22 +54,8 @@ namespace Divide {
         _enabled = state;
     }
 
-    void SGNComponent::Update(const U64 deltaTime) {
-        ACKNOWLEDGE_UNUSED(deltaTime);
-    }
-
-    void SGNComponent::PostUpdate(const U64 deltaTime) {
-        ACKNOWLEDGE_UNUSED(deltaTime);
-    }
-
     void SGNComponent::OnData(const ECS::CustomEvent& data) {
         ACKNOWLEDGE_UNUSED(data);
-    }
-
-    void SGNComponent::OnFrameStart() {
-    }
-
-    void SGNComponent::OnFrameEnd() {
     }
 
 } //namespace Divide

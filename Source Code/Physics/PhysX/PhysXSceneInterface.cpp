@@ -7,6 +7,8 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "ECS/Components/Headers/TransformComponent.h"
+#include "Headers/PhysX.h"
+#include "Physics/Headers/PXDevice.h"
 
 using namespace physx;
 
@@ -15,20 +17,44 @@ namespace Divide {
 enum class PhysXSceneInterfaceState : U8 {
     STATE_LOADING_ACTORS
 };
+#ifdef USE_MBP
+
+static void setupMBP(PxScene& scene) {
+    const float range = 1000.0f;
+    const PxU32 subdiv = 4;
+    // const PxU32 subdiv = 1;
+    // const PxU32 subdiv = 2;
+    // const PxU32 subdiv = 8;
+
+    const PxVec3 min(-range);
+    const PxVec3 max(range);
+    const PxBounds3 globalBounds(min, max);
+
+    PxBounds3 bounds[256];
+    const PxU32 nbRegions = PxBroadPhaseExt::createRegionsFromWorldBounds(bounds, globalBounds, subdiv);
+
+    for (PxU32 i = 0; i < nbRegions; i++) 	{
+        PxBroadPhaseRegion region;
+        region.bounds = bounds[i];
+        region.userData = (void*)i;
+        scene.addBroadPhaseRegion(region);
+    }
+}
+#endif //USE_MBP
 
 PhysXSceneInterface::PhysXSceneInterface(Scene& parentScene)
-    : PhysicsSceneInterface(parentScene),
-      _gScene(nullptr),
-      _cpuDispatcher(nullptr)
+    : PhysicsSceneInterface(parentScene)
 {
 }
 
-PhysXSceneInterface::~PhysXSceneInterface() {
+PhysXSceneInterface::~PhysXSceneInterface()
+{
     release();
 }
 
 bool PhysXSceneInterface::init() {
-    PxPhysics* gPhysicsSDK = static_cast<PhysX&>(_parentScene.context().pfx().getImpl()).getSDK();
+    const PhysX& physX = static_cast<PhysX&>(_parentScene.context().pfx().getImpl());
+    PxPhysics* gPhysicsSDK = physX.getSDK();
     // Create the scene
     if (!gPhysicsSDK) {
         Console::errorfn(Locale::Get(_ID("ERROR_PHYSX_SDK")));
@@ -36,10 +62,9 @@ bool PhysXSceneInterface::init() {
     }
 
     PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
-    sceneDesc.gravity =
-        PxVec3(DEFAULT_GRAVITY.x, DEFAULT_GRAVITY.y, DEFAULT_GRAVITY.z);
+    sceneDesc.gravity = PxVec3(DEFAULT_GRAVITY.x, DEFAULT_GRAVITY.y, DEFAULT_GRAVITY.z);
     if (!sceneDesc.cpuDispatcher) {
-        _cpuDispatcher = PxDefaultCpuDispatcherCreate(3);
+        _cpuDispatcher = PxDefaultCpuDispatcherCreate(std::max(2u, HardwareThreadCount() - 2u));
         if (!_cpuDispatcher) {
             Console::errorfn(Locale::Get(_ID("ERROR_PHYSX_INTERFACE_CPU_DISPATCH")));
         }
@@ -50,51 +75,72 @@ bool PhysXSceneInterface::init() {
         sceneDesc.filterShader = PxDefaultSimulationFilterShader;
     }
 
+#if PX_SUPPORT_GPU_PHYSX
+    if (!sceneDesc.cudaContextManager)
+        sceneDesc.cudaContextManager = physX.cudaContextManager();
+#endif //PX_SUPPORT_GPU_PHYSX
+
+    //sceneDesc.frictionType = PxFrictionType::eTWO_DIRECTIONAL;
+    //sceneDesc.frictionType = PxFrictionType::eONE_DIRECTIONAL;
+    //sceneDesc.flags |= PxSceneFlag::eENABLE_GPU_DYNAMICS;
+    sceneDesc.flags |= PxSceneFlag::eENABLE_PCM;
+    //sceneDesc.flags |= PxSceneFlag::eENABLE_AVERAGE_POINT;
+    sceneDesc.flags |= PxSceneFlag::eENABLE_STABILIZATION;
+    //sceneDesc.flags |= PxSceneFlag::eADAPTIVE_FORCE;
+    sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
+    sceneDesc.sceneQueryUpdateMode = PxSceneQueryUpdateMode::eBUILD_ENABLED_COMMIT_DISABLED;
+
+    //sceneDesc.flags |= PxSceneFlag::eDISABLE_CONTACT_CACHE;
+    //sceneDesc.broadPhaseType =  PxBroadPhaseType::eGPU;
+    //sceneDesc.broadPhaseType = PxBroadPhaseType::eSAP;
+    sceneDesc.gpuMaxNumPartitions = 8;
+    //sceneDesc.solverType = PxSolverType::eTGS;
+#ifdef USE_MBP
+    sceneDesc.broadPhaseType = PxBroadPhaseType::eMBP;
+#endif //USE_MBP
+
     _gScene = gPhysicsSDK->createScene(sceneDesc);
     if (!_gScene) {
         Console::errorfn(Locale::Get(_ID("ERROR_PHYSX_INTERFACE_CREATE_SCENE")));
         return false;
     }
 
+    PxSceneWriteLock scopedLock(*_gScene);
+    const PxSceneFlags flag = _gScene->getFlags();
+    PX_UNUSED(flag);
     _gScene->setVisualizationParameter(PxVisualizationParameter::eSCALE, 1.0);
-    _gScene->setVisualizationParameter(
-        PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);
-    PxMaterial* planeMaterial = gPhysicsSDK->createMaterial(0.9f, 0.1f, 1.0f);
-    _materials.push_back(planeMaterial);
-    PxMaterial* cubeMaterial = gPhysicsSDK->createMaterial(0.1f, 0.4f, 1.0f);
-    _materials.push_back(cubeMaterial);
-    PxMaterial* sphereMaterial = gPhysicsSDK->createMaterial(0.6f, 0.1f, 0.6f);
-    _materials.push_back(sphereMaterial);
+    _gScene->setVisualizationParameter(PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);
+    PxPvdSceneClient* pvdClient = _gScene->getScenePvdClient();
+    if (pvdClient) {
+        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+    }
+
+#ifdef USE_MBP
+    setupMBP(*_gScene);
+#endif //USE_MBP
+
     return true;
 }
 
+#define SAFE_RELEASE(X) if (X != nullptr) { X->release(); X = nullptr;}
 void PhysXSceneInterface::release() {
-    if (!_gScene) {
-        return;
-    }
-
     Console::d_printfn(Locale::Get(_ID("STOP_PHYSX_SCENE_INTERFACE")));
 
     idle();
-    for (PhysXActor* actor : _sceneRigidActors) {
-        actor->_actor->release();
-    }
 
-    MemoryManager::DELETE_CONTAINER(_sceneRigidActors);
-
-    if (_cpuDispatcher) {
-        _cpuDispatcher->release();
-    }
-    _gScene->release();
-    _gScene = nullptr;
+    SAFE_RELEASE(_cpuDispatcher);
+    SAFE_RELEASE(_gScene);
 }
 
 void PhysXSceneInterface::idle() {
-    PhysXActor* crtActor = nullptr;
-    while (_sceneRigidQueue.try_dequeue(crtActor)) {
-        assert(crtActor != nullptr);
-        _sceneRigidActors.push_back(crtActor);
-        addToScene(*crtActor);
+    if (_gScene != nullptr) {
+        PhysXActor* crtActor = nullptr;
+        while (_sceneRigidQueue.try_dequeue(crtActor)) {
+            _sceneRigidActors.push_back(crtActor);
+            _gScene->addActor(*(crtActor->_actor));
+        }
     }
 }
 
@@ -115,7 +161,9 @@ void PhysXSceneInterface::update(const U64 deltaTimeUS) {
     // update each render object with the new transform
     for (PxU32 i = 0; i < nbActiveActors; ++i) {
         PxRigidActor* actor = static_cast<PxRigidActor*>(activeActors[i]);
-        TransformComponent* tComp = static_cast<TransformComponent*>(activeActors[i]->userData);
+        SceneGraphNode* node = static_cast<SceneGraphNode*>(activeActors[i]->userData);
+        TransformComponent* tComp = node->get<TransformComponent>();
+
         PxTransform pT = actor->getGlobalPose();
         const PxQuat pQ = pT.q.getConjugate();
         const PxVec3 pP = pT.p;
@@ -133,8 +181,7 @@ void PhysXSceneInterface::process(const U64 deltaTimeUS) {
         return;
     }
 
-    const PxReal deltaTimeMS = 
-        Time::MicrosecondsToMilliseconds<PxReal>(deltaTimeUS);
+    const PxReal deltaTimeMS =  Time::MicrosecondsToMilliseconds<PxReal>(deltaTimeUS);
 
     _gScene->simulate(deltaTimeMS);
 
@@ -143,97 +190,18 @@ void PhysXSceneInterface::process(const U64 deltaTimeUS) {
     }
 }
 
-void PhysXSceneInterface::addRigidActor(PhysXActor* const actor, const bool threaded) {
+void PhysXSceneInterface::addRigidActor(PhysXActor* const actor) {
     assert(actor != nullptr);
-
-    if (threaded) {
-        _sceneRigidQueue.enqueue(actor);
-    } else {
-        _sceneRigidActors.push_back(actor);
-    }
+    // We DO NOT take ownership of actors. Ownership remains with RigidBodyComponent
+    //_sceneRigidQueue.enqueue(actor);
 }
 
-void PhysXSceneInterface::addToScene(PhysXActor& actor) {
-    ACKNOWLEDGE_UNUSED(actor);
-    constexpr U32 normalMask = to_base(ComponentType::NAVIGATION) |
-                               to_base(ComponentType::TRANSFORM) |
-                               to_base(ComponentType::RIGID_BODY) |
-                               to_base(ComponentType::BOUNDS) |
-                               to_base(ComponentType::RENDERING) |
-                               to_base(ComponentType::NETWORKING);
-    ACKNOWLEDGE_UNUSED(normalMask);
-   /* STUBBED("ToDo: Only 1 shape per actor for now. Also, maybe use a factory or something. Fix This! -Ionut")
-    SceneNode* sceneNode = nullptr;
-
-    _gScene->addActor(*(actor._actor));
-    U32 nbActors =
-        _gScene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC |
-                             PxActorTypeSelectionFlag::eRIGID_STATIC);
-    PxShape** shapes =
-        MemoryManager_NEW PxShape * [actor._actor->getNbShapes()];
-    actor._actor->getShapes(shapes, actor._actor->getNbShapes());
-
-    SceneGraphNode* targetNode;
-    stringImpl sgnName = "";
-    bool shadowState = true;
-    switch (actor._type) {
-        case PxGeometryType::eBOX: {
-            ResourceDescriptor boxDescriptor("BoxActor");
-            sceneNode = CreateResource<Box3D>(boxDescriptor);
-
-            sgnName = "BoxActor_" + Util::to_string(nbActors);
-
-            if (sceneNode->GetRef() == 1) {
-                Material* boxMaterial = CreateResource<Material>(
-                    ResourceDescriptor("BoxActor_material"));
-                boxMaterial->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
-                boxMaterial->setEmissive(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
-                boxMaterial->setShininess(2);
-                boxMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-                sceneNode->setMaterialTpl(boxMaterial);
-            }
-        } break;
-
-        case PxGeometryType::ePLANE: {
-            sgnName = "PlaneActor";
-            targetNode = parentScene.sceneGraph().findNode(sgnName).lock();
-            if (targetNode != nullptr) {
-                actor.setParent(targetNode->get<RigidBodyComponent>());
-                return;
-            }
-
-            ResourceDescriptor planeDescriptor(sgnName);
-            planeDescriptor.setFlag(true);
-            sceneNode = CreateResource<Quad3D>(planeDescriptor);
-            Material* planeMaterial = CreateResource<Material>(
-                ResourceDescriptor(sgnName + "_material"));
-            planeMaterial->setDiffuse(vec4<F32>(0.4f, 0.1f, 0.1f, 1.0f));
-            planeMaterial->setEmissive(vec4<F32>(0.3f, 0.3f, 0.3f, 1.0f));
-            planeMaterial->setShininess(0);
-            planeMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-            shadowState = false;
-            sceneNode->setMaterialTpl(planeMaterial);
-        } break;
+void PhysXSceneInterface::updateRigidActor(PxRigidActor* oldActor, PxRigidActor* newActor) const { 
+    if (oldActor != nullptr) {
+        _gScene->removeActor(*oldActor);
     }
-
-    MemoryManager::DELETE_ARRAY(shapes);
-
-    if (actor._type != PxGeometryType::eTRIANGLEMESH) {
-        if (sceneNode) {
-            sceneNode->renderState().setDrawState(true);
-            targetNode =
-                _parentScene->sceneGraph().getRoot().addChildNode(sceneNode, normalMask, sgnName);
-            targetNode->get<RenderingComponent>()->castsShadows(
-                shadowState);
-        }
-
-        actor._actorName = sgnName;
-        actor.getParent()->setScale(actor._userData);
-        actor._actor->userData = actor.getParent();
-    } 
-
-    assert(targetNode != nullptr);
-    actor.setParent(targetNode->get<RigidBodyComponent>());
-    */
+    if (newActor != nullptr) {
+        _gScene->addActor(*newActor);
+    }
 }
 };

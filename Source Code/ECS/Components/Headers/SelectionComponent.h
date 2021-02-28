@@ -37,12 +37,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SGNComponent.h"
 
 namespace Divide {
-    class SelectionComponent final : public BaseComponentType<SelectionComponent, ComponentType::SELECTION> {
+BEGIN_COMPONENT(Selection, ComponentType::SELECTION)
     public:
         SelectionComponent(SceneGraphNode* parentSGN, PlatformContext& context);
-    };
-
-    INIT_COMPONENT(SelectionComponent);
+END_COMPONENT(Selection);
 
 } //namespace Divide
 

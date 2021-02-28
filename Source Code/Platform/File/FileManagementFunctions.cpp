@@ -309,6 +309,7 @@ bool clearCache(const CacheType type) {
         case CacheType::SHADER_BIN : cache = Paths::Shaders::g_cacheLocationBin; break;
         case CacheType::TERRAIN    : cache = Paths::g_terrainCacheLocation; break;
         case CacheType::MODELS     : cache = Paths::g_geometryCacheLocation; break;
+        case CacheType::COLLISION  : cache = Paths::g_collisionMeshCacheLocation; break;
         case CacheType::TEXTURES   : cache = Paths::Textures::g_metadataLocation; break;
 
         case CacheType::COUNT:

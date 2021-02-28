@@ -61,48 +61,6 @@ AnimationComponent::AnimationComponent(SceneGraphNode* parentSGN, PlatformContex
     });
 }
 
-void AnimationComponent::setParentTimeStamp(const U64 timestamp) noexcept {
-    _parentTimeStamp = Time::MicrosecondsToMilliseconds<D64>(timestamp);
-}
-
-void AnimationComponent::incParentTimeStamp(const U64 timestamp) noexcept {
-    _parentTimeStamp += Time::MicrosecondsToMilliseconds<D64>(timestamp * animationSpeed());
-}
-
-void AnimationComponent::Update(const U64 deltaTimeUS) {
-    if (!_animator || _parentTimeStamp == _currentTimeStamp) {
-        return;
-    }
-
-    _currentTimeStamp = _parentTimeStamp;
-
-    if (playAnimations()) {
-        if (_currentAnimIndex == -1) {
-            playAnimation(0);
-        }
-
-        // Update Animations
-        _frameIndex = _animator->frameIndexForTimeStamp(_currentAnimIndex, Time::MillisecondsToSeconds<D64>(_currentTimeStamp));
-
-        if (_currentAnimIndex != _previousAnimationIndex && _currentAnimIndex >= 0) {
-            _previousAnimationIndex = _currentAnimIndex;
-        }
-    }
-
-    // Resolve IK
-    //if (_resolveIK) {
-        /// Use CCD to move target joints to target positions
-    //}
-
-    // Resolve ragdoll
-    // if (_resolveRagdoll) {
-        /// Use PhysX actor from RigidBodyComponent to feed new bone positions/orientation
-        /// And read back ragdoll results to update transforms accordingly
-    //}
-    
-    BaseComponentType<AnimationComponent, ComponentType::ANIMATION>::Update(deltaTimeUS);
-}
-
 void AnimationComponent::resetTimers() noexcept {
     _currentTimeStamp = _parentTimeStamp = 0UL;
     _frameIndex = {};
@@ -212,41 +170,9 @@ bool AnimationComponent::frameTicked() const noexcept {
     return _frameIndex._prev != _frameIndex._curr;
 }
 
-const BoneTransform& AnimationComponent::transformsByIndex(const U32 animationID, const U32 index) const {
-    assert(_animator != nullptr);
-
-    return _animator->transforms(animationID, index);
-}
-
-mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeStamp, const stringImpl& name) const {
-    const Object3D& node = _parentSGN->getNode<Object3D>();
-    assert(_animator != nullptr);
-
-    if (node.getObjectType()._value != ObjectType::SUBMESH ||
-        node.getObjectType()._value == ObjectType::SUBMESH &&
-        !node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
-    {
-        mat4<F32> mat;
-        _parentSGN->get<TransformComponent>()->getWorldMatrix(mat);
-        return mat;
-    }
-
-    const I32 frameIndex = _animator->frameIndexForTimeStamp(animationID, timeStamp)._curr;
-
-    if (frameIndex == -1) {
-        return MAT4_IDENTITY;
-    }
-
-    return _animator->transforms(animationID, frameIndex).matrices().at(_animator->boneIndex(name));
-}
-
-Bone* AnimationComponent::getBoneByName(const stringImpl& bname) const {
-    return _animator != nullptr ? _animator->boneByName(bname) : nullptr;
-}
-
 AnimEvaluator& AnimationComponent::getAnimationByIndex(const I32 animationID) const {
     assert(_animator != nullptr);
-
     return _animator->animationByIndex(animationID);
 }
-}
+
+} //namespace Divide

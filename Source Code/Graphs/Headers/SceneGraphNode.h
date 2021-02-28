@@ -45,6 +45,7 @@ class SceneGraph;
 class SceneState;
 class PropertyWindow;
 class BoundsComponent;
+class TransformSystem;
 class RenderPassCuller;
 class RenderPassManager;
 class RenderPassExecutor;
@@ -66,6 +67,7 @@ struct SceneGraphNodeDescriptor {
 namespace Attorney {
     class SceneGraphNodeEditor;
     class SceneGraphNodeComponent;
+    class SceneGraphNodeSystem;
     class SceneGraphNodeSceneGraph;
     class SceneGraphNodeRenderPassCuller;
     class SceneGraphNodeRenderPassManager;
@@ -94,6 +96,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 {
     friend class Attorney::SceneGraphNodeEditor;
     friend class Attorney::SceneGraphNodeComponent;
+    friend class Attorney::SceneGraphNodeSystem;
     friend class Attorney::SceneGraphNodeSceneGraph;
     friend class Attorney::SceneGraphNodeRenderPassCuller;
     friend class Attorney::SceneGraphNodeRenderPassManager;
@@ -356,7 +359,6 @@ private:
     PROPERTY_R(I64, queuedNewParent, -1);
     PROPERTY_RW(U64, lockToCamera, 0u);
     PROPERTY_R(U64, elapsedTimeUS, 0u);
-    PROPERTY_R(U64, lastDeltaTimeUS, 0u);
     PROPERTY_R(U32, componentMask, 0u);
     PROPERTY_R(U32, nodeFlags, 0u);
     PROPERTY_R(U32, instanceCount, 1u);
@@ -412,11 +414,15 @@ namespace Attorney {
         friend class Divide::SceneGraph;
     };
 
-    class SceneGraphNodeComponent {
+    class SceneGraphNodeSystem
+    {
         static void setTransformDirty(SceneGraphNode* node, const U32 transformMask) {
             node->setTransformDirty(transformMask);
         }
+        friend class Divide::TransformSystem;
+    };
 
+    class SceneGraphNodeComponent {
         static void prepareRender(SceneGraphNode* node, RenderingComponent& rComp, const Camera& camera, const RenderStagePass& renderStagePass, const bool refreshData) {
             node->prepareRender(rComp, renderStagePass, camera, refreshData);
         }

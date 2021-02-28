@@ -2,8 +2,7 @@
 
 #include "Headers/Object3D.h"
 
-
-
+#include "Core/Headers/ByteBuffer.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -31,7 +30,7 @@ Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, const size_t 
     _rigidBodyShape(RigidBodyShape::SHAPE_COUNT)
 {
     _editorComponent.name(getTypeName().c_str());
-    _geometryPartitionIDs.fill(std::numeric_limits<U16>::max());
+    _geometryPartitionIDs.fill(VertexBuffer::INVALID_PARTITION_ID);
     _geometryPartitionIDs[0] = 0u;
 
     if (!getObjectFlag(ObjectFlag::OBJECT_FLAG_NO_VB)) {
@@ -98,7 +97,7 @@ VertexBuffer* Object3D::getGeometryVB() const {
 }
 
 void Object3D::rebuildInternal() {
-    computeTriangleList();
+    computeTriangleList(0);
 }
 
 void Object3D::prepareRender(SceneGraphNode* sgn,
@@ -151,10 +150,20 @@ void Object3D::buildDrawCommands(SceneGraphNode* sgn,
 }
 
 // Create a list of triangles from the vertices + indices lists based on primitive type
-bool Object3D::computeTriangleList() {
-    if (!_geometryTriangles.empty()) {
+bool Object3D::computeTriangleList(const U16 partitionID, const bool force) {
+    if(partitionID >= _geometryTriangles.size()) {
+        _geometryTriangles.resize(partitionID + 1);
+    }
+
+    vectorEASTL<vec3<U32>>& triangles = _geometryTriangles[partitionID];
+    if (!force && !triangles.empty()) {
         return true;
     }
+
+    if (!triangles.empty()) {
+        triangles.resize(0);
+    }
+
 
     VertexBuffer* geometry = getGeometryVB();
 
@@ -173,10 +182,6 @@ bool Object3D::computeTriangleList() {
                                    ? PrimitiveType::TRIANGLES
                                    : PrimitiveType::TRIANGLE_STRIP;
 
-    if (!_geometryTriangles.empty()) {
-        _geometryTriangles.resize(0);
-    }
-
     if (geometry->getIndexCount() == 0) {
         return false;
     }
@@ -186,7 +191,7 @@ bool Object3D::computeTriangleList() {
         const size_t indiceStart = 2 + partitionOffset;
         const size_t indiceEnd = indiceCount + partitionOffset;
         vec3<U32> curTriangle;
-        _geometryTriangles.reserve(indiceCount / 2);
+        triangles.reserve(indiceCount / 2);
         const vectorEASTL<U32>& indices = geometry->getIndices();
         for (size_t i = indiceStart; i < indiceEnd; i++) {
             curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
@@ -194,32 +199,30 @@ bool Object3D::computeTriangleList() {
             if (i % 2 != 0) {
                 std::swap(curTriangle.y, curTriangle.z);
             }
-            _geometryTriangles.push_back(curTriangle);
+            triangles.push_back(curTriangle);
         }
     } else if (type == PrimitiveType::TRIANGLES) {
         indiceCount /= 3;
-        _geometryTriangles.reserve(indiceCount);
+        triangles.reserve(indiceCount);
         const vectorEASTL<U32>& indices = geometry->getIndices();
         for (size_t i = 0; i < indiceCount; i += 3) {
-            _geometryTriangles.push_back(vec3<U32>(indices[i + 0],
-                                                    indices[i + 1],
-                                                    indices[i + 2]));
+            triangles.push_back(vec3<U32>(indices[i + 0],
+                                          indices[i + 1],
+                                          indices[i + 2]));
         }
     }
 
     // Check for degenerate triangles
-    _geometryTriangles.erase(
+    triangles.erase(
         eastl::partition(
-            begin(_geometryTriangles), end(_geometryTriangles),
+            begin(triangles), end(triangles),
             [](const vec3<U32>& triangle) -> bool {
                 return triangle.x != triangle.y && triangle.x != triangle.z &&
                     triangle.y != triangle.z;
             }),
-        end(_geometryTriangles));
+        end(triangles));
 
-    DIVIDE_ASSERT(!_geometryTriangles.empty(),
-                  "Object3D error: computeTriangleList() failed to generate "
-                  "any triangles!");
+    DIVIDE_ASSERT(!triangles.empty(), "Object3D error: computeTriangleList() failed to generate any triangles!");
     return true;
 }
 

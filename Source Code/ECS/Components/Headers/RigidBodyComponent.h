@@ -36,7 +36,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SGNComponent.h"
 #include "Physics/Headers/PhysicsAsset.h"
 
-
 namespace Divide {
 
     enum class PhysicsGroup : U8 {
@@ -49,32 +48,28 @@ namespace Divide {
         GROUP_COUNT
     };
 
-    class RigidBodyComponent final : public BaseComponentType<RigidBodyComponent, ComponentType::RIGID_BODY> {
+    BEGIN_COMPONENT(RigidBody, ComponentType::RIGID_BODY)
       public:
         RigidBodyComponent(SceneGraphNode* parentSGN, PlatformContext& context);
-        ~RigidBodyComponent() = default;
+        ~RigidBodyComponent();
 
-
-        void physicsGroup(const PhysicsGroup physicsGroup) noexcept { _physicsCollisionGroup = physicsGroup; }
-
-        [[nodiscard]] const PhysicsGroup& physicsGroup() const noexcept { return _physicsCollisionGroup; }
-
-        void cookCollisionMesh(const char* sceneName);
+        void physicsCollisionGroup(PhysicsGroup group);
 
         void onCollision(const RigidBodyComponent& collider);
 
         void onCollisionCbk(const DELEGATE<void, const RigidBodyComponent&>& cbk) { _collisionCbk = cbk; }
 
-      private:
-        bool filterCollission(const RigidBodyComponent& collider);
+        PROPERTY_R(PhysicsGroup, physicsCollisionGroup, PhysicsGroup::GROUP_COUNT);
 
       private:
-        PhysicsGroup _physicsCollisionGroup;
+        bool filterCollision(const RigidBodyComponent& collider);
+
+      private:
         eastl::unique_ptr<PhysicsAsset> _rigidBody;
         DELEGATE<void, const RigidBodyComponent&> _collisionCbk;
-    };
+    END_COMPONENT(RigidBody)
 
-    INIT_COMPONENT(RigidBodyComponent);
+    
 
 } //namespace Divide
 

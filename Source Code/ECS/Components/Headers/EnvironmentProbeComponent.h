@@ -49,12 +49,9 @@ namespace GFX {
     class CommandBuffer;
 } //namespace GFX
 
+BEGIN_COMPONENT_EXT1(EnvironmentProbe, ComponentType::ENVIRONMENT_PROBE, GUIDWrapper)
 
-class EnvironmentProbeComponent final : public BaseComponentType<EnvironmentProbeComponent, ComponentType::ENVIRONMENT_PROBE>,
-                                        public GUIDWrapper {
 public:
-    using Parent = BaseComponentType<EnvironmentProbeComponent, ComponentType::ENVIRONMENT_PROBE>;
-
     enum class ProbeType {
         TYPE_INFINITE = 0,
         TYPE_LOCAL,
@@ -78,8 +75,6 @@ public:
 public:
     explicit EnvironmentProbeComponent(SceneGraphNode* sgn, PlatformContext& context);
     ~EnvironmentProbeComponent();
-
-    void PreUpdate(U64 deltaTime) override;
 
     /// Returns true if the probe was updated, false if skipped
     bool refresh(GFX::CommandBuffer& bufferInOut);
@@ -129,9 +124,7 @@ protected:
 private:
     bool _queueRefresh = true;
     bool _drawImpostor = false;
-};
-
-INIT_COMPONENT(EnvironmentProbeComponent);
+END_COMPONENT(EnvironmentProbe);
 
 namespace TypeUtil {
     const char* EnvProveUpdateTypeToString(EnvironmentProbeComponent::UpdateType type) noexcept;

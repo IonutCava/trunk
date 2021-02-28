@@ -44,14 +44,14 @@ class AnimEvaluator;
 class SceneGraphNode;
 
 FWD_DECLARE_MANAGED_CLASS(SceneAnimator);
-class AnimationComponent final : public BaseComponentType<AnimationComponent, ComponentType::ANIMATION> {
+BEGIN_COMPONENT(Animation, ComponentType::ANIMATION)
    public:
       struct AnimData {
           vec2<U32> _boneBufferRange = { 0u, 0u };
           vec2<U32> _prevBoneBufferRange = { 0u, 0u };
           ShaderBuffer* _boneBuffer = nullptr;
       };
-
+      
    public:
     explicit AnimationComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     ~AnimationComponent() = default;
@@ -70,45 +70,33 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     [[nodiscard]] U8 boneCount() const;
     [[nodiscard]] bool frameTicked() const noexcept;
 
-    [[nodiscard]] Bone* getBoneByName(const stringImpl& bname) const;
-    [[nodiscard]] mat4<F32> getBoneTransform(U32 animationID, D64 timeStamp, const stringImpl& name) const;
     [[nodiscard]] const vectorEASTL<Line>& skeletonLines() const;
     [[nodiscard]] AnimData getAnimationData() const;
     
     [[nodiscard]] AnimEvaluator& getAnimationByIndex(I32 animationID) const;
-    [[nodiscard]] const BoneTransform& transformsByIndex(U32 animationID, U32 index) const;
 
     void resetTimers() noexcept;
-    void incParentTimeStamp(U64 timestamp) noexcept;
-    void setParentTimeStamp(U64 timestamp) noexcept;
 
     [[nodiscard]] D64 animationTimeStamp() const noexcept { return _currentTimeStamp; }
     [[nodiscard]] AnimEvaluator::FrameIndex frameIndex() const noexcept { return _frameIndex; }
     [[nodiscard]] I32 frameCount() const noexcept { return frameCount(_currentAnimIndex); }
 
-    [[nodiscard]] const BoneTransform& transformsByIndex(const U32 index) const { return transformsByIndex(_currentAnimIndex, index); }
     [[nodiscard]] AnimEvaluator& getCurrentAnimation() const { return getAnimationByIndex(animationIndex()); }
-    void updateAnimator(const SceneAnimator_ptr& animator) noexcept { _animator = animator; }
     [[nodiscard]] I32 animationIndex() const noexcept { return _currentAnimIndex; }
 
     PROPERTY_R(bool, showSkeleton, false);
     PROPERTY_RW(F32, animationSpeed, 1.f);
+    /// Pointer to the mesh's animator. Owned by the mesh!
+    PROPERTY_RW(SceneAnimator_ptr, animator, nullptr)
 
                   void playAnimations(const bool state)       noexcept { _playAnimations = state;}
     [[nodiscard]] bool playAnimations()                 const noexcept { return _playAnimations && s_globalAnimationState; }
 
    protected:
-    friend class AnimationSystem;
-    template<typename T, typename U>
-    friend class ECSSystem;
-    void Update(U64 deltaTimeUS) override;
-
     static void GlobalAnimationState(const bool state) { s_globalAnimationState = state; }
     [[nodiscard]] static bool GlobalAnimationState() noexcept { return s_globalAnimationState; }
 
    protected:
-    /// Pointer to the mesh's animator. Owned by the mesh!
-    std::shared_ptr<SceneAnimator> _animator = nullptr;
     /// Current animation index for the current SGN
     I32 _currentAnimIndex = -1;
     AnimEvaluator::FrameIndex _frameIndex = {};
@@ -123,9 +111,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     bool _playAnimations = true;
 
     static bool s_globalAnimationState;
-};
-
-INIT_COMPONENT(AnimationComponent);
+END_COMPONENT(Animation)
 
 }  // namespace Divide
-#endif
+#endif //_ANIMATION_COMPONENT_H_

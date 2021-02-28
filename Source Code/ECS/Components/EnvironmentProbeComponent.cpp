@@ -256,34 +256,6 @@ F32 EnvironmentProbeComponent::distanceSqTo(const vec3<F32>& pos) const {
     return _aabb.getCenter().distanceSquared(pos);
 }
 
-void EnvironmentProbeComponent::PreUpdate(const U64 deltaTime) {
-    using Parent = BaseComponentType<EnvironmentProbeComponent, ComponentType::ENVIRONMENT_PROBE>;
-    if (_drawImpostor || showParallaxAABB()) {
-        context().gfx().debugDrawSphere(_aabb.getCenter(), 0.5f, DefaultColours::BLUE);
-        context().gfx().debugDrawBox(_aabb.getMin(), _aabb.getMax(), DefaultColours::BLUE);
-    }
-
-    switch(_updateType) {
-        case UpdateType::ALWAYS:
-            if (_queueRefresh) {
-                dirty(true);
-            }
-            break;
-        case UpdateType::ON_RATE:
-            if (_queueRefresh) {
-                dirty(++_currentUpdateCall % _updateRate == 0);
-            }
-            break;
-        case UpdateType::ONCE:
-        case UpdateType::ON_DIRTY:
-            break;//Nothing needed
-        case UpdateType::COUNT:
-            DIVIDE_UNEXPECTED_CALL();
-            break;
-    }
-    Parent::PreUpdate(deltaTime);
-}
-
 void EnvironmentProbeComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
         const vec3<F32> pos = _parentSGN->get<TransformComponent>()->getPosition();

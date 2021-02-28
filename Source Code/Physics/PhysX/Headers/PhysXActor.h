@@ -44,7 +44,7 @@ namespace Divide {
 class PhysXActor final : public PhysicsAsset {
 public:
     explicit PhysXActor(RigidBodyComponent& parent);
-    ~PhysXActor() = default;
+    ~PhysXActor();
 
     void setPosition(const vec3<F32>& position) override;
     void setPosition(F32 x, F32 y, F32 z) override;
@@ -89,14 +89,14 @@ public:
 
     [[nodiscard]] TransformValues getValues() const override;
 
+    void physicsCollisionGroup(PhysicsGroup group) override;
 protected:
     friend class PhysX;
     friend class PhysXSceneInterface;
-    physx::PxRigidActor* _actor;
-    physx::PxGeometryType::Enum _type;
+    physx::PxRigidActor* _actor = nullptr;
+    physx::PxGeometryType::Enum _type = physx::PxGeometryType::eINVALID;
     stringImpl _actorName;
-    bool _isDynamic;
-    F32 _userData;
+    F32 _userData = 0.0f;
 
     mat4<F32> _cachedLocalMatrix;
 };

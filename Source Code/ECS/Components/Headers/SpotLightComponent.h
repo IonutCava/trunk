@@ -37,12 +37,9 @@
 
 namespace Divide {
 
-class SpotLightComponent final : public BaseComponentType<SpotLightComponent, ComponentType::SPOT_LIGHT>,
-                                 public Light
-{
+BEGIN_COMPONENT_EXT1(SpotLight, ComponentType::SPOT_LIGHT, Light)
    public:
     explicit SpotLightComponent(SceneGraphNode* sgn, PlatformContext& context);
-    void PreUpdate(U64 deltaTime) override;
 
     PROPERTY_RW(Angle::DEGREES<F32>, coneCutoffAngle, 35.0f);
     PROPERTY_RW(Angle::DEGREES<F32>, outerConeCutoffAngle, 15.0f);
@@ -59,9 +56,7 @@ class SpotLightComponent final : public BaseComponentType<SpotLightComponent, Co
 
    private:
      bool _drawImpostor = false;
-};
-
-INIT_COMPONENT(SpotLightComponent);
+END_COMPONENT(SpotLight);
 
 }  // namespace Divide
 

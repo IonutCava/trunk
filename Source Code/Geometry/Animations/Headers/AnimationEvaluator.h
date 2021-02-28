@@ -85,7 +85,7 @@ class AnimEvaluator {
 
     void evaluate(D64 dt, Bone* skeleton);
 
-    [[nodiscard]] FrameIndex frameIndexAt(D64 elapsedTime) const noexcept;
+    [[nodiscard]] FrameIndex frameIndexAt(D64 elapsedTimeS) const noexcept;
 
     [[nodiscard]] U32 frameCount() const noexcept { return to_U32(_transforms.size()); }
 

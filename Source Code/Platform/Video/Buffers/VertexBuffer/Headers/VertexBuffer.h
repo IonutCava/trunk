@@ -33,15 +33,13 @@
 #ifndef _VERTEX_BUFFER_OBJECT_H
 #define _VERTEX_BUFFER_OBJECT_H
 
-#include "config.h"
-
 #include "VertexDataInterface.h"
-#include "Core/Headers/ByteBuffer.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
+class ByteBuffer;
 
-/// Vertex Buffer interface class to allow API-independent implementation of data
+    /// Vertex Buffer interface class to allow API-independent implementation of data
 /// This class does NOT represent an API-level VB, such as: GL_ARRAY_BUFFER / D3DVERTEXBUFFER
 /// It is only a "buffer" for "vertex info" abstract of implementation. (e.g.:
 /// OGL uses a vertex array object for this)
@@ -49,6 +47,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
    public:
     constexpr static U32 PRIMITIVE_RESTART_INDEX_L = 0xFFFFFFFF;
     constexpr static U32 PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
+    constexpr static U16 INVALID_PARTITION_ID = 0xFFFF;
 
     struct Vertex {
         UColour4  _colour;

@@ -36,16 +36,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SGNComponent.h"
 
 namespace Divide {
-class ScriptComponent final : public BaseComponentType<ScriptComponent, ComponentType::SCRIPT> {
+BEGIN_COMPONENT(Script, ComponentType::SCRIPT)
    public:
     explicit ScriptComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     ~ScriptComponent() = default;
 
-    void Update(U64 deltaTimeUS) override;
-
-};
-
-INIT_COMPONENT(ScriptComponent);
+END_COMPONENT(Script);
 
 }  // namespace Divide
 #endif //_SCRIPT_COMPONENT_H_

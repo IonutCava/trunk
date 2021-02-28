@@ -253,25 +253,6 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, c
     _parentSGN->getNode().buildDrawCommands(_parentSGN, stagePass, crtCamera, pkg);
 }
 
-void RenderingComponent::Update(const U64 deltaTimeUS) {
-    if (_materialInstance != nullptr && _materialInstance->update(deltaTimeUS)) {
-        onMaterialChanged();
-    }
-
-    if (_parentSGN->getNode().rebuildDrawCommands()) {
-        for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
-            FlagsPerPassType& perPassFlags = _rebuildDrawCommandsFlags[s];
-            for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
-                FlagsPerIndex& perIndexFlags = perPassFlags[p];
-                perIndexFlags.fill(true);
-            }
-        }
-        _parentSGN->getNode().rebuildDrawCommands(false);
-    }
-
-    BaseComponentType<RenderingComponent, ComponentType::RENDERING>::Update(deltaTimeUS);
-}
-
 void RenderingComponent::onMaterialChanged() {
     OPTICK_EVENT();
 

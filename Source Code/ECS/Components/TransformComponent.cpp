@@ -88,46 +88,6 @@ namespace Divide {
         resetInterpolation();
     }
 
-    void TransformComponent::PreUpdate(const U64 deltaTimeUS) {
-        OPTICK_EVENT();
-
-        // If we have dirty transforms, inform everybody
-        const U32 updateMask = _transformUpdatedMask.load();
-        if (updateMask != to_base(TransformType::NONE)) {
-            Attorney::SceneGraphNodeComponent::setTransformDirty(_parentSGN, updateMask);
-            resetInterpolation();
-        }
-
-        BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::PreUpdate(deltaTimeUS);
-    }
-
-    void TransformComponent::Update(const U64 deltaTimeUS) {
-        // Cleanup our dirty transforms
-        const U32 previousMask = _transformUpdatedMask.exchange(to_U32(TransformType::NONE));
-        if (previousMask != to_U32(TransformType::NONE)) {
-            updateWorldMatrix();
-
-            _parentSGN->SendEvent(
-            {
-                ECS::CustomEvent::Type::TransformUpdated,
-                this,
-                previousMask
-            });
-        }
-
-        BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::Update(deltaTimeUS);
-    }
-
-    void TransformComponent::OnFrameEnd() {
-        if (_prevWorldMatrixDirty) {
-            // Just memcpy the 2
-            _worldMatrix[to_base(WorldMatrixType::PREVIOUS)].set(_worldMatrix[to_base(WorldMatrixType::CURRENT)]);
-            _prevWorldMatrixDirty = false;
-        }
-
-        BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::OnFrameEnd();
-    }
-
     void TransformComponent::setOffset(const bool state, const mat4<F32>& offset) {
         _transformOffset.first = state;
         _transformOffset.second.set(offset);
@@ -676,7 +636,7 @@ namespace Divide {
             outputBuffer << values._orientation;
         }
 
-        return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::saveCache(outputBuffer);
+        return Parent::saveCache(outputBuffer);
     }
 
     bool TransformComponent::loadCache(ByteBuffer& inputBuffer) {
@@ -692,6 +652,6 @@ namespace Divide {
             setTransform(valuesIn);
         }
 
-        return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::loadCache(inputBuffer);
+        return Parent::loadCache(inputBuffer);
     }
 } //namespace

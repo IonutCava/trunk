@@ -3,6 +3,7 @@
 #include "Headers/MeshImporter.h"
 #include "Headers/DVDConverter.h"
 
+#include "Core/Headers/ByteBuffer.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
@@ -290,22 +291,25 @@ namespace Import {
 
         for (const Import::SubMeshData& subMeshData : dataIn._subMeshData) {
             // Submesh is created as a resource when added to the scenegraph
-            ResourceDescriptor submeshdesc(subMeshData.name());
-            submeshdesc.flag(true);
-            submeshdesc.ID(subMeshData.index());
+            ResourceDescriptor subMeshDesc(subMeshData.name());
+            subMeshDesc.flag(true);
+            subMeshDesc.ID(subMeshData.index());
             if (subMeshData.boneCount() > 0) {
-                submeshdesc.enumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+                subMeshDesc.enumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
             }
 
-            SubMesh_ptr tempSubMesh = CreateResource<SubMesh>(cache, submeshdesc);
+            SubMesh_ptr tempSubMesh = CreateResource<SubMesh>(cache, subMeshDesc);
             if (!tempSubMesh) {
                 continue;
             }
             // it may already be loaded
             if (!tempSubMesh->getParentMesh()) {
-                tempSubMesh->addTriangles(subMeshData._triangles[0]);
-                for (U8 i = 0; i < Import::MAX_LOD_LEVELS; ++i) {
-                    tempSubMesh->setGeometryPartitionID(i, subMeshData._partitionIDs[i]);
+                for (U8 i = 0, j = 0; i < Import::MAX_LOD_LEVELS; ++i) {
+                    if (!subMeshData._triangles[i].empty()) {
+                        tempSubMesh->setGeometryPartitionID(j, subMeshData._partitionIDs[j]);
+                        tempSubMesh->addTriangles(subMeshData._partitionIDs[j], subMeshData._triangles[j]);
+                        ++j;
+                    }
                 }
                 Attorney::SubMeshMeshImporter::setGeometryLimits(*tempSubMesh,
                                                                  subMeshData.minPos(),
@@ -320,7 +324,7 @@ namespace Import {
         }
 
         mesh->getGeometryVB()->create();
-        mesh->getGeometryVB()->keepData(mesh->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+        mesh->getGeometryVB()->keepData(true); //< for physics and intersection tests
         mesh->postImport();
 
         WAIT_FOR_CONDITION(taskCounter.load() == 0)

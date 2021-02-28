@@ -477,7 +477,6 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
 
     // update local time
     _elapsedTimeUS += deltaTimeUS;
-    _lastDeltaTimeUS = deltaTimeUS;
 
     if (hasFlag(Flags::ACTIVE)) {
         if (_lockToCamera != 0) {

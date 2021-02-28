@@ -69,7 +69,7 @@ namespace Attorney {
     class SceneNodePlayer;
     class SceneNodeSceneGraph;
     class SceneNodeLightComponent;
-    class SceneNodeBoundsComponent;
+    class SceneNodeBoundsSystem;
     class SceneNodeNetworkComponent;
 };
 
@@ -111,7 +111,7 @@ class SceneNode : public CachedResource {
     friend class Attorney::SceneNodePlayer;
     friend class Attorney::SceneNodeSceneGraph;
     friend class Attorney::SceneNodeLightComponent;
-    friend class Attorney::SceneNodeBoundsComponent;
+    friend class Attorney::SceneNodeBoundsSystem;
     friend class Attorney::SceneNodeNetworkComponent;
 
   public:
@@ -260,7 +260,7 @@ class SceneNodeNetworkComponent {
     friend class Divide::NetworkingComponent;
 };
 
-class SceneNodeBoundsComponent {
+class SceneNodeBoundsSystem {
     static void setBounds(SceneNode& node, const BoundingBox& aabb) {
         node.setBounds(aabb);
     }
@@ -277,7 +277,6 @@ class SceneNodeBoundsComponent {
         node._boundsChanged = false;
     }
 
-    friend class Divide::BoundsComponent;
     friend class Divide::BoundsSystem;
 };
 

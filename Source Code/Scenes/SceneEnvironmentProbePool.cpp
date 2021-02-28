@@ -221,27 +221,27 @@ void SceneEnvironmentProbePool::debugProbe(EnvironmentProbeComponent* probe) {
     }
 }
 
-void SceneEnvironmentProbePool::OnNodeUpdated(SceneEnvironmentProbePool* probePool, const SceneGraphNode& node) {
+void SceneEnvironmentProbePool::OnNodeUpdated(SceneEnvironmentProbePool& probePool, const SceneGraphNode& node) {
     const BoundingSphere& bSphere = node.get<BoundsComponent>()->getBoundingSphere();
-    probePool->lockProbeList();
-    const EnvironmentProbeList& probes = probePool->getLocked();
+    probePool.lockProbeList();
+    const EnvironmentProbeList& probes = probePool.getLocked();
     for (const auto& probe : probes) {
         if (probe->checkCollisionAndQueueUpdate(bSphere)) {
             NOP();
         }
     }
-    probePool->unlockProbeList();
+    probePool.unlockProbeList();
 }
 
-void SceneEnvironmentProbePool::OnTimeOfDayChange(SceneEnvironmentProbePool* probePool) {
-    probePool->lockProbeList();
-    const EnvironmentProbeList& probes = probePool->getLocked();
+void SceneEnvironmentProbePool::OnTimeOfDayChange(SceneEnvironmentProbePool& probePool) {
+    probePool.lockProbeList();
+    const EnvironmentProbeList& probes = probePool.getLocked();
     for (const auto& probe : probes) {
         if (probe->updateType() != EnvironmentProbeComponent::UpdateType::ONCE) {
             probe->dirty(true);
         }
     }
-    probePool->unlockProbeList();
+    probePool.unlockProbeList();
 }
 
 } //namespace Divide

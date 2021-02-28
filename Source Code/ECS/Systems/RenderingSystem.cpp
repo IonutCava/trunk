@@ -2,11 +2,58 @@
 
 #include "Headers/RenderingSystem.h"
 
+#include "Geometry/Material/Headers/Material.h"
+
 namespace Divide {
     RenderingSystem::RenderingSystem(ECS::ECSEngine& parentEngine, PlatformContext& context)
         : PlatformContextComponent(context),
           ECSSystem(parentEngine)
     {
+    }
+
+    RenderingSystem::~RenderingSystem()
+    {
+    }
+
+    void RenderingSystem::PreUpdate(const F32 dt) {
+        Parent::PreUpdate(dt);
+    }
+
+    void RenderingSystem::Update(const F32 dt) {
+        OPTICK_EVENT();
+
+        Parent::Update(dt);
+
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
+
+        for (RenderingComponent* comp : _componentCache) {
+            if (comp->_materialInstance != nullptr && comp->_materialInstance->update(microSec)) {
+                comp->onMaterialChanged();
+            }
+
+            if (comp->getSGN()->getNode().rebuildDrawCommands()) {
+                for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+                    RenderingComponent::FlagsPerPassType& perPassFlags = comp->_rebuildDrawCommandsFlags[s];
+                    for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+                        RenderingComponent::FlagsPerIndex& perIndexFlags = perPassFlags[p];
+                        perIndexFlags.fill(true);
+                    }
+                }
+                comp->getSGN()->getNode().rebuildDrawCommands(false);
+            }
+        }
+    }
+
+    void RenderingSystem::PostUpdate(const F32 dt) {
+        Parent::PostUpdate(dt);
+    }
+
+    void RenderingSystem::OnFrameStart() {
+        Parent::OnFrameStart();
+    }
+
+    void RenderingSystem::OnFrameEnd() {
+        Parent::OnFrameEnd();
     }
 
     bool RenderingSystem::saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) {
@@ -15,7 +62,7 @@ namespace Divide {
             return false;
         }
 
-        return Super::saveCache(sgn, outputBuffer);
+        return Parent::saveCache(sgn, outputBuffer);
     }
 
     bool RenderingSystem::loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) {
@@ -24,6 +71,6 @@ namespace Divide {
             return false;
         }
 
-        return Super::loadCache(sgn, inputBuffer);
+        return Parent::loadCache(sgn, inputBuffer);
     }
 } //namespace Divide

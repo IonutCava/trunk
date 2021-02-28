@@ -2,6 +2,7 @@
 
 #include "Headers/VertexBuffer.h"
 
+#include "Core/Headers/ByteBuffer.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {

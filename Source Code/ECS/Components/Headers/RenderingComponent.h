@@ -103,7 +103,7 @@ struct RenderCbkParams {
 
 using RenderCallback = DELEGATE<void, RenderPassManager*, RenderCbkParams&, GFX::CommandBuffer&>;
 
-class RenderingComponent final : public BaseComponentType<RenderingComponent, ComponentType::RENDERING> {
+BEGIN_COMPONENT(Rendering, ComponentType::RENDERING)
     friend class Attorney::RenderingCompRenderPass;
     friend class Attorney::RenderingCompGFXDevice;
     friend class Attorney::RenderingCompRenderBin;
@@ -133,7 +133,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     explicit RenderingComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     ~RenderingComponent();
 
-    void Update(U64 deltaTimeUS) override;
 
     void toggleRenderOption(RenderOptions option, bool state, bool recursive = true);
     [[nodiscard]] bool renderOptionEnabled(RenderOptions option) const;
@@ -183,6 +182,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     [[nodiscard]] const auto& getShaderBuffers() const noexcept { return _externalBufferBindings; }
 
     [[nodiscard]] bool canDraw(const RenderStagePass& renderStagePass);
+
   protected:
     void toggleBoundsDraw(bool showAABB, bool showBS, bool recursive);
 
@@ -296,9 +296,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     std::array<std::pair<bool, U8>, to_base(RenderStage::COUNT)> _lodLockLevels{};
 
     static hashMap<U32, DebugView*> s_debugViews[2];
-};
-
-INIT_COMPONENT(RenderingComponent);
+END_COMPONENT(Rendering);
 
 namespace Attorney {
 class RenderingCompRenderPass {

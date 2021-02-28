@@ -40,9 +40,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     class RenderingSystem final : public PlatformContextComponent,
                                   public ECSSystem<RenderingSystem, RenderingComponent> {
-        public:
+        using Parent = ECSSystem<RenderingSystem, RenderingComponent>;
+    public:
         RenderingSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
-        virtual ~RenderingSystem() = default;
+        virtual ~RenderingSystem();
+
+        void PreUpdate(F32 dt) override;
+        void Update(F32 dt) override;
+        void PostUpdate(F32 dt) override;
+        void OnFrameStart() override;
+        void OnFrameEnd() override;
 
         bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) override;
         bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) override;

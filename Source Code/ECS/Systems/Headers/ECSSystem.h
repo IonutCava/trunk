@@ -40,8 +40,6 @@ namespace Divide {
     template<class T, class U>
     class ECSSystem : public ECS::System<T> {
     public:
-        using Super = ECSSystem<T, U>;
-
         explicit ECSSystem(ECS::ECSEngine& engine);
         virtual ~ECSSystem() = default;
 

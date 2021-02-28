@@ -121,6 +121,7 @@ class Terrain final : public Object3D {
 
     void toggleBoundingBoxes();
 
+    [[nodiscard]] const vectorEASTL<VertexBuffer::Vertex>& getVerts() const;
     [[nodiscard]] Vert      getVert(F32 x_clampf, F32 z_clampf, bool smooth) const;
     [[nodiscard]] Vert      getVertFromGlobal(F32 x, F32 z, bool smooth) const;
     [[nodiscard]] vec2<U16> getDimensions() const noexcept;
@@ -160,6 +161,7 @@ class Terrain final : public Object3D {
     [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Terrain"; }
 
     PROPERTY_R(TessellationParams, tessParams);
+
    public:
      vectorEASTL<VertexBuffer::Vertex> _physicsVerts;
 

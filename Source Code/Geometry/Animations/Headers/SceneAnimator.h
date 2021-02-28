@@ -147,8 +147,7 @@ class SceneAnimator {
         }
         return -1;
     }
-    /// GetBoneTransform will return the matrix of the bone given its name and
-    /// the time.
+    /// GetBoneTransform will return the matrix of the bone given its name and the time.
     /// Be careful with this to make sure and send the correct dt. If the dt is
     /// different from what the model is currently at,
     /// the transform will be off

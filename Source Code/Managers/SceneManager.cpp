@@ -5,6 +5,7 @@
 #include "Headers/RenderPassManager.h"
 
 #include "AI/PathFinding/Headers/DivideRecast.h"
+#include "Core/Headers/ByteBuffer.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/EngineTaskPool.h"
 #include "Core/Headers/Kernel.h"

@@ -13,6 +13,7 @@ Sphere3D::Sphere3D(GFXDevice& context, ResourceCache* parentCache, const size_t 
     getGeometryVB()->setVertexCount(vertexCount);
     getGeometryVB()->reserveIndexCount(vertexCount);
     getGeometryVB()->useLargeIndices(vertexCount + 1 > std::numeric_limits<U16>::max());
+    geometryDirty(true);
 }
 
 void Sphere3D::setRadius(const F32 radius) {

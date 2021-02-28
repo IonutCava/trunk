@@ -39,12 +39,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-    class BoundsSystem final : public PlatformContextComponent,
-                               public ECSSystem<BoundsSystem, BoundsComponent> {
-       public:
-        BoundsSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
-        virtual ~BoundsSystem() = default;
-    };
+class BoundsSystem final : public PlatformContextComponent,
+                           public ECSSystem<BoundsSystem, BoundsComponent> {
+    using Parent = ECSSystem<BoundsSystem, BoundsComponent>;
+public:
+    BoundsSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
+    virtual ~BoundsSystem();
+
+    void PreUpdate(F32 dt) override;
+    void Update(F32 dt) override;
+    void PostUpdate(F32 dt) override;
+    void OnFrameStart() override;
+    void OnFrameEnd() override;
+protected:
+    static void OnBoundsChanged(const SceneGraphNode* sgn);
+};
 }
 
 #endif //_BOUNDS_SYSTEM_H_

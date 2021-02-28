@@ -36,17 +36,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/Headers/TransformInterface.h"
 
 namespace Divide {
-
+enum class PhysicsGroup : U8;
 class RigidBodyComponent;
+
 class PhysicsAsset : public ITransform {
 public:
     explicit PhysicsAsset(RigidBodyComponent& parent);
     virtual ~PhysicsAsset() = default;
 
+    virtual void physicsCollisionGroup(PhysicsGroup group);
+
     [[nodiscard]] RigidBodyComponent& getParent() const { return _parentComponent; }
 
 protected:
     RigidBodyComponent & _parentComponent;
+    PhysicsGroup _physicsGroup;
 };
 };
 

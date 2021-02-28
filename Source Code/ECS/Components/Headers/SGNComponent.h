@@ -163,12 +163,6 @@ class SGNComponent : protected PlatformContextComponent,
         explicit SGNComponent(Key key, ComponentType type, SceneGraphNode* parentSGN, PlatformContext& context);
         virtual ~SGNComponent() = default;
 
-        virtual void PreUpdate(U64 deltaTime);
-        virtual void Update(U64 deltaTime);
-        virtual void PostUpdate(U64 deltaTime);
-        virtual void OnFrameStart();
-        virtual void OnFrameEnd();
-
         virtual void OnData(const ECS::CustomEvent& data);
 
         virtual void saveToXML(boost::property_tree::ptree& pt) const;
@@ -200,6 +194,22 @@ template<typename T, ComponentType::_enumerated C>
 using BaseComponentType = SGNComponent::Registrar<T, C>;
 
 #define INIT_COMPONENT(X) static bool X##_registered = X::s_registered
+
+#define _COMPONENT_SIGNATURE(Name, Enum) class Name##Component final : public BaseComponentType<Name##Component, Enum>
+#define _COMPONENT_PARENT(Name, Enum) using Parent = BaseComponentType<Name##Component, Enum>; \
+                                      friend class Name##System;
+#define BEGIN_COMPONENT(Name, Enum) \
+    _COMPONENT_SIGNATURE(Name, Enum) { \
+    _COMPONENT_PARENT(Name, Enum)
+
+#define BEGIN_COMPONENT_EXT1(Name, Enum, Base1) \
+    _COMPONENT_SIGNATURE(Name, Enum) , public Base1 {  \
+    _COMPONENT_PARENT(Name, Enum)
+    
+#define END_COMPONENT(Name) \
+    }; \
+    INIT_COMPONENT(Name##Component);
+
 }  // namespace Divide
 #endif //_SGN_COMPONENT_H_
 

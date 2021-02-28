@@ -39,8 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 
 namespace Divide {
-    //struct TransformUpdated;
-    class BoundsComponent final : public BaseComponentType<BoundsComponent, ComponentType::BOUNDS>{
+BEGIN_COMPONENT(Bounds, ComponentType::BOUNDS)
     public:
         BoundsComponent(SceneGraphNode* sgn, PlatformContext& context);
         ~BoundsComponent() = default;
@@ -51,8 +50,6 @@ namespace Divide {
         const OBB& getOBB() noexcept;
 
         const BoundingBox& updateAndGetBoundingBox();
-
-        F32 distanceToBSpehereSQ(const vec3<F32>& pos) const noexcept;
 
         PROPERTY_R(bool, showAABB, false);
         PROPERTY_R(bool, showBS, false);
@@ -66,17 +63,12 @@ namespace Divide {
         template<typename T, typename U>
         friend class ECSSystem;
 
-        void PreUpdate(U64 deltaTimeUS) override;
-        void Update(U64 deltaTimeUS) override;
-        void PostUpdate(U64 deltaTimeUS) override;
-
         void OnData(const ECS::CustomEvent& data) override;
 
         void setRefBoundingBox(const BoundingBox& nodeBounds) noexcept;
 
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
         void flagBoundingBoxDirty(U32 transformMask, bool recursive);
-        void onBoundsChanged(const SceneGraphNode* sgn) const;
 
     private:
         std::atomic_uint _transformUpdatedMask;
@@ -88,9 +80,8 @@ namespace Divide {
         std::atomic_bool _obbDirty = false;
 
         TransformComponent* _tCompCache = nullptr;
-    };
+END_COMPONENT(Bounds)
 
-    INIT_COMPONENT(BoundsComponent);
 }; //namespace Divide
 
 #endif //_BOUNDS_COMPONENT_H_

@@ -74,7 +74,8 @@ void SceneGraph::onNodeUpdated(const SceneGraphNode& node) {
 
     //ToDo: Maybe add particles too? -Ionut
     if (node.getNode<>().type() == SceneNodeType::TYPE_OBJECT3D) {
-        SceneEnvironmentProbePool::OnNodeUpdated(Attorney::SceneGraph::getEnvProbes(parentScene()), node);
+        SceneEnvironmentProbePool* probes = Attorney::SceneGraph::getEnvProbes(parentScene());
+        SceneEnvironmentProbePool::OnNodeUpdated(*probes, node);
     }
 }
 

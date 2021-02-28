@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 FWD_DECLARE_MANAGED_CLASS(Unit);
-class UnitComponent final : public BaseComponentType<UnitComponent, ComponentType::UNIT> {
+BEGIN_COMPONENT(Unit, ComponentType::UNIT)
 public:
     UnitComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     ~UnitComponent() = default;
@@ -55,9 +55,8 @@ public:
 
 private:
     Unit_ptr _unit;
-};
+END_COMPONENT(Unit);
 
-INIT_COMPONENT(UnitComponent);
 } //namespace Divide
 
 #endif //_UNIT_COMPONENT_H_

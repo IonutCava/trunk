@@ -12,6 +12,7 @@
 #include "ECS/Components/Headers/TransformComponent.h"
 
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
+#include "Core/Headers/Application.h"
 
 namespace Divide {
 

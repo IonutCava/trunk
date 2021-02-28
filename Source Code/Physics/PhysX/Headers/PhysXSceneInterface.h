@@ -33,7 +33,7 @@
 #ifndef _PHYSX_SCENE_INTERFACE_H_
 #define _PHYSX_SCENE_INTERFACE_H_
 
-#include "PhysX.h"
+#include "PhysXActor.h"
 #include "Physics/Headers/PhysicsSceneInterface.h"
 
 namespace Divide {
@@ -53,24 +53,18 @@ class PhysXSceneInterface final : public PhysicsSceneInterface {
     void update(U64 deltaTimeUS) override;
     void process(U64 deltaTimeUS) override;
 
-    void addRigidActor(PhysXActor* actor, bool threaded = true);
-    vectorEASTL<physx::PxMaterial*> getMaterials() const {
-        return _materials;
-    }
-
+    // We DO NOT take ownership of actors. Ownership remains with RigidBodyComponent
+    void addRigidActor(PhysXActor* actor);
+    void updateRigidActor(physx::PxRigidActor* oldActor, physx::PxRigidActor* newActor) const;
     physx::PxScene* getPhysXScene() const noexcept { return _gScene; }
 
    protected:
     void updateActor(PhysXActor& actor);
-    /// Adds the actor to the PhysX scene
-    void addToScene(PhysXActor& actor);
 
    private:
     using RigidMap = vectorEASTL<PhysXActor*>;
-    using MaterialMap = vectorEASTL<physx::PxMaterial*>;
-    physx::PxScene* _gScene;
-    physx::PxDefaultCpuDispatcher* _cpuDispatcher;
-    MaterialMap _materials;
+    physx::PxScene* _gScene = nullptr;
+    physx::PxDefaultCpuDispatcher* _cpuDispatcher = nullptr;
     RigidMap _sceneRigidActors;
     LoadQueue _sceneRigidQueue;
 };

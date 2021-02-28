@@ -2,14 +2,21 @@
 
 #include "Headers/PhysXActor.h"
 
+#include "Core/Headers/PlatformContext.h"
+#include "ECS/Components/Headers/RigidBodyComponent.h"
+#include "Physics/Headers/PXDevice.h"
+
 namespace Divide {
     PhysXActor::PhysXActor(RigidBodyComponent& parent)
-        : PhysicsAsset(parent),
-        _actor(nullptr),
-        _type(physx::PxGeometryType::eINVALID),
-        _isDynamic(false),
-        _userData(0.0f)
+        : PhysicsAsset(parent)
     {
+    }
+
+    PhysXActor::~PhysXActor()
+    {
+        if (_actor != nullptr) {
+            _actor->release();
+        }
     }
 
     /// Set the local X,Y and Z position
@@ -181,6 +188,14 @@ namespace Divide {
         getScale(ret._scale);
         getOrientation(ret._orientation);
         return ret;
+    }
+
+    void PhysXActor::physicsCollisionGroup(const PhysicsGroup group) {
+        if (_physicsGroup != group && _actor != nullptr) {
+            _parentComponent.getSGN()->context().pfx().convertActor(this, group);
+        }
+
+        PhysicsAsset::physicsCollisionGroup(group);
     }
 
 }; //namespace Divide

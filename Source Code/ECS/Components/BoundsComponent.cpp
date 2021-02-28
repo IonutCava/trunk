@@ -186,44 +186,4 @@ const OBB& BoundsComponent::getOBB() noexcept {
 
     return _obb;
 }
-
-F32 BoundsComponent::distanceToBSpehereSQ(const vec3<F32>& pos) const noexcept {
-    const BoundingSphere& sphere = getBoundingSphere();
-    return sphere.getCenter().distanceSquared(pos) - SQUARED(sphere.getRadius());
-}
-
-void BoundsComponent::PreUpdate(const U64 deltaTimeUS) {
-    if (Attorney::SceneNodeBoundsComponent::boundsChanged(getSGN()->getNode())) {
-        flagBoundingBoxDirty(to_U32(TransformType::ALL), false);
-        onBoundsChanged(getSGN());
-    }
-}
-
-void BoundsComponent::Update(const U64 deltaTimeUS) {
-    OPTICK_EVENT();
-    const SceneNode& sceneNode = getSGN()->getNode();
-    if (Attorney::SceneNodeBoundsComponent::boundsChanged(sceneNode)) {
-        setRefBoundingBox(sceneNode.getBounds());
-    }
-
-    BaseComponentType<BoundsComponent, ComponentType::BOUNDS>::Update(deltaTimeUS);
-}
-
-void BoundsComponent::PostUpdate(const U64 deltaTimeUS) {
-    OPTICK_EVENT();
-
-    Attorney::SceneNodeBoundsComponent::clearBoundsChanged(getSGN()->getNode());
-    updateAndGetBoundingBox();
-
-    BaseComponentType<BoundsComponent, ComponentType::BOUNDS>::PostUpdate(deltaTimeUS);
-}
-
-// Recures all the way up to the root
-void BoundsComponent::onBoundsChanged(const SceneGraphNode* sgn) const {
-    SceneGraphNode* parent = sgn->parent();
-    if (parent != nullptr) {
-        Attorney::SceneNodeBoundsComponent::setBoundsChanged(parent->getNode());
-        onBoundsChanged(parent);
-    }
-}
 }

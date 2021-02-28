@@ -27,18 +27,8 @@ void SkinnedSubMesh::postLoad(SceneGraphNode* sgn) {
         _boundingBoxes.resize(animationCount);
     }
 
-    sgn->get<AnimationComponent>()->updateAnimator(_parentAnimatorPtr);
+    sgn->get<AnimationComponent>()->animator(_parentAnimatorPtr);
     SubMesh::postLoad(sgn);
-}
-
-void SkinnedSubMesh::sceneUpdate(const U64 deltaTimeUS,
-                                 SceneGraphNode* sgn,
-                                 SceneState& sceneState) {
-    OPTICK_EVENT();
-
-    // keep all animators in the same mesh in sync by using the Mesh's SGN deltatime update
-    sgn->get<AnimationComponent>()->incParentTimeStamp(sgn->parent()->lastDeltaTimeUS());
-    SubMesh::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
 /// update possible animations

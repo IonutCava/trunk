@@ -38,9 +38,7 @@
 
 namespace Divide {
 
-class DirectionalLightComponent final : public BaseComponentType<DirectionalLightComponent, ComponentType::DIRECTIONAL_LIGHT>,
-                                        public Light
-{
+BEGIN_COMPONENT_EXT1(DirectionalLight, ComponentType::DIRECTIONAL_LIGHT, Light)
    public:
     using Light::getSGN;
     using PerSplitToggle = std::array<bool, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT>;
@@ -51,7 +49,6 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     ~DirectionalLightComponent() = default;
 
     void setDirection(const vec3<F32>& direction);
-    void PreUpdate(U64 deltaTime) override;
 
     // Quick hack to store previous frame's culling results
     vectorEASTL<FeedBackContainer>& feedBackContainers() noexcept { return _feedbackContainers; }
@@ -72,9 +69,7 @@ protected:
 protected:
     //Used to adjust ortho-matrix's near/far planes per pass
     vectorEASTL<FeedBackContainer> _feedbackContainers;
-};
-
-INIT_COMPONENT(DirectionalLightComponent);
+END_COMPONENT(DirectionalLight);
 
 }  // namespace Divide
 

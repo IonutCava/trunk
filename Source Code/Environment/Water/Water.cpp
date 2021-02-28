@@ -264,7 +264,7 @@ void WaterPlane::postLoad(SceneGraphNode* sgn) {
 
     RigidBodyComponent* rComp = sgn->get<RigidBodyComponent>();
     if (rComp != nullptr) {
-        rComp->physicsGroup(PhysicsGroup::GROUP_STATIC);
+        rComp->physicsCollisionGroup(PhysicsGroup::GROUP_STATIC);
     }
 
     const F32 halfWidth = _dimensions.width * 0.5f;

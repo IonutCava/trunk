@@ -155,7 +155,6 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
         vegParent->addChildNode(vegetationNodeDescriptor);
     }
 
-    sgn->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
     sgn->get<RenderingComponent>()->lockLoD(0u);
 
     SceneNode::postLoad(sgn);
@@ -171,10 +170,8 @@ void Terrain::postBuild() {
     const U16 terrainWidth = _descriptor->dimensions().width;
     const U16 terrainHeight = _descriptor->dimensions().height;
 
-    reserveTriangleCount((terrainWidth - 1) * (terrainHeight - 1) * 2);
-
     // Generate index buffer
-    vectorEASTL<vec3<U32>>& triangles = getTriangles();
+    vectorEASTL<vec3<U32>>& triangles = getTriangles(0u);
     triangles.resize(to_size(terrainHeight) * terrainWidth * 2u);
 
     // ToDo: Use parallel_for for this
@@ -364,6 +361,10 @@ void Terrain::buildDrawCommands(SceneGraphNode* sgn,
     }
 
     Object3D::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
+}
+
+const vectorEASTL<VertexBuffer::Vertex>& Terrain::getVerts() const {
+    return _physicsVerts;
 }
 
 Terrain::Vert Terrain::getVertFromGlobal(F32 x, F32 z, const bool smooth) const {

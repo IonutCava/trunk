@@ -97,11 +97,11 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     return numberOfFrames > 0;
 }
 
-AnimEvaluator::FrameIndex AnimEvaluator::frameIndexAt(const D64 elapsedTime) const noexcept {
+AnimEvaluator::FrameIndex AnimEvaluator::frameIndexAt(const D64 elapsedTimeS) const noexcept {
     D64 time = 0.0;
     if (duration() > 0.0) {
         // get a [0.f ... 1.f) value by allowing the percent to wrap around 1
-        time = std::fmod(elapsedTime * ticksPerSecond(), duration());
+        time = std::fmod(elapsedTimeS * ticksPerSecond(), duration());
     }
 
     const D64 percent = time / duration();

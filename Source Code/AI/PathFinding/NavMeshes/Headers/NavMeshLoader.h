@@ -133,7 +133,7 @@ enum class MeshDetailLevel : U8 {
 [[nodiscard]] bool SaveMeshFile(const NavModelData& inData, const char* filepath, const char* filename);
 /// Merge the data from two navigation geometry sources
 [[nodiscard]] NavModelData MergeModels(NavModelData& a, NavModelData& b, bool delOriginals = false);
-/// Parsing method that calls itself recursively untill all geometry has been parsed
+/// Parsing method that calls itself recursively until all geometry has been parsed
 [[nodiscard]] bool Parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn);
 
 void AddVertex(NavModelData* modelData, const vec3<F32>& vertex);

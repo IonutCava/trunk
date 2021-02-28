@@ -2,75 +2,37 @@
 
 #include "Headers/ECSManager.h"
 
-#include "ECS/Systems/Headers/TransformSystem.h"
 #include "ECS/Systems/Headers/AnimationSystem.h"
-#include "ECS/Systems/Headers/RenderingSystem.h"
 #include "ECS/Systems/Headers/BoundsSystem.h"
+#include "ECS/Systems/Headers/RenderingSystem.h"
+#include "ECS/Systems/Headers/TransformSystem.h"
+#include "ECS/Systems/Headers/DirectionalLightSystem.h"
+#include "ECS/Systems/Headers/PointLightSystem.h"
+#include "ECS/Systems/Headers/SpotLightSystem.h"
+#include "Headers/EnvironmentProbeSystem.h"
+#include "Headers/NavigationSystem.h"
+#include "Headers/RigidBodySystem.h"
 
 #include "ECS/Components/Headers/IKComponent.h"
-#include "ECS/Components/Headers/NavigationComponent.h"
 #include "ECS/Components/Headers/NetworkingComponent.h"
 #include "ECS/Components/Headers/RagdollComponent.h"
-#include "ECS/Components/Headers/RigidBodyComponent.h"
 #include "ECS/Components/Headers/ScriptComponent.h"
 #include "ECS/Components/Headers/SelectionComponent.h"
 #include "ECS/Components/Headers/UnitComponent.h"
-#include "ECS/Components/Headers/PointLightComponent.h"
-#include "ECS/Components/Headers/SpotLightComponent.h"
-#include "ECS/Components/Headers/DirectionalLightComponent.h"
-#include "ECS/Components/Headers/EnvironmentProbeComponent.h"
 
 namespace Divide {
 
-namespace {
-    struct PointLightSystem final : ECSSystem<PointLightSystem, PointLightComponent> {
-        explicit PointLightSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-    struct SpotLightSystem final : ECSSystem<SpotLightSystem, SpotLightComponent>
-    {
-        explicit SpotLightSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-    struct DirectionalLightSystem final : ECSSystem<DirectionalLightSystem, DirectionalLightComponent>
-    {
-        explicit DirectionalLightSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-    struct IKSystem final : ECSSystem<IKSystem, IKComponent>
-    {
-        explicit IKSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-    struct NavigationSystem final : ECSSystem<NavigationSystem, NavigationComponent>
-    {
-        explicit NavigationSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-    struct NetworkingSystem final : ECSSystem<NetworkingSystem, NetworkingComponent>
-    {
-        explicit NetworkingSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-    struct RagdollSystem final : ECSSystem<RagdollSystem, RagdollComponent>
-    {
-        explicit RagdollSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-    struct RigidBodySystem final : ECSSystem<RigidBodySystem, RigidBodyComponent>
-    {
-        explicit RigidBodySystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-    struct ScriptSystem final : ECSSystem<ScriptSystem, ScriptComponent>
-    {
-        explicit ScriptSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-    struct SelectionSystem final : ECSSystem<SelectionSystem, SelectionComponent>
-    {
-        explicit SelectionSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-    struct UnitSystem final : ECSSystem<UnitSystem, UnitComponent>
-    {
-        explicit UnitSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-    struct EnvProbeSystem final : ECSSystem<EnvProbeSystem, EnvironmentProbeComponent>
-    {
-        explicit EnvProbeSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
-    };
-}
+#define STUB_SYSTEM(Name) \
+    class Name##System final : public ECSSystem<Name##System, Name##Component> {\
+        public: explicit Name##System(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}\
+    }
+
+STUB_SYSTEM(IK);
+STUB_SYSTEM(Networking);
+STUB_SYSTEM(Ragdoll);
+STUB_SYSTEM(Script);
+STUB_SYSTEM(Selection);
+STUB_SYSTEM(Unit);
 
 ECSManager::ECSManager(PlatformContext& context, ECS::ECSEngine& engine)
     : PlatformContextComponent(context),
@@ -80,19 +42,19 @@ ECSManager::ECSManager(PlatformContext& context, ECS::ECSEngine& engine)
     auto* ASys = _ecsEngine.GetSystemManager()->AddSystem<AnimationSystem>(_ecsEngine, _context);
     auto* RSys = _ecsEngine.GetSystemManager()->AddSystem<RenderingSystem>(_ecsEngine, _context);
     auto* BSys = _ecsEngine.GetSystemManager()->AddSystem<BoundsSystem>(_ecsEngine, _context);
-    auto* PlSys = _ecsEngine.GetSystemManager()->AddSystem<PointLightSystem>(_ecsEngine);
-    auto* SlSys = _ecsEngine.GetSystemManager()->AddSystem<SpotLightSystem>(_ecsEngine);
-    auto* DlSys = _ecsEngine.GetSystemManager()->AddSystem<DirectionalLightSystem>(_ecsEngine);
+    auto* PlSys = _ecsEngine.GetSystemManager()->AddSystem<PointLightSystem>(_ecsEngine, _context);
+    auto* SlSys = _ecsEngine.GetSystemManager()->AddSystem<SpotLightSystem>(_ecsEngine, _context);
+    auto* DlSys = _ecsEngine.GetSystemManager()->AddSystem<DirectionalLightSystem>(_ecsEngine, _context);
 
     auto* IKSys = _ecsEngine.GetSystemManager()->AddSystem<IKSystem>(_ecsEngine);
-    auto* NavSys = _ecsEngine.GetSystemManager()->AddSystem<NavigationSystem>(_ecsEngine);
+    auto* NavSys = _ecsEngine.GetSystemManager()->AddSystem<NavigationSystem>(_ecsEngine, _context);
     auto* NetSys = _ecsEngine.GetSystemManager()->AddSystem<NetworkingSystem>(_ecsEngine);
     auto* RagSys = _ecsEngine.GetSystemManager()->AddSystem<RagdollSystem>(_ecsEngine);
-    auto* RBSys = _ecsEngine.GetSystemManager()->AddSystem<RigidBodySystem>(_ecsEngine);
+    auto* RBSys = _ecsEngine.GetSystemManager()->AddSystem<RigidBodySystem>(_ecsEngine, _context);
     auto* ScpSys = _ecsEngine.GetSystemManager()->AddSystem<ScriptSystem>(_ecsEngine);
     auto* SelSys = _ecsEngine.GetSystemManager()->AddSystem<SelectionSystem>(_ecsEngine);
     auto* UnitSys = _ecsEngine.GetSystemManager()->AddSystem<UnitSystem>(_ecsEngine);
-    auto* ProbeSys = _ecsEngine.GetSystemManager()->AddSystem<EnvProbeSystem>(_ecsEngine);
+    auto* ProbeSys = _ecsEngine.GetSystemManager()->AddSystem<EnvironmentProbeSystem>(_ecsEngine, _context);
     
     ASys->AddDependencies(TSys);
     BSys->AddDependencies(ASys);

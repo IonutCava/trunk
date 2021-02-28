@@ -37,12 +37,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SGNComponent.h"
 
 namespace Divide {
-    class RagdollComponent final : public BaseComponentType<RagdollComponent, ComponentType::RAGDOLL>{
-        public:
-            RagdollComponent(SceneGraphNode* parentSGN, PlatformContext& context);
-    };
-
-    INIT_COMPONENT(RagdollComponent);
+BEGIN_COMPONENT(Ragdoll, ComponentType::RAGDOLL)
+    public:
+        RagdollComponent(SceneGraphNode* parentSGN, PlatformContext& context);
+END_COMPONENT(Ragdoll);
 } //namespace Divide
 
 #endif //_RAGDOLL_COMPONENT_H_

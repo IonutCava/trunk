@@ -32,6 +32,7 @@ ResourcePath Paths::g_localisationPath;
 ResourcePath Paths::g_cacheLocation;
 ResourcePath Paths::g_terrainCacheLocation;
 ResourcePath Paths::g_geometryCacheLocation;
+ResourcePath Paths::g_collisionMeshCacheLocation;
 
 ResourcePath Paths::Editor::g_saveLocation;
 ResourcePath Paths::Editor::g_tabLayoutFile;
@@ -98,6 +99,7 @@ void Paths::initPaths(const SysInfo& info) {
     g_cacheLocation = ResourcePath("cache/");
     g_terrainCacheLocation = ResourcePath("terrain/");
     g_geometryCacheLocation = ResourcePath("geometry/");
+    g_collisionMeshCacheLocation = ResourcePath("collisionMeshes/");
 
     Editor::g_saveLocation = ResourcePath("Editor/");
     Editor::g_tabLayoutFile = ResourcePath("Tabs.layout");

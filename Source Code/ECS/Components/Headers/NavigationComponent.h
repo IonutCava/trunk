@@ -38,8 +38,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class SceneGraphNode;
-class NavigationComponent final : public BaseComponentType<NavigationComponent, ComponentType::NAVIGATION>{
-   public:
+BEGIN_COMPONENT(Navigation, ComponentType::NAVIGATION)
+public:
     enum class NavigationContext :U32 {
         NODE_OBSTACLE = 0,
         NODE_IGNORE
@@ -61,9 +61,7 @@ class NavigationComponent final : public BaseComponentType<NavigationComponent, 
    protected:
     NavigationContext _navigationContext;
     bool _overrideNavMeshDetail;
-};
-
-INIT_COMPONENT(NavigationComponent);
+END_COMPONENT(Navigation);
 
 }  // namespace Divide
 #endif

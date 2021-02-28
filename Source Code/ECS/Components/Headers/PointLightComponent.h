@@ -37,21 +37,16 @@
 
 namespace Divide {
 
-class PointLightComponent final : public BaseComponentType<PointLightComponent, ComponentType::POINT_LIGHT>,
-                                  public Light
-{
+BEGIN_COMPONENT_EXT1(PointLight, ComponentType::POINT_LIGHT, Light)
    public:
     explicit PointLightComponent(SceneGraphNode* sgn, PlatformContext& context);
-    void PreUpdate(U64 deltaTime) override;
 
    protected:
     void OnData(const ECS::CustomEvent& data) override;
 
    private:
     bool _drawImpostor = false;
-};
-
-INIT_COMPONENT(PointLightComponent);
+END_COMPONENT(PointLight);
 
 }  // namespace Divide
 
