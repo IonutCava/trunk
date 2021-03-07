@@ -39,7 +39,7 @@ namespace Time {
 class ApplicationTimer;
 class ProfileTimer {
    public:
-    ProfileTimer() noexcept;
+    ProfileTimer() = default;
     ~ProfileTimer() = default;
 
     void start();
@@ -63,11 +63,11 @@ class ProfileTimer {
 
    // time data
    protected:
-    stringImpl _name;
-    U64 _timer;
-    U64 _timerAverage;
-    U32 _timerCounter;
-    U32 _globalIndex;
+    stringImpl _name = "";
+    U64 _timer = 0UL;
+    U64 _timerAverage = 0UL;
+    U32 _timerCounter = 0;
+    U32 _globalIndex = 0;
 
    // timer <-> timer relationship
    public:
@@ -78,8 +78,7 @@ class ProfileTimer {
 
    protected:
      vectorEASTL<U32> _children;
-     U32 _parent;
-
+     U32 _parent = Config::Profile::MAX_PROFILE_TIMERS + 1;
      static bool s_enabled;
 };
 

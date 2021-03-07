@@ -10,8 +10,6 @@
 #include "Headers/PlatformDefinesWindows.h"
 #include "Core/Headers/StringHelper.h"
 
-#include "Platform/File/Headers/FileManagement.h"
-
 #include <direct.h>
 
 #pragma comment(lib, "OpenAL32.lib")
@@ -134,10 +132,12 @@ namespace Divide {
         handleOut._handle = wmInfo.info.win.window;
     }
 
-    void DebugBreak(const bool condition) noexcept {
+    bool DebugBreak(const bool condition) noexcept {
         if (condition && IsDebuggerPresent()) {
             __debugbreak();
+            return true;
         }
+        return false;
     }
 
     ErrorCode PlatformInitImpl(int argc, char** argv) noexcept {

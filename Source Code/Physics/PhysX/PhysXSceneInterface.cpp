@@ -3,6 +3,7 @@
 #include "Headers/PhysXSceneInterface.h"
 
 #include "Scenes/Headers/Scene.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
@@ -10,16 +11,19 @@
 #include "Headers/PhysX.h"
 #include "Physics/Headers/PXDevice.h"
 
-using namespace physx;
-
 namespace Divide {
+    namespace {
+        constexpr U32 g_parallelPartitionSize = 32;
+    }
 
 enum class PhysXSceneInterfaceState : U8 {
     STATE_LOADING_ACTORS
 };
 #ifdef USE_MBP
 
-static void setupMBP(PxScene& scene) {
+static void setupMBP(physx::PxScene& scene) {
+    using namespace physx;
+
     const float range = 1000.0f;
     const PxU32 subdiv = 4;
     // const PxU32 subdiv = 1;
@@ -54,17 +58,17 @@ PhysXSceneInterface::~PhysXSceneInterface()
 
 bool PhysXSceneInterface::init() {
     const PhysX& physX = static_cast<PhysX&>(_parentScene.context().pfx().getImpl());
-    PxPhysics* gPhysicsSDK = physX.getSDK();
+    physx::PxPhysics* gPhysicsSDK = physX.getSDK();
     // Create the scene
     if (!gPhysicsSDK) {
         Console::errorfn(Locale::Get(_ID("ERROR_PHYSX_SDK")));
         return false;
     }
 
-    PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
-    sceneDesc.gravity = PxVec3(DEFAULT_GRAVITY.x, DEFAULT_GRAVITY.y, DEFAULT_GRAVITY.z);
+    physx::PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
+    sceneDesc.gravity = physx::PxVec3(DEFAULT_GRAVITY.x, DEFAULT_GRAVITY.y, DEFAULT_GRAVITY.z);
     if (!sceneDesc.cpuDispatcher) {
-        _cpuDispatcher = PxDefaultCpuDispatcherCreate(std::max(2u, HardwareThreadCount() - 2u));
+        _cpuDispatcher = physx::PxDefaultCpuDispatcherCreate(std::max(2u, HardwareThreadCount() - 2u));
         if (!_cpuDispatcher) {
             Console::errorfn(Locale::Get(_ID("ERROR_PHYSX_INTERFACE_CPU_DISPATCH")));
         }
@@ -72,7 +76,7 @@ bool PhysXSceneInterface::init() {
     }
 
     if (!sceneDesc.filterShader) {
-        sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+        sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
     }
 
 #if PX_SUPPORT_GPU_PHYSX
@@ -80,23 +84,23 @@ bool PhysXSceneInterface::init() {
         sceneDesc.cudaContextManager = physX.cudaContextManager();
 #endif //PX_SUPPORT_GPU_PHYSX
 
-    //sceneDesc.frictionType = PxFrictionType::eTWO_DIRECTIONAL;
-    //sceneDesc.frictionType = PxFrictionType::eONE_DIRECTIONAL;
-    //sceneDesc.flags |= PxSceneFlag::eENABLE_GPU_DYNAMICS;
-    sceneDesc.flags |= PxSceneFlag::eENABLE_PCM;
-    //sceneDesc.flags |= PxSceneFlag::eENABLE_AVERAGE_POINT;
-    sceneDesc.flags |= PxSceneFlag::eENABLE_STABILIZATION;
-    //sceneDesc.flags |= PxSceneFlag::eADAPTIVE_FORCE;
-    sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
-    sceneDesc.sceneQueryUpdateMode = PxSceneQueryUpdateMode::eBUILD_ENABLED_COMMIT_DISABLED;
+    //sceneDesc.frictionType = physx::PxFrictionType::eTWO_DIRECTIONAL;
+    //sceneDesc.frictionType = physx::PxFrictionType::eONE_DIRECTIONAL;
+    //sceneDesc.flags |= physx::PxSceneFlag::eENABLE_GPU_DYNAMICS;
+    sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM;
+    //sceneDesc.flags |= physx::PxSceneFlag::eENABLE_AVERAGE_POINT;
+    sceneDesc.flags |= physx::PxSceneFlag::eENABLE_STABILIZATION;
+    //sceneDesc.flags |= physx::PxSceneFlag::eADAPTIVE_FORCE;
+    sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
+    sceneDesc.sceneQueryUpdateMode = physx::PxSceneQueryUpdateMode::eBUILD_ENABLED_COMMIT_DISABLED;
 
-    //sceneDesc.flags |= PxSceneFlag::eDISABLE_CONTACT_CACHE;
-    //sceneDesc.broadPhaseType =  PxBroadPhaseType::eGPU;
-    //sceneDesc.broadPhaseType = PxBroadPhaseType::eSAP;
+    //sceneDesc.flags |= physx::PxSceneFlag::eDISABLE_CONTACT_CACHE;
+    //sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eGPU;
+    //sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eSAP;
     sceneDesc.gpuMaxNumPartitions = 8;
-    //sceneDesc.solverType = PxSolverType::eTGS;
+    //sceneDesc.solverType = physx::PxSolverType::eTGS;
 #ifdef USE_MBP
-    sceneDesc.broadPhaseType = PxBroadPhaseType::eMBP;
+    sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eMBP;
 #endif //USE_MBP
 
     _gScene = gPhysicsSDK->createScene(sceneDesc);
@@ -105,18 +109,20 @@ bool PhysXSceneInterface::init() {
         return false;
     }
 
-    PxSceneWriteLock scopedLock(*_gScene);
-    const PxSceneFlags flag = _gScene->getFlags();
+    physx::PxSceneWriteLock scopedLock(*_gScene);
+    const physx::PxSceneFlags flag = _gScene->getFlags();
     PX_UNUSED(flag);
-    _gScene->setVisualizationParameter(PxVisualizationParameter::eSCALE, 1.0);
-    _gScene->setVisualizationParameter(PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);
-    PxPvdSceneClient* pvdClient = _gScene->getScenePvdClient();
-    if (pvdClient) {
-        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
-        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
-        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+    //_gScene->setVisualizationParameter(physx::PxVisualizationParameter::eSCALE, 1.0);
+    //_gScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);
+    
+    if_constexpr(!Config::Build::IS_SHIPPING_BUILD) {
+        physx::PxPvdSceneClient* pvdClient = _gScene->getScenePvdClient();
+        if (pvdClient != nullptr) {
+            pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+            pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+            pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+        }
     }
-
 #ifdef USE_MBP
     setupMBP(*_gScene);
 #endif //USE_MBP
@@ -145,63 +151,90 @@ void PhysXSceneInterface::idle() {
 }
 
 void PhysXSceneInterface::update(const U64 deltaTimeUS) {
-    if (!_gScene) {
+    if (_gScene == nullptr) {
         return;
     }
 
-    for (PhysXActor* actor : _sceneRigidActors) {
-        updateActor(*actor);
-    }
-
-
     // retrieve array of actors that moved
-    PxU32 nbActiveActors;
-    PxActor** activeActors = _gScene->getActiveActors(nbActiveActors);
+    physx::PxU32 nbActiveActors = 0;
+    physx::PxActor** activeActors = _gScene->getActiveActors(nbActiveActors);
 
-    // update each render object with the new transform
-    for (PxU32 i = 0; i < nbActiveActors; ++i) {
-        PxRigidActor* actor = static_cast<PxRigidActor*>(activeActors[i]);
-        SceneGraphNode* node = static_cast<SceneGraphNode*>(activeActors[i]->userData);
-        TransformComponent* tComp = node->get<TransformComponent>();
+    if (nbActiveActors > 0u) {
+        // update each render object with the new transform
+        ParallelForDescriptor descriptor = {};
+        descriptor._iterCount = to_U32(nbActiveActors);
+        descriptor._partitionSize = g_parallelPartitionSize;
+        descriptor._cbk = [this, activeActors](const Task*, const U32 start, const U32 end) {
+            for (U32 i = start; i < end; ++i) {
+                UpdateActor(activeActors[i]);
+            }
+        };
 
-        PxTransform pT = actor->getGlobalPose();
-        const PxQuat pQ = pT.q.getConjugate();
-        const PxVec3 pP = pT.p;
-        tComp->setRotation(Quaternion<F32>(pQ.x, pQ.y, pQ.z, pQ.w));
-        tComp->setPosition(vec3<F32>(pP.x, pP.y, pP.z));
+        parallel_for(parentScene().context(), descriptor);
     }
 }
 
-void PhysXSceneInterface::updateActor(PhysXActor& actor) {
-    ACKNOWLEDGE_UNUSED(actor);
+void PhysXSceneInterface::UpdateActor(physx::PxActor* actor) {
+    physx::PxRigidActor* rigidActor = static_cast<physx::PxRigidActor*>(actor);
+    TransformComponent* tComp = static_cast<SceneGraphNode*>(rigidActor->userData)->get<TransformComponent>();
+
+    const physx::PxTransform pT = rigidActor->getGlobalPose();
+    const physx::PxQuat pQ = pT.q.getConjugate();
+    tComp->setRotation(Quaternion<F32>(pQ.x, pQ.y, pQ.z, pQ.w));
+    tComp->setPosition(pT.p.x, pT.p.y, pT.p.z);
 }
 
 void PhysXSceneInterface::process(const U64 deltaTimeUS) {
-    if (!_gScene) {
-        return;
-    }
+    if (_gScene != nullptr) {
+        _gScene->simulate(Time::MicrosecondsToMilliseconds<physx::PxReal>(deltaTimeUS));
 
-    const PxReal deltaTimeMS =  Time::MicrosecondsToMilliseconds<PxReal>(deltaTimeUS);
-
-    _gScene->simulate(deltaTimeMS);
-
-    while (!_gScene->fetchResults()) {
-        idle();
+        while (!_gScene->fetchResults()) {
+            idle();
+        }
     }
 }
 
 void PhysXSceneInterface::addRigidActor(PhysXActor* const actor) {
     assert(actor != nullptr);
     // We DO NOT take ownership of actors. Ownership remains with RigidBodyComponent
-    //_sceneRigidQueue.enqueue(actor);
+    _sceneRigidQueue.enqueue(actor);
 }
 
-void PhysXSceneInterface::updateRigidActor(PxRigidActor* oldActor, PxRigidActor* newActor) const { 
+void PhysXSceneInterface::updateRigidActor(physx::PxRigidActor* oldActor, physx::PxRigidActor* newActor) const { 
     if (oldActor != nullptr) {
         _gScene->removeActor(*oldActor);
     }
     if (newActor != nullptr) {
         _gScene->addActor(*newActor);
     }
+}
+
+bool PhysXSceneInterface::intersect(const Ray& intersectionRay, const vec2<F32>& range, vectorEASTL<SGNRayResult>& intersectionsOut) const {
+    physx::PxRaycastBuffer hit;
+
+    const physx::PxHitFlags outputFlags = physx::PxHitFlag::eMESH_ANY | physx::PxHitFlag::ePOSITION | physx::PxHitFlag::eNORMAL;
+    const physx::PxVec3 unitDir = Util::toVec3(intersectionRay._direction);
+    const physx::PxVec3 origin = Util::toVec3(intersectionRay._origin);
+
+    if (_gScene->raycast(origin + unitDir * range.min, unitDir, range.max, hit, outputFlags)) {
+        const physx::PxU32 numHits = hit.getNbAnyHits();
+
+        for (physx::PxU32 i = 0; i < numHits; ++i) {
+            hit.block = hit.getAnyHit(i);
+            PX_ASSERT(hit.block.shape);
+            PX_ASSERT(hit.block.actor);
+            PX_ASSERT(hit.block.distance <= probeLength + extra);
+
+            SceneGraphNode* node = static_cast<SceneGraphNode*>(hit.block.actor->userData);
+            intersectionsOut.push_back({
+                node->getGUID(),
+                hit.block.distance,
+                node->name().c_str()
+            });
+        }
+        return numHits > 0;
+    }
+
+    return false;
 }
 };

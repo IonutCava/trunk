@@ -60,6 +60,7 @@ namespace Divide {
         void onCollisionCbk(const DELEGATE<void, const RigidBodyComponent&>& cbk) { _collisionCbk = cbk; }
 
         PROPERTY_R(PhysicsGroup, physicsCollisionGroup, PhysicsGroup::GROUP_COUNT);
+        PROPERTY_R(bool, isKinematic, false);
 
       private:
         bool filterCollision(const RigidBodyComponent& collider);

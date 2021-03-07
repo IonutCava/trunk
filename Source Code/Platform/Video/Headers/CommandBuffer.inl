@@ -195,9 +195,9 @@ CommandBuffer::tryMergeCommands(const CommandType type, T* prevCommand, T* crtCo
             ret = Merge(reinterpret_cast<SendPushConstantsCommand*>(prevCommand)->_constants, reinterpret_cast<SendPushConstantsCommand*>(crtCommand)->_constants, partial);
         } break;
         case CommandType::DRAW_TEXT:            {
-            const TextElementBatch::BatchType& crt = reinterpret_cast<DrawTextCommand*>(crtCommand)->_batch._data;
+            const TextElementBatch::BatchType& crt = reinterpret_cast<DrawTextCommand*>(crtCommand)->_batch.data();
             if (!crt.empty()) {
-                TextElementBatch::BatchType& prev = reinterpret_cast<DrawTextCommand*>(prevCommand)->_batch._data;
+                TextElementBatch::BatchType& prev = reinterpret_cast<DrawTextCommand*>(prevCommand)->_batch.data();
                 prev.insert(std::cend(prev), std::cbegin(crt), std::cend(crt));
                 ret = true;
             }

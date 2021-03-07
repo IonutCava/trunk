@@ -2,11 +2,20 @@
 
 #include "Headers/PhysXActor.h"
 
-#include "Core/Headers/PlatformContext.h"
 #include "ECS/Components/Headers/RigidBodyComponent.h"
 #include "Physics/Headers/PXDevice.h"
 
 namespace Divide {
+namespace Util {
+    vec3<F32> toVec3(const physx::PxVec3& vec) {
+        return { vec.x, vec.y, vec.z };
+    }
+
+    physx::PxVec3 toVec3(const vec3<F32>& vec) {
+        return { vec.x, vec.y, vec.z };
+    }
+} //namespace Util
+
     PhysXActor::PhysXActor(RigidBodyComponent& parent)
         : PhysicsAsset(parent)
     {
@@ -191,8 +200,8 @@ namespace Divide {
     }
 
     void PhysXActor::physicsCollisionGroup(const PhysicsGroup group) {
-        if (_physicsGroup != group && _actor != nullptr) {
-            _parentComponent.getSGN()->context().pfx().convertActor(this, group);
+        if (_parentComponent.physicsCollisionGroup() != group && _actor != nullptr) {
+            _context.convertActor(this, group);
         }
 
         PhysicsAsset::physicsCollisionGroup(group);

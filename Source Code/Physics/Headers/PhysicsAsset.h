@@ -36,6 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/Headers/TransformInterface.h"
 
 namespace Divide {
+class PXDevice;
 enum class PhysicsGroup : U8;
 class RigidBodyComponent;
 
@@ -50,7 +51,7 @@ public:
 
 protected:
     RigidBodyComponent & _parentComponent;
-    PhysicsGroup _physicsGroup;
+    PXDevice& _context;
 };
 };
 

@@ -144,11 +144,11 @@ class SceneGraph final : NonCopyable,
     ECS::ECSEngine _ecsEngine;
     eastl::unique_ptr<ECSManager> _ecsManager;
 
-    bool _loadComplete;
-    bool _octreeChanged;
-    bool _nodeListChanged;
+    bool _loadComplete = false;
+    bool _octreeChanged = false;
+    bool _nodeListChanged = false;
 
-    SceneGraphNode* _root;
+    SceneGraphNode* _root = nullptr;
     std::shared_ptr<Octree> _octree;
     std::atomic_bool _octreeUpdating;
     vectorEASTL<SceneGraphNode*> _nodeList;

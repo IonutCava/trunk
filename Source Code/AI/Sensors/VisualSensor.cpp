@@ -79,7 +79,7 @@ void VisualSensor::update(const U64 deltaTimeUS) {
     }
 }
 
-SceneGraphNode* VisualSensor::getClosestNode(const U32 containerID) {
+SceneGraphNode* VisualSensor::findClosestNode(const U32 containerID) {
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
     if (container != std::end(_nodeContainerMap)) {
         NodePositions& positions = _nodePositionsMap[container->first];

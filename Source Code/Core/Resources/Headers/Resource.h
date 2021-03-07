@@ -73,7 +73,7 @@ class Resource : public GUIDWrapper
    public:
     explicit Resource(ResourceType type, const Str256& resourceName);
 
-    ResourceState getState() const noexcept;
+    [[nodiscard]] ResourceState getState() const noexcept;
 
     PROPERTY_R(Str256, resourceName);
     PROPERTY_R(ResourceType, resourceType, ResourceType::COUNT);
@@ -112,7 +112,7 @@ public:
     virtual bool load();
     virtual bool unload();
 
-    stringImpl assetPath() const { return assetLocation().str() + "/" + assetName().str(); }
+    [[nodiscard]] stringImpl assetPath() const { return assetLocation().str() + "/" + assetName().str(); }
     void addStateCallback(ResourceState targetState, const DELEGATE<void, CachedResource*>& cbk);
 
 protected:
@@ -122,8 +122,8 @@ protected:
 
 protected:
     using CallbackList = vectorEASTL<DELEGATE<void, CachedResource*>>;
-    std::array<CallbackList, to_base(ResourceState::COUNT)> _loadingCallbacks;
-    mutable Mutex _callbackLock;
+    std::array<CallbackList, to_base(ResourceState::COUNT)> _loadingCallbacks{};
+    mutable Mutex _callbackLock{};
     PROPERTY_RW(ResourcePath, assetLocation);
     PROPERTY_RW(ResourcePath, assetName);
     PROPERTY_R(size_t, descriptorHash);

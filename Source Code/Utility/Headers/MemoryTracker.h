@@ -91,7 +91,6 @@ class MemoryTracker {
 
    public:
     MemoryTracker()
-        : _locked(false)
     {
         Ready = true;
     }
@@ -183,7 +182,7 @@ class MemoryTracker {
    private:
     mutable Mutex _mutex;
     hashMap<void*, Entry> _allocations;
-    std::atomic_bool _locked;
+    std::atomic_bool _locked = false;
 };
 
 extern MemoryTracker AllocTracer;

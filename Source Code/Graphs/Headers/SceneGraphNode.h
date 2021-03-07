@@ -191,7 +191,7 @@ public:
     void postLoad();
 
     /// Find the graph nodes whom's bounding boxes intersects the given ray
-    bool intersect(const SGNIntersectionParams& params, vectorEASTL<SGNRayResult>& intersections) const;
+    bool intersect(const Ray& intersectionRay, const vec2<F32>& range, vectorEASTL<SGNRayResult>& intersections) const;
 
     void changeUsageContext(const NodeUsageContext& newContext);
 

@@ -121,11 +121,16 @@ ErrorCode PhysX::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed) {
     }
 
     if (!_cooking) {
+      
         physx::PxCookingParams params(toleranceScale);
         params.meshWeldTolerance = 0.001f;
         params.meshPreprocessParams = physx::PxMeshPreprocessingFlags(physx::PxMeshPreprocessingFlag::eWELD_VERTICES);
+#if PX_SUPPORT_GPU_PHYSX
         params.buildGPUData = true; //Enable GRB data being produced in cooking.
-
+#else
+        params.buildGPUData = false;
+#endif
+        params.midphaseDesc = physx::PxMeshMidPhase::Enum::eBVH34;
         _cooking = PxCreateCooking(PX_PHYSICS_VERSION, *_foundation, params);
     }
     if (_cooking == nullptr) {
@@ -209,15 +214,11 @@ void PhysX::createPvdConnection(const char* ip, const physx::PxU32 port, const p
     //are taken care of by the PVD SDK.
 
     //Use these flags for a clean profile trace with minimal overhead
-    _pvdFlags = physx::PxPvdInstrumentationFlag::eALL;
-    if (!useFullConnection)
-    {
-        _pvdFlags = physx::PxPvdInstrumentationFlag::ePROFILE;
-    }
+    _pvdFlags = useFullConnection ? physx::PxPvdInstrumentationFlag::eALL : physx::PxPvdInstrumentationFlag::ePROFILE;
     _pvd = physx::PxCreatePvd(*_foundation);
-    //if (_pvd->connect(*_transport, _pvdFlags)) {
-    //    Console::d_printfn(Locale::Get(_ID("CONNECT_PVD_OK")));
-    //}
+    if (_pvd->connect(*_transport, _pvdFlags)) {
+        Console::d_printfn(Locale::Get(_ID("CONNECT_PVD_OK")));
+    }
 }
 
 inline void PhysX::updateTimeStep(U8 timeStepFactor, const F32 simSpeed) {
@@ -280,6 +281,27 @@ bool PhysX::destroyPhysicsScene() {
     return true;
 }
 
+physx::PxRigidActor* PhysX::createActorForGroup(const PhysicsGroup group, const physx::PxTransform& pose) {
+    physx::PxRigidActor* ret = nullptr;
+    switch (group) {
+        case PhysicsGroup::GROUP_STATIC:
+            ret = _gPhysicsSDK->createRigidStatic(pose);
+            break;
+        case PhysicsGroup::GROUP_DYNAMIC:
+            ret = _gPhysicsSDK->createRigidDynamic(pose);
+            break;
+        case PhysicsGroup::GROUP_KINEMATIC: {
+            ret = _gPhysicsSDK->createRigidDynamic(pose);
+            assert(ret != nullptr);
+            auto dynamicActor = static_cast<physx::PxRigidDynamic*>(ret);
+            dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::Enum::eKINEMATIC, true);
+        }break;
+        default: DIVIDE_UNEXPECTED_CALL(); break; //Not implemented yet
+    }
+
+    return ret;
+}
+
 PhysicsAsset* PhysX::createRigidActor(SceneGraphNode* node, RigidBodyComponent& parentComp)
 {
     PhysXActor* newActor = new PhysXActor(parentComp);
@@ -289,25 +311,15 @@ PhysicsAsset* PhysX::createRigidActor(SceneGraphNode* node, RigidBodyComponent& 
 
     const vec3<F32>& position = tComp->getPosition();
     const vec4<F32>& orientation = tComp->getOrientation().asVec4();
-    const physx::PxTransform posePxTransform(physx::PxVec3(position.x, position.y, position.z),
-        physx::PxQuat(orientation.x,
-                      orientation.y,
-                      orientation.z,
-                      orientation.w).getConjugate());
-    //if (parentComp.physicsCollisionGroup() == PhysicsGroup::GROUP_STATIC) {
-        newActor->_actor = _gPhysicsSDK->createRigidStatic(posePxTransform);
-    /*} else if (parentComp.physicsCollisionGroup() == PhysicsGroup::GROUP_DYNAMIC) {
-        newActor->_actor = _gPhysicsSDK->createRigidDynamic(posePxTransform);
-    } else {
-        DIVIDE_UNEXPECTED_CALL();
-    }*/
+    const physx::PxTransform posePxTransform(Util::toVec3(position), physx::PxQuat(orientation.x, orientation.y, orientation.z, orientation.w).getConjugate());
 
-    if (!newActor->_actor) {
+    newActor->_actor = createActorForGroup(parentComp.physicsCollisionGroup(), posePxTransform);
+    if (newActor->_actor == nullptr) {
         MemoryManager::DELETE(newActor);
         return nullptr;
     }
-    newActor->_actor->userData = node;
 
+    newActor->_actor->userData = node;
     SceneNode& sNode = node->getNode();
     const stringImpl meshName = sNode.assetName().empty() ? sNode.resourceName().c_str() : sNode.assetName().str();
     const U64 nameHash = _ID(meshName.c_str());
@@ -355,24 +367,24 @@ PhysicsAsset* PhysX::createRigidActor(SceneGraphNode* node, RigidBodyComponent& 
                 }
                 if (!collisionMeshFileExists) {
                     physx::PxTriangleMeshDesc meshDesc;
+                    meshDesc.points.stride = sizeof(VertexBuffer::Vertex);
+
                     meshDesc.triangles.count = static_cast<physx::PxU32>(triangles.size());
-                    meshDesc.triangles.stride = 3 * sizeof(U32);
+                    meshDesc.triangles.stride = sizeof(triangles.front());
                     meshDesc.triangles.data = triangles.data();
 
-                    meshDesc.points.stride = sizeof(VertexBuffer::Vertex);
                     physx::PxDefaultFileOutputStream outputStream(cachePath.c_str());
                     if (obj.getObjectType()._value == ObjectType::TERRAIN) {
-                        const vectorEASTL<VertexBuffer::Vertex>& verts = node->getNode<Terrain>().getVerts();
+                        const auto& verts = node->getNode<Terrain>().getVerts();
                         meshDesc.points.count = static_cast<physx::PxU32>(verts.size());
                         meshDesc.points.data = verts[0]._position._v;
                     } else {
                         VertexBuffer* vb = obj.getGeometryVB();
                         DIVIDE_ASSERT(vb != nullptr);
                         meshDesc.points.count = static_cast<physx::PxU32>(vb->getVertexCount());
-                        meshDesc.points.stride = sizeof(VertexBuffer::Vertex);
                         meshDesc.points.data = vb->getVertices()[0]._position._v;
                     }
-                    
+
                     const auto getErrorMessage = [](const physx::PxTriangleMeshCookingResult::Enum value) {
                         switch (value) {
                         case physx::PxTriangleMeshCookingResult::Enum::eSUCCESS:
@@ -427,8 +439,17 @@ PhysicsAsset* PhysX::createRigidActor(SceneGraphNode* node, RigidBodyComponent& 
 
         newActor->_type = physx::PxGeometryType::eBOX;
 
+        
+
         physx::PxBoxGeometry geometry = { hExtent.x, hExtent.y, hExtent.z};
         physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*newActor->_actor, geometry, *_defaultMaterial);
+        if (sNode.type() == SceneNodeType::TYPE_WATER) {
+            // Water geom has the range  [0, depth] and half extents work from [-half depth, half depth]
+            // so offset the local pose by half
+            auto crtPose = shape->getLocalPose();
+            crtPose.p.y -= hExtent.y;
+            shape->setLocalPose(crtPose);
+        }
         PX_UNUSED(shape);
     } else {
         DIVIDE_UNEXPECTED_CALL();
@@ -444,28 +465,26 @@ bool PhysX::convertActor(PhysicsAsset* actor, const PhysicsGroup newGroup) {
     PhysXActor* targetActor = dynamic_cast<PhysXActor*>(actor);
 
     if (targetActor != nullptr) {
-        physx::PxRigidActor* tempActor = nullptr;
-        if (newGroup == PhysicsGroup::GROUP_STATIC) {
-            tempActor = _gPhysicsSDK->createRigidStatic(targetActor->_actor->getGlobalPose());
-        } else if (newGroup == PhysicsGroup::GROUP_DYNAMIC) {
-            tempActor = _gPhysicsSDK->createRigidDynamic(targetActor->_actor->getGlobalPose());
-        } else {
-            DIVIDE_UNEXPECTED_CALL();
-        }
+        physx::PxRigidActor* newActor = createActorForGroup(newGroup, targetActor->_actor->getGlobalPose());
+        DIVIDE_ASSERT(newActor != nullptr);
 
         const physx::PxU32 nShapes = targetActor->_actor->getNbShapes();
         vectorEASTL<physx::PxShape*> shapes(nShapes);
         targetActor->_actor->getShapes(shapes.data(), nShapes);
         for (physx::PxU32 i = 0; i < nShapes; ++i) {
-            tempActor->attachShape(*shapes[i]);
+            newActor->attachShape(*shapes[i]);
         }
 
-        _targetScene->updateRigidActor(targetActor->_actor, tempActor);
-        targetActor->_actor = tempActor;
+        _targetScene->updateRigidActor(targetActor->_actor, newActor);
+        targetActor->_actor = newActor;
         return true;
     }
 
     return false;
+}
+
+bool PhysX::intersect(const Ray& intersectionRay, const vec2<F32>& range, vectorEASTL<SGNRayResult>& intersectionsOut) const {
+    return _targetScene->intersect(intersectionRay, range, intersectionsOut);
 }
 
 };

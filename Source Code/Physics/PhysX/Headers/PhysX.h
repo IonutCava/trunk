@@ -75,6 +75,8 @@ public:
     bool initPhysicsScene(Scene& scene) override;
     bool destroyPhysicsScene() override;
 
+    bool intersect(const Ray& intersectionRay, const vec2<F32>& range, vectorEASTL<SGNRayResult>& intersectionsOut) const;
+
     [[nodiscard]] physx::PxPhysics* getSDK() const noexcept { return _gPhysicsSDK; }
 
     PhysicsAsset* createRigidActor(SceneGraphNode* node, RigidBodyComponent& parentComp) override;
@@ -89,7 +91,7 @@ public:
 
 protected:
     eastl::unique_ptr<PhysXSceneInterface> _targetScene;
-
+    physx::PxRigidActor* createActorForGroup(PhysicsGroup group, const physx::PxTransform& pose);
 private:
     F32 _simulationSpeed = 1.0f;
     physx::PxPhysics* _gPhysicsSDK = nullptr;

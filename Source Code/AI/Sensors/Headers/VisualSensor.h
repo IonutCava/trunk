@@ -75,7 +75,7 @@ class VisualSensor final : public Sensor {
     }
 
     vec3<F32> getNodePosition(U32 containerID, U64 nodeGUID);
-    SceneGraphNode* getClosestNode(U32 containerID);
+    SceneGraphNode* findClosestNode(U32 containerID);
 
    protected:
     explicit VisualSensor(AIEntity* parentEntity);

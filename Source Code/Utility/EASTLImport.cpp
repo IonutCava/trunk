@@ -31,6 +31,6 @@ void* operator new[](const size_t size, const char* pName, int flags,
     return malloc(size);
 }
 
-int Vsnprintf8(char* pDestination, const size_t n, const char* pFormat, const va_list arguments) {
+int Vsnprintf8(char* pDestination, const size_t n, const char* pFormat, va_list const arguments) {
     return vsnprintf(pDestination, n, pFormat, arguments);
 }

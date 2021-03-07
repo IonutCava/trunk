@@ -202,7 +202,7 @@ stringImpl ToString(const SetTexturesResidencyCommand& cmd, const U16 indent) {
 stringImpl ToString(const DrawTextCommand& cmd, const U16 indent) {
     stringImpl ret = "\n";
     size_t i = 0;
-    for (const TextElement& element : cmd._batch()) {
+    for (const TextElement& element : cmd._batch.data()) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");

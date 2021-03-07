@@ -13,15 +13,9 @@ TextLabelStyle::FontNameHashMap TextLabelStyle::s_fontName;
 TextLabelStyle::TextLabelStyle(const char* font,
                                const UColour4& colour,
                                const U8 fontSize)
-  : _font(_ID(font)),
-    _fontSize(fontSize),
-    _width(1),
-    _blurAmount(0.0f),
-    _spacing(0.0f),
-    _alignFlag(0),
-    _colour(colour),
-    _bold(false),
-    _italic(false)
+  : _fontSize(fontSize),
+    _font(_ID(font)),
+    _colour(colour)
 {
     // First one found
     if (s_defaultHashValue == 0) {
@@ -37,28 +31,24 @@ TextLabelStyle::TextLabelStyle(const char* font,
 }
 
 size_t TextLabelStyle::getHash() const noexcept {
-    if (_dirty) {
-        const size_t previousCache = Hashable::getHash();
+    const size_t previousHash = _hash;
+    _hash = 17;
+    Util::Hash_combine(_hash, _font);
+    Util::Hash_combine(_hash, _fontSize);
+    Util::Hash_combine(_hash, _width);
+    Util::Hash_combine(_hash, _blurAmount);
+    Util::Hash_combine(_hash, _spacing);
+    Util::Hash_combine(_hash, _alignFlag);
+    Util::Hash_combine(_hash, _colour.r);
+    Util::Hash_combine(_hash, _colour.g);
+    Util::Hash_combine(_hash, _colour.b);
+    Util::Hash_combine(_hash, _colour.a);
+    Util::Hash_combine(_hash, _bold);
+    Util::Hash_combine(_hash, _italic);
 
-        _hash = 17;
-        Util::Hash_combine(_hash, _font);
-        Util::Hash_combine(_hash, _fontSize);
-        Util::Hash_combine(_hash, _width);
-        Util::Hash_combine(_hash, _blurAmount);
-        Util::Hash_combine(_hash, _spacing);
-        Util::Hash_combine(_hash, _alignFlag);
-        Util::Hash_combine(_hash, _colour.r);
-        Util::Hash_combine(_hash, _colour.g);
-        Util::Hash_combine(_hash, _colour.b);
-        Util::Hash_combine(_hash, _colour.a);
-        Util::Hash_combine(_hash, _bold);
-        Util::Hash_combine(_hash, _italic);
-
-        if (previousCache != _hash) {
-            UniqueLock<SharedMutex> w_lock(s_textLableStyleMutex);
-            insert(s_textLabelStyle, _hash, *this);
-        }
-        _dirty = false;
+    if (previousHash != _hash) {
+        UniqueLock<SharedMutex> w_lock(s_textLableStyleMutex);
+        insert(s_textLabelStyle, _hash, *this);
     }
 
     return Hashable::getHash();

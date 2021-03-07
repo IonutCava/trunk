@@ -676,24 +676,25 @@ bool TerrainLoader::loadThreadedResources(const Terrain_ptr& terrain,
         F32 bZRange = bMax.z - bMin.z;
 
         #pragma omp parallel for
-        for (I32 height = 0; height < terrainHeight ; ++height) {
+        for (I32 height = 0; height < terrainHeight; ++height) {
             for (I32 width = 0; width < terrainWidth; ++width) {
-                I32 idxIMG = TER_COORD(width < terrainWidth - 1 ? width : width - 1,
-                                       height < terrainHeight - 1 ? height : height - 1,
-                                       terrainWidth);
-
-                vec3<F32>& vertexData = terrain->_physicsVerts[TER_COORD(width, height, terrainWidth)]._position;
+                const I32 idxTER = TER_COORD(width, height, terrainWidth);
+                vec3<F32>& vertexData = terrain->_physicsVerts[idxTER]._position;
 
 
                 F32 yOffset = 0.0f;
                 U16* heightData = reinterpret_cast<U16*>(data.data());
+
+                const I32 coordX = width < terrainWidth - 1 ? width : width - 1;
+                const I32 coordY = height < terrainHeight - 1 ? height : height - 1;
+                const I32 idxIMG = TER_COORD(coordX, coordY, terrainWidth);
                 yOffset = altitudeRange * (heightData[idxIMG] / ushortMax) + minAltitude;
 
 
                 //#pragma omp critical
                 //Surely the id is unique and memory has also been allocated beforehand
-                vertexData.set(bMin.x + to_F32(width) * bXRange / (terrainWidth - 1),         //X
-                               yOffset,                                                         //Y
+                vertexData.set(bMin.x + to_F32(width) * bXRange / (terrainWidth - 1),       //X
+                               yOffset,                                                     //Y
                                bMin.z + to_F32(height) * bZRange / (terrainHeight - 1));    //Z
             }
         }

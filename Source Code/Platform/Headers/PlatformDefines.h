@@ -210,7 +210,7 @@ extern bool CallSystemCmd(const char* cmd, const char* args);
 bool CreateDirectories(const char* path);
 bool CreateDirectories(const ResourcePath& path);
 
-void DebugBreak(bool condition = true) noexcept;
+bool DebugBreak(bool condition = true) noexcept;
 
 ErrorCode PlatformInit(int argc, char** argv);
 bool PlatformClose();

@@ -10,21 +10,25 @@
 #include "Utility/Headers/Localization.h"
 
 #include "ECS/Systems/Headers/ECSManager.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
+#include "Physics/Headers/PXDevice.h"
 
 namespace Divide {
 
 namespace {
     constexpr I8 g_cacheMarkerByteValue = -126;
     constexpr U32 g_nodesPerPartition = 32u;
+
+    [[nodiscard]] bool IsTransformNode(const SceneNodeType nodeType, const ObjectType objType) noexcept {
+        return nodeType == SceneNodeType::TYPE_TRANSFORM ||
+               nodeType == SceneNodeType::TYPE_TRIGGER ||
+               objType._value == ObjectType::MESH;
+    }
 };
 
 SceneGraph::SceneGraph(Scene& parentScene)
     : FrameListener("SceneGraph", parentScene.context().kernel().frameListenerMgr(), 1),
-      SceneComponent(parentScene),
-     _loadComplete(false),
-     _octreeChanged(false),
-     _nodeListChanged(false),
-     _root(nullptr)
+      SceneComponent(parentScene)
 {
     _ecsManager = eastl::make_unique<ECSManager>(parentScene.context(), GetECSEngine());
 
@@ -235,16 +239,43 @@ void SceneGraph::onNetworkSend(const U32 frameCount) {
 
 bool SceneGraph::intersect(const SGNIntersectionParams& params, vectorEASTL<SGNRayResult>& intersectionsOut) const {
     intersectionsOut.resize(0);
-    return _root->intersect(params, intersectionsOut);
 
-    /*if (_loadComplete) {
-        WAIT_FOR_CONDITION(!_octreeUpdating);
-        U32 filter = to_base(SceneNodeType::TYPE_OBJECT3D);
-        SceneGraphNode* collision = _octree->nearestIntersection(ray, start, end, filter)._intersectedObject1.lock();
-        if (collision) {
-            Console::d_printfn("Octree ray cast [ %s ]", collision->name().c_str());
+    // Try to leverage our physics system as it will always be way more faster and accurate
+    if (!parentScene().context().pfx().intersect(params._ray, params._range, intersectionsOut)) {
+        // Fallback to Sphere/AABB/OBB intersections
+        if (!_root->intersect(params._ray, params._range, intersectionsOut)) {
+            return false;
         }
-    }*/
+    }
+
+
+    DIVIDE_ASSERT(!intersectionsOut.empty());
+
+    const auto isIgnored = [&params](const SceneNodeType type) {
+        for (size_t i = 0; i < params._ignoredTypesCount; ++i) {
+            if (type == params._ignoredTypes[i]) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    for (SGNRayResult& result : intersectionsOut) {
+        SceneGraphNode* node = findNode(result.sgnGUID);
+        const SceneNodeType snType =  node->getNode().type();
+        ObjectType objectType = ObjectType::COUNT;
+        if (snType == SceneNodeType::TYPE_OBJECT3D) {
+            objectType = static_cast<const Object3D&>(node->getNode()).getObjectType();
+        }
+
+        if (isIgnored(snType) || (!params._includeTransformNodes && IsTransformNode(snType, objectType))) {
+            result.sgnGUID = -1;
+        }
+    }
+
+    eastl::erase_if(intersectionsOut, [](const SGNRayResult& res) { return res.dist < 0.f || res.sgnGUID == -1; });
+
+    return !intersectionsOut.empty();
 }
 
 void SceneGraph::postLoad() {

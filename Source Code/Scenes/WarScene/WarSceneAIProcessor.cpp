@@ -388,7 +388,7 @@ bool WarSceneAIProcessor::preAction(const ActionType type, const WarSceneAction*
                 _globalWorkingMemory._teamAliveCount[enemyTeamID].value() > 0) {
 
                 if (_localWorkingMemory._isFlagRetriever.value() == false) {
-                    SceneGraphNode* enemy = _visualSensor->getClosestNode(g_enemyTeamContainer);
+                    SceneGraphNode* enemy = _visualSensor->findClosestNode(g_enemyTeamContainer);
                     if (!_entity->updateDestination(enemy->get<TransformComponent>()->getPosition(), true)) {
                         DIVIDE_UNEXPECTED_CALL();
                     }

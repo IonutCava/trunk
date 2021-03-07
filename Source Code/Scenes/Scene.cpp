@@ -1569,37 +1569,6 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
     sceneGraph()->intersect(intersectionParams, _sceneSelectionCandidates);
 
     if (!_sceneSelectionCandidates.empty()) {
-
-        const auto IsValidTarget = [](SceneGraphNode* sgn, const bool inEditMode) {
-            if (sgn == nullptr) {
-                return false;
-            }
-
-            if (!inEditMode) {
-                return sgn->get<SelectionComponent>() != nullptr &&
-                    sgn->get<SelectionComponent>()->enabled();
-            }
-
-            SceneNodeType sType = sgn->getNode().type();
-            if (sType == SceneNodeType::TYPE_OBJECT3D) {
-                const ObjectType oType = sgn->getNode<Object3D>().getObjectType();
-
-                if (!inEditMode && oType._value == ObjectType::SUBMESH ||
-                    oType._value == ObjectType::TERRAIN) {
-                    sType = SceneNodeType::COUNT;
-                } else if (sgn->parent() != nullptr) {
-                    sType = sgn->parent()->getNode().type();
-                    if (sType == SceneNodeType::TYPE_TRANSFORM) {
-                        sType = SceneNodeType::TYPE_OBJECT3D;
-                    }
-                }
-            }
-
-            return sType == SceneNodeType::TYPE_OBJECT3D ||
-                sType == SceneNodeType::TYPE_TRIGGER ||
-                sType == SceneNodeType::TYPE_PARTICLE_EMITTER;
-        };
-
         // If we don't force selections, remove all of the nodes that lack a SelectionComponent
         eastl::sort(begin(_sceneSelectionCandidates),
                     end(_sceneSelectionCandidates),
@@ -1614,9 +1583,32 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
             }
 
             SceneGraphNode* crtNode = _sceneGraph->findNode(result.sgnGUID);
-            if (IsValidTarget(crtNode, (Config::Build::ENABLE_EDITOR ? _context.editor().inEditMode() : false))) {
+            if (DebugBreak(crtNode == nullptr)) {
+                continue;
+            }
+
+            // In the editor, we can select ... anything ...
+            if (Config::Build::ENABLE_EDITOR && _context.editor().inEditMode()) {
                 target = crtNode;
                 break;
+            }
+
+testNode:
+            // Outside of the editor, we only select nodes that have a selection component
+            if (crtNode->get<SelectionComponent>() != nullptr && crtNode->get<SelectionComponent>()->enabled()) {
+                target = crtNode;
+                break;
+            }
+
+            if (crtNode->getNode().type() == SceneNodeType::TYPE_OBJECT3D &&
+                crtNode->getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH)                 {
+                // In normal gameplay, we need to top node for the selection (i.e. a mesh for submeshe intersections)
+                // Because we use either the physics system or a recursive scenegraph intersection loop, we may end up with
+                // child-node data as a result
+                crtNode = crtNode->parent();
+                if (crtNode != nullptr) {
+                    goto testNode;
+                }
             }
         }
 

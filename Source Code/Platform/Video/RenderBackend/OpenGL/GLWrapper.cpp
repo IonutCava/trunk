@@ -611,10 +611,10 @@ void GL_API::drawText(const TextElementBatch& batch) {
     size_t previousStyle = 0;
 
     fonsClearState(_fonsContext);
-    for (const TextElement& entry : batch())
+    for (const TextElement& entry : batch.data())
     {
-        if (previousStyle != entry._textLabelStyleHash) {
-            const TextLabelStyle& textLabelStyle = TextLabelStyle::get(entry._textLabelStyleHash);
+        if (previousStyle != entry.textLabelStyleHash()) {
+            const TextLabelStyle& textLabelStyle = TextLabelStyle::get(entry.textLabelStyleHash());
             const UColour4& colour = textLabelStyle.colour();
             // Retrieve the font from the font cache
             const I32 font = getFont(TextLabelStyle::fontName(textLabelStyle.font()));
@@ -627,11 +627,11 @@ void GL_API::drawText(const TextElementBatch& batch) {
             fonsSetAlign(_fonsContext, textLabelStyle.alignFlag());
             fonsSetSize(_fonsContext, to_F32(textLabelStyle.fontSize()));
             fonsSetColour(_fonsContext, colour.r, colour.g, colour.b, colour.a);
-            previousStyle = entry._textLabelStyleHash;
+            previousStyle = entry.textLabelStyleHash();
         }
 
-        const F32 textX = entry._position.d_x.d_scale * width + entry._position.d_x.d_offset;
-        const F32 textY = height - (entry._position.d_y.d_scale * height + entry._position.d_y.d_offset);
+        const F32 textX = entry.position().d_x.d_scale * width + entry.position().d_x.d_offset;
+        const F32 textY = height - (entry.position().d_y.d_scale * height + entry.position().d_y.d_offset);
 
         F32 lh = 0;
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);

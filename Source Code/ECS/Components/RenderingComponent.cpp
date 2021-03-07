@@ -445,12 +445,14 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData);
 
     if (refreshData) {
+        BoundsComponent* bComp = static_cast<BoundsComponent*>(_parentSGN->get<BoundsComponent>());
         const vec3<F32> cameraEye = camera.getEye();
         const SceneNodeRenderState& renderState = _parentSGN->getNode<>().renderState();
-        if (renderState.lod0OnCollision() && _boundsCache.containsPoint(cameraEye)) {
+        if (renderState.lod0OnCollision() && bComp->getBoundingBox().containsPoint(cameraEye)) {
             _lodLevels[to_base(renderStagePass._stage)] = 0u;
         } else {
-            const vec3<F32> LoDtarget = renderState.useBoundsCenterForLoD() ? _boundsCache.getCenter() : _boundsCache.nearestPoint(cameraEye);
+            const BoundingBox& aabb = bComp->getBoundingBox();
+            const vec3<F32> LoDtarget = renderState.useBoundsCenterForLoD() ? aabb.getCenter() : aabb.nearestPoint(cameraEye);
             _lodLevels[to_base(renderStagePass._stage)] = getLoDLevel(LoDtarget, cameraEye, renderStagePass._stage, sceneRenderState.lodThresholds(renderStagePass._stage));
         }
     }
@@ -649,7 +651,9 @@ void RenderingComponent::drawSelectionGizmo(GFX::CommandBuffer& bufferInOut) {
             }
         }
         //draw something else (at some point ...)
-        _selectionGizmo->fromBox(_boundsCache.getMin(), _boundsCache.getMax(), colour);
+        BoundsComponent* bComp = static_cast<BoundsComponent*>(_parentSGN->get<BoundsComponent>());
+        DIVIDE_ASSERT(bComp != nullptr);
+        _selectionGizmo->fromOBB(bComp->getOBB(), colour);
     }
 
     bufferInOut.add(_selectionGizmo->toCommandBuffer());
@@ -813,8 +817,6 @@ void RenderingComponent::OnData(const ECS::CustomEvent& data) {
         } break;
         case ECS::CustomEvent::Type::BoundsUpdated:
         {
-            BoundsComponent* bComp = static_cast<BoundsComponent*>(data._sourceCmp);
-            _boundsCache = bComp->getBoundingBox();
             _selectionGizmoDirty = true;
         } break;
         default: break;

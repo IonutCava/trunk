@@ -102,11 +102,8 @@ public:
 
     struct Entry {
         PROPERTY_RW(std::set<Input::KeyCode>, modifiers);
-        std::set<Input::KeyCode>& modifiers() noexcept { return _modifiers; }
         PROPERTY_RW(std::set<U16>, pressIDs);
-        std::set<U16>& pressIDs() noexcept { return _pressIDs; }
         PROPERTY_RW(std::set<U16>, releaseIDs);
-        std::set<U16>& releaseIDs() noexcept { return _releaseIDs; }
 
         void clear() {
             modifiers().clear();

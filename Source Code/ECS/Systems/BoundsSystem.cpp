@@ -27,7 +27,7 @@ namespace Divide {
         Parent::PreUpdate(dt);
 
         ParallelForDescriptor descriptor = {};
-        descriptor._iterCount = _componentCache.size();
+        descriptor._iterCount = to_U32(_componentCache.size());
         descriptor._partitionSize = g_parallelPartitionSize;
         descriptor._cbk = [this](const Task*, const U32 start, const U32 end) {
             for (U32 i = start; i < end; ++i) {
@@ -48,7 +48,7 @@ namespace Divide {
         Parent::Update(dt);
 
         ParallelForDescriptor descriptor = {};
-        descriptor._iterCount = _componentCache.size();
+        descriptor._iterCount = to_U32(_componentCache.size());
         descriptor._partitionSize = g_parallelPartitionSize;
         descriptor._cbk = [this](const Task*, const U32 start, const U32 end) {
             for (U32 i = start; i < end; ++i) {
@@ -69,7 +69,7 @@ namespace Divide {
         Parent::PostUpdate(dt);
 
         ParallelForDescriptor descriptor = {};
-        descriptor._iterCount = _componentCache.size();
+        descriptor._iterCount = to_U32(_componentCache.size());
         descriptor._partitionSize = g_parallelPartitionSize;
         descriptor._cbk = [this](const Task*, const U32 start, const U32 end) {
             for (U32 i = start; i < end; ++i) {

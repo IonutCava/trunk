@@ -73,6 +73,8 @@ public:
     [[nodiscard]] PhysicsAPIWrapper& getImpl() noexcept { assert(_api != nullptr); return *_api; }
     [[nodiscard]] const PhysicsAPIWrapper& getImpl() const noexcept { assert(_api != nullptr); return *_api; }
 
+    bool intersect(const Ray& intersectionRay, const vec2<F32>& range, vectorEASTL<SGNRayResult>& intersectionsOut) const;
+
 private:
     F32 _simulationSpeed = 1.0f;
     PhysicsAPI _API_ID = PhysicsAPI::COUNT;

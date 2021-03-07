@@ -305,7 +305,7 @@ void CommandBuffer::clean() {
                 const TextElementBatch& textBatch = get<DrawTextCommand>(cmd)->_batch;
 
                 erase = true;
-                for (const TextElement& element : textBatch()) {
+                for (const TextElement& element : textBatch.data()) {
                     if (!element.text().empty()) {
                         erase = false;
                         break;

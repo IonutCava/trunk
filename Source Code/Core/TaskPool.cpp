@@ -17,7 +17,6 @@ TaskPool::TaskPool()
     : GUIDWrapper(),
       _taskCallbacks(Config::MAX_POOLED_TASKS)
 {
-    _threadCount = 0u;
 }
 
 TaskPool::TaskPool(const U32 threadCount, const TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate, const stringImpl& workerName)
@@ -135,12 +134,8 @@ void TaskPool::waitForAllTasks(const bool yield, const bool flushCallbacks) {
         return;
     }
 
-    bool finished = _workerThreadCount == 0u;
-    while (!finished) {
-        finished = _runningTaskCount.load() == 0u;
-        if (!finished && yield) {
-            std::this_thread::yield();
-        }
+    if (_workerThreadCount > 0u) {
+        WAIT_FOR_CONDITION((_runningTaskCount.load() == 0u), yield);
     }
 
     if (flushCallbacks) {

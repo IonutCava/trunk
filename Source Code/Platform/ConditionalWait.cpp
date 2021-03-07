@@ -15,8 +15,7 @@ void InitConditionalWait(PlatformContext& context) {
 }
 
 void PlatformContextIdleCall() {
-    assert(g_ctx != nullptr);
-    if (Runtime::isMainThread()) {
+    if (Runtime::isMainThread() && g_ctx != nullptr) {
         g_ctx->idle(true, 0u);
     }
 }

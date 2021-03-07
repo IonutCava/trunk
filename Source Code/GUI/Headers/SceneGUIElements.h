@@ -53,7 +53,7 @@ public:
     void onDisable();
 
 private:
-    GFX::DrawTextCommand _drawTextCommand = {};
+    GFX::DrawTextCommand _drawTextCommand{};
 };
 } //namespace Divide;
 

@@ -33,6 +33,7 @@
 #ifndef _UTILITY_TEXT_LABEL_H_
 #define _UTILITY_TEXT_LABEL_H_
 
+#include "Colours.h"
 #include "Core/Math/Headers/Dimension.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Hashable.h"
@@ -63,45 +64,19 @@ class TextLabelStyle final : public Hashable {
     static const TextLabelStyle& get(size_t textLabelStyleHash, bool& styleFound);
     static const Str64& fontName(size_t fontNameHash);
 
-   TextLabelStyle(const char* font,
-                  const UColour4& colour,
-                  U8 fontSize);
+   TextLabelStyle(const char* font, const UColour4& colour, U8 fontSize);
 
-    size_t getHash() const noexcept override;
+    [[nodiscard]] size_t getHash() const noexcept override;
 
-    size_t font() const noexcept { return _font; }
-    U8 fontSize() const noexcept { return _fontSize; }
-    U8 width() const noexcept { return _width; }
-    F32 blurAmount() const noexcept { return _blurAmount; }
-    F32 spacing() const noexcept { return _spacing; }
-    U32 alignFlag() const noexcept { return _alignFlag; }
-    const UColour4& colour() const noexcept { return _colour; }
-    bool bold() const noexcept { return _bold; }
-    bool italic() const noexcept { return _italic; }
-
-
-    void font(const size_t font) noexcept { _font = font; _dirty = true; }
-    void fontSize(const U8 fontSize) noexcept { _fontSize = fontSize; _dirty = true; }
-    void width(const U8 width) noexcept { _width = width; _dirty = true; }
-    void blurAmount(const F32 blurAmount) noexcept { _blurAmount = blurAmount; _dirty = true; }
-    void spacing(const F32 spacing) noexcept { _spacing = spacing; _dirty = true; }
-    void alignFlag(const U32 alignFlag) noexcept { _alignFlag = alignFlag; _dirty = true; }
-    void colour(const UColour4& colour) noexcept { _colour.set(colour); _dirty = true; }
-    void bold(const bool bold) noexcept { _bold = bold; _dirty = true; }
-    void italic(const bool italic) noexcept { _italic = italic; _dirty = true; }
-
- protected:
-    size_t _font;
-    U8 _fontSize;
-    U8 _width;
-    F32 _blurAmount;
-    F32 _spacing;
-    U32 _alignFlag;  ///< Check font-stash alignment for details
-    UColour4 _colour;
-    bool _bold;
-    bool _italic;
-
-     mutable bool _dirty = true;
+    PROPERTY_RW(U8, fontSize, 1u);
+    PROPERTY_RW(U8, width, 1u);
+    PROPERTY_RW(F32, blurAmount, 0.f);
+    PROPERTY_RW(F32, spacing, 0.f);
+    PROPERTY_RW(U32, alignFlag, 0u); ///< Check font-stash alignment for details
+    PROPERTY_RW(size_t, font, 0u);
+    PROPERTY_RW(UColour4, colour, DefaultColours::BLACK_U8);
+    PROPERTY_RW(bool, bold, false);
+    PROPERTY_RW(bool, italic, false);
 };
 
 struct TextElement {
@@ -125,40 +100,26 @@ struct TextElement {
     void text(const char* text, const bool multiLine) {
         if (multiLine) {
             Util::Split(text, '\n', _text);
-        } else {
-            _text = { text };
+            return;
         }
+
+        _text = { text };
     }
 
-    [[nodiscard]] const TextType& text() const noexcept { return _text; }
-
-    size_t _textLabelStyleHash = 0;
-    RelativePosition2D _position ;
-
-  private:
-    TextType _text;
+    PROPERTY_R(size_t, textLabelStyleHash, 0);
+    PROPERTY_R(TextType, text, {});
+    PROPERTY_RW(RelativePosition2D, position);
 };
 
 struct TextElementBatch {
     using BatchType = vectorEASTLFast<TextElement>;
 
     TextElementBatch() = default;
-
-    explicit TextElementBatch(const size_t elementCount)
-    {
-        _data.reserve(elementCount);
+    explicit TextElementBatch(const TextElement& element) {
+        _data.push_back(element);
     }
 
-    explicit TextElementBatch(const TextElement& element)
-        : _data {element}
-    {
-    }
-
-    const BatchType& operator()() const noexcept { return _data; }
-
-    [[nodiscard]] bool empty() const noexcept { return _data.empty(); }
-
-    BatchType _data;
+    PROPERTY_RW(BatchType, data, {});
 };
 
 }  // namespace Divide

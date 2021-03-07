@@ -29,15 +29,6 @@ ScopedTimer::~ScopedTimer()
     _timer.stop();
 }
 
-ProfileTimer::ProfileTimer() noexcept
-    : _timer(0UL),
-      _timerAverage(0UL),
-      _timerCounter(0),
-      _globalIndex(0),
-      _parent(Config::Profile::MAX_PROFILE_TIMERS + 1)
-{
-}
-
 void ProfileTimer::start() {
     if (timersEnabled()) {
         _timer = App::ElapsedMicroseconds();

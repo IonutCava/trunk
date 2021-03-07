@@ -9,7 +9,7 @@
 namespace Divide {
     RigidBodyComponent::RigidBodyComponent(SceneGraphNode* parentSGN, PlatformContext& context)
         : Parent(parentSGN, context),
-          _physicsCollisionGroup(parentSGN->usageContext() == NodeUsageContext::NODE_STATIC ? PhysicsGroup::GROUP_STATIC : PhysicsGroup::GROUP_DYNAMIC)
+          _physicsCollisionGroup(PhysicsGroup::GROUP_STATIC)
     {
     }
 
@@ -18,9 +18,11 @@ namespace Divide {
     }
 
     void RigidBodyComponent::physicsCollisionGroup(const PhysicsGroup group) {
-        _physicsCollisionGroup = group;
-        if (_rigidBody != nullptr) {
-            _rigidBody->physicsCollisionGroup(group);
+        if (_physicsCollisionGroup != group) {
+            _physicsCollisionGroup = group;
+            if (_rigidBody != nullptr) {
+                _rigidBody->physicsCollisionGroup(group);
+            }
         }
     }
 

@@ -141,8 +141,8 @@ protected:
     //using ResourceMap = ska::bytell_hash_map<size_t, CachedResource_wptr>;
     using ResourceMap = hashMap<size_t, CachedResource_wptr>;
 
-    ResourceMap _resDB; 
-    mutable SharedMutex _creationMutex;
+    ResourceMap _resDB{}; 
+    mutable SharedMutex _creationMutex{};
 };
 
 template <typename T>

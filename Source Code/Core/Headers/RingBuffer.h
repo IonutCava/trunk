@@ -43,9 +43,9 @@ public:
 
     virtual void resize(I32 queueLength) noexcept;
 
-    I32 queueLength() const noexcept { return _queueLength; }
+    [[nodiscard]] I32 queueLength() const noexcept { return _queueLength; }
 
-    I32 queueWriteIndex() const noexcept {
+    [[nodiscard]] I32 queueWriteIndex() const noexcept {
         const I32 ret = _queueIndex.load();
 
         if (_separateReadWrite) {
@@ -55,7 +55,7 @@ public:
         return ret;
     }
 
-    I32 queueReadIndex() const noexcept { return _queueIndex; }
+    [[nodiscard]] I32 queueReadIndex() const noexcept { return _queueIndex; }
 
     void incQueue() noexcept {
         if (queueLength() > 1) {
@@ -74,10 +74,10 @@ public:
     }
 
 private:
-    I32 _queueLength;
-    const bool _writeAhead;
-    const bool _separateReadWrite;
-    std::atomic_int _queueIndex;
+    I32 _queueLength = 1;
+    const bool _writeAhead = false;
+    const bool _separateReadWrite = false;
+    std::atomic_int _queueIndex = 0;
 };
 
 class RingBuffer : public NonCopyable {
@@ -87,8 +87,8 @@ public:
 
     virtual void resize(I32 queueLength) noexcept;
 
-    I32 queueLength() const noexcept { return _queueLength; }
-    I32 queueIndex() const noexcept { return _queueIndex; }
+    [[nodiscard]] I32 queueLength() const noexcept { return _queueLength; }
+    [[nodiscard]] I32 queueIndex() const noexcept { return _queueIndex; }
 
     void incQueue() noexcept {
         if (queueLength() > 1) {

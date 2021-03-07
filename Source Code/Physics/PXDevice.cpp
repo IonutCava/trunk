@@ -95,4 +95,7 @@ bool PXDevice::convertActor(PhysicsAsset* actor, const PhysicsGroup newGroup) {
     return _api->convertActor(actor, newGroup);
 }
 
+bool PXDevice::intersect(const Ray& intersectionRay, const vec2<F32>& range, vectorEASTL<SGNRayResult>& intersectionsOut) const {
+    return _api->intersect(intersectionRay, range, intersectionsOut);
+}
 }; //namespace Divide

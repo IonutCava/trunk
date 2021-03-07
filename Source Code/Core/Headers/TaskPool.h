@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct ParallelForDescriptor {
-    DELEGATE<void, const Task*, U32/*start*/, U32/*end*/> _cbk;
+    DELEGATE<void, const Task*, U32/*start*/, U32/*end*/> _cbk{};
     /// For loop iteration count
     U32 _iterCount = 0u;
     /// How many elements should we process per async task
@@ -81,7 +81,7 @@ public:
     template<class Predicate>
     Task* createTask(Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle = true);
 
-    U32 workerThreadCount() const noexcept {
+    [[nodiscard]] U32 workerThreadCount() const noexcept {
         return _workerThreadCount;
     }
 
@@ -134,9 +134,9 @@ public:
           void threadWaiting() const;
       };
 
-     hashMap<U32, vectorEASTL<DELEGATE<void>>> _taskCallbacks;
-     DELEGATE<void, const std::thread::id&> _threadCreateCbk;
-     moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer;
+     hashMap<U32, vectorEASTL<DELEGATE<void>>> _taskCallbacks{};
+     DELEGATE<void, const std::thread::id&> _threadCreateCbk{};
+     moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer{};
      PoolHolder _poolImpl = {};
      stringImpl _threadNamePrefix = "";
      std::atomic_uint _runningTaskCount = 0u;

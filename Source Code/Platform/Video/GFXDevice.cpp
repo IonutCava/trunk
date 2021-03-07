@@ -2156,7 +2156,7 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
         setViewport._viewport.set(targetViewRect);
         EnqueueCommand(bufferInOut, setViewport);
 
-        text._position.d_y.d_offset = targetViewRect.sizeY - 10.0f;
+        text.position().d_y.d_offset = targetViewRect.sizeY - 10.0f;
         text.text(labelText.c_str(), false);
 
         TextElementBatch batch{ text };

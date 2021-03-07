@@ -55,12 +55,12 @@ private:
     std::array<F32, FRAME_ARRAY_SIZE> _framerateSecPerFrame = {};
     U32 _frameCount = 0u;
     F32 _minFPS = std::numeric_limits<F32>::max();
-    F32 _maxFPS = std::numeric_limits<F32>::min();
-    F32 _averageFPS = 0.0f;
-    F32 _previousElapsedSeconds = 0.0f;
-    F32 _framerate = 0.0f;
+    F32 _maxFPS = std::numeric_limits<F32>::lowest();
+    F32 _averageFPS = 0.f;
+    F32 _previousElapsedSeconds = 0.f;
+    F32 _framerate = 0.f;
     I32 _framerateSecPerFrameIdx = 0;
-    F32 _framerateSecPerFrameAccum = 0.0f;
+    F32 _framerateSecPerFrameAccum = 0.f;
 };
 
 } //namespace Time

@@ -41,6 +41,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+namespace Util {
+    vec3<F32> toVec3(const physx::PxVec3& vec);
+    physx::PxVec3 toVec3(const vec3<F32>& vec);
+} //namespace Util
+
 class PhysXActor final : public PhysicsAsset {
 public:
     explicit PhysXActor(RigidBodyComponent& parent);
@@ -90,9 +95,11 @@ public:
     [[nodiscard]] TransformValues getValues() const override;
 
     void physicsCollisionGroup(PhysicsGroup group) override;
+
 protected:
     friend class PhysX;
     friend class PhysXSceneInterface;
+
     physx::PxRigidActor* _actor = nullptr;
     physx::PxGeometryType::Enum _type = physx::PxGeometryType::eINVALID;
     stringImpl _actorName;

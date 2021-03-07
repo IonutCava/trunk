@@ -272,7 +272,6 @@ BEGIN_COMPONENT(Rendering, ComponentType::RENDERING)
     mat4<F32> _worldMatrixCache;
     mat4<F32> _worldOffsetMatrixCache;
     vec2<F32> _renderRange;
-    BoundingBox _boundsCache;
     bool _selectionGizmoDirty = true;
 
     Pipeline*    _primitivePipeline[3] = {nullptr, nullptr, nullptr};

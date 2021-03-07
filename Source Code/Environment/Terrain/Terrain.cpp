@@ -172,17 +172,16 @@ void Terrain::postBuild() {
 
     // Generate index buffer
     vectorEASTL<vec3<U32>>& triangles = getTriangles(0u);
-    triangles.resize(to_size(terrainHeight) * terrainWidth * 2u);
+    triangles.reserve((terrainWidth - 1) * (terrainHeight - 1) * 2);
 
-    // ToDo: Use parallel_for for this
-    I32 vectorIndex = 0;
-    for (U16 height = 0; height < terrainHeight - 1; ++height) {
-        for (U16 width = 0; width < terrainWidth - 1; ++width) {
-            const U16 vertexIndex = TER_COORD(width, height, terrainWidth);
+    //Ref : https://www.3dgep.com/multi-textured-terrain-in-opengl/
+    for (U32 height = 0; height < to_U32(terrainHeight - 1); ++height) {
+        for (U32 width = 0; width < to_U32(terrainWidth - 1); ++width) {
+            const U32 vertexIndex = TER_COORD(width, height, to_U32(terrainWidth));
             // Top triangle (T0)
-            triangles[vectorIndex++].set(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
+            triangles.emplace_back(vertexIndex, vertexIndex + terrainWidth + 1u, vertexIndex + 1u);
             // Bottom triangle (T1)
-            triangles[vectorIndex++].set(vertexIndex, vertexIndex + terrainWidth, vertexIndex + terrainWidth + 1);
+            triangles.emplace_back(vertexIndex, vertexIndex + terrainWidth,      vertexIndex + terrainWidth + 1u);
         }
     }
 

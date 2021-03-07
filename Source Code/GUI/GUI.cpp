@@ -104,15 +104,16 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
 
     const GUIMap& elements = _guiElements[to_base(GUIType::GUI_TEXT)];
 
-    TextElementBatch textBatch(elements.size());
+    TextElementBatch textBatch;
+    textBatch.data().reserve(elements.size());
     for (const GUIMap::value_type& guiStackIterator : elements) {
         const GUIText& textLabel = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (textLabel.visible() && !textLabel.text().empty()) {
-            textBatch._data.push_back(textLabel);
+            textBatch.data().push_back(textLabel);
         }
     }
 
-    if (!textBatch().empty()) {
+    if (!textBatch.data().empty()) {
         Attorney::GFXDeviceGUI::drawText(context, textBatch, bufferInOut);
     }
 

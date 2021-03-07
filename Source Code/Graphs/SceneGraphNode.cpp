@@ -26,12 +26,6 @@
 namespace Divide {
 
 namespace {
-    [[nodiscard]] bool IsTransformNode(const SceneNodeType nodeType, const ObjectType objType) noexcept {
-        return nodeType == SceneNodeType::TYPE_TRANSFORM ||
-               nodeType == SceneNodeType::TYPE_TRIGGER ||
-               objType._value == ObjectType::MESH;
-    }
-
     bool PropagateFlagToChildren(const SceneGraphNode::Flags flag) noexcept {
         return flag == SceneGraphNode::Flags::SELECTED || 
                flag == SceneGraphNode::Flags::HOVERED ||
@@ -390,46 +384,26 @@ SceneGraphNode* SceneGraphNode::findChild(const I64 GUID, const bool sceneNodeGu
     return nullptr;
 }
 
-bool SceneGraphNode::intersect(const SGNIntersectionParams& params, vectorEASTL<SGNRayResult>& intersections) const {
+bool SceneGraphNode::intersect(const Ray& intersectionRay, const vec2<F32>& range, vectorEASTL<SGNRayResult>& intersections) const {
     vectorEASTL<SGNRayResult> ret = {};
-    // If we start from the root node, process children only
+
+    // Root has its own intersection routine, so we ignore it
     if (_sceneGraph->getRoot()->getGUID() == this->getGUID()) {
-        return forEachChild([&](const SceneGraphNode* child, I32 /*childIdx*/) {
-            child->intersect(params, intersections);
+        forEachChild([&](const SceneGraphNode* child, I32 /*childIdx*/) {
+            child->intersect(intersectionRay, range, intersections);
             return true;
         });
-    }
-
-    const auto isIgnored = [&](const SceneNodeType type) {
-        for (size_t i = 0; i < params._ignoredTypesCount; ++i) {
-            if (type == params._ignoredTypes[i]) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-    // If we hit a bounding sphere, we proceed to the more expensive OBB test
-    if (get<BoundsComponent>()->getBoundingSphere().intersect(params._ray, params._range.min, params._range.max).hit) {
-        const RayResult result = get<BoundsComponent>()->getOBB().intersect(params._ray, params._range.min, params._range.max);
-        if (result.hit) {
-            // If we also hit the OBB we should probably register the intersection since we aren't going to go down to a triangle level intersection or whatnot
-            // At least not now ...
-            //
-            //   const SceneNode& sceneNode = node->getNode();
-            const SceneNodeType snType = getNode().type();
-            ObjectType objectType = ObjectType::COUNT;
-            if (snType == SceneNodeType::TYPE_OBJECT3D) {
-                objectType = static_cast<const Object3D&>(getNode()).getObjectType();
-            }
-
-            if (!isIgnored(snType) && (params._includeTransformNodes || !IsTransformNode(snType, objectType))) {
+    } else {
+        // If we hit a bounding sphere, we proceed to the more expensive OBB test
+        if (get<BoundsComponent>()->getBoundingSphere().intersect(intersectionRay, range.min, range.max).hit) {
+            const RayResult result = get<BoundsComponent>()->getOBB().intersect(intersectionRay, range.min, range.max);
+            if (result.hit) {
                 intersections.push_back({ getGUID(), result.dist, name().c_str() });
+                forEachChild([&](const SceneGraphNode* child, I32 /*childIdx*/) {
+                    child->intersect(intersectionRay, range, intersections);
+                    return true;
+                });
             }
-            forEachChild([&](const SceneGraphNode* child, I32 /*childIdx*/) {
-                child->intersect(params, intersections);
-                return true;
-            });
         }
     }
 
